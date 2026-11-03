@@ -1,0 +1,238 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* Dark mode is wired for shadcn/ui components but is not offered to visitors yet.
+   The public brand palette is light-first; a site-wide theme toggle is a later task. */
+@custom-variant dark (&:is(.dark *));
+
+/* -------------------------------------------------------------------------- */
+/* Design tokens                                                              */
+/* -------------------------------------------------------------------------- */
+
+:root {
+  --radius: 0.75rem;
+
+  /* ISNESI brand palette (from the approved brand and public prototype) */
+  --brand: #1b3fa0;
+  --brand-strong: #142b69;
+  --brand-soft: #f1f5ff;
+  --cream: #fffdf5;
+  --ink: #182443;
+  --ink-muted: #4d5a72;
+  --line: #e6e8ef;
+  --leaf: #2e9e4f;
+  --leaf-soft: #eaf7ef;
+  --sun: #ffc83d;
+  --sun-soft: #fff6de;
+  --coral: #f47768;
+
+  /* shadcn/ui semantic tokens, aligned with the brand */
+  --background: #fffdf5;
+  --foreground: #182443;
+  --card: #ffffff;
+  --card-foreground: #182443;
+  --popover: #ffffff;
+  --popover-foreground: #182443;
+  --primary: #1b3fa0;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5ff;
+  --secondary-foreground: #142b69;
+  --muted: #f4f6fb;
+  --muted-foreground: #4d5a72;
+  --accent: #eaf7ef;
+  --accent-foreground: #1d6b35;
+  --destructive: #c43e46;
+  --destructive-foreground: #ffffff;
+  --border: #e6e8ef;
+  --input: #d8dce8;
+  --ring: #1b3fa0;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Brand namespace — deliberately avoids shadcn's reserved token names. */
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-soft: var(--brand-soft);
+  --color-cream: var(--cream);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-line: var(--line);
+  --color-leaf: var(--leaf);
+  --color-leaf-soft: var(--leaf-soft);
+  --color-sun: var(--sun);
+  --color-sun-soft: var(--sun-soft);
+  --color-coral: var(--coral);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-nunito), ui-rounded, "Trebuchet MS", system-ui, sans-serif;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 10px);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Base layer                                                                 */
+/* -------------------------------------------------------------------------- */
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-padding-top: 90px;
+  }
+
+  body {
+    @apply bg-cream font-sans text-ink antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5 {
+    @apply font-display;
+    text-wrap: balance;
+  }
+
+  /* A clearly visible focus indicator is required for WCAG 2.4.11 / 2.4.13. */
+  :focus-visible {
+    outline: 3px solid #a35a00;
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: var(--sun);
+    color: var(--ink);
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Utilities                                                                  */
+/* -------------------------------------------------------------------------- */
+
+/* Skip link: hidden until focused, then pinned to the top-left corner. */
+@utility skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+
+  &:focus {
+    left: 12px;
+    top: 12px;
+    padding: 12px 18px;
+    border-radius: 12px;
+    background: #ffffff;
+    color: var(--brand);
+    font-weight: 700;
+    box-shadow: 0 10px 30px rgb(24 36 67 / 18%);
+  }
+}
+
+/* Long-form CMS content: predictable rhythm and readable measure. */
+@utility rich-text {
+  max-width: 68ch;
+  color: var(--ink-muted);
+
+  & > * + * {
+    margin-top: 1rem;
+  }
+
+  & h2 {
+    margin-top: 2rem;
+    color: var(--brand);
+    font-size: 1.6rem;
+    font-weight: 900;
+  }
+
+  & h3 {
+    margin-top: 1.5rem;
+    color: var(--ink);
+    font-size: 1.25rem;
+    font-weight: 800;
+  }
+
+  & a {
+    color: var(--brand);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  & ul,
+  & ol {
+    padding-left: 1.4rem;
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  & ul {
+    list-style: disc;
+  }
+
+  & ol {
+    list-style: decimal;
+  }
+
+  & blockquote {
+    border-left: 4px solid var(--leaf);
+    padding-left: 1rem;
+    color: var(--ink);
+    font-style: italic;
+  }
+
+  & img {
+    border-radius: var(--radius-lg);
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Motion and print preferences                                               */
+/* -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: #ffffff;
+  }
+}

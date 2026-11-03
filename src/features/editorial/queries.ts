@@ -1,0 +1,156 @@
+import { siteConfig } from "@/lib/site";
+import { createPublicClient, hasPublicContentAccess } from "@/lib/supabase/public";
+import type { ContentType, Json } from "@/types/database";
+
+export type StorySummary = {
+  id: string;
+  slug: string;
+  contentType: ContentType;
+  featured: boolean;
+  publishedAt: string | null;
+  locale: string;
+  title: string;
+  excerpt: string | null;
+};
+
+type ContentTranslation = {
+  content_id: string;
+  locale: string;
+  title: string;
+  excerpt: string | null;
+};
+
+function pickTranslation(
+  rows: ContentTranslation[],
+  contentId: string,
+  locale: string,
+): ContentTranslation | undefined {
+  const forItem = rows.filter((row) => row.content_id === contentId);
+  return (
+    forItem.find((row) => row.locale === locale) ??
+    forItem.find((row) => row.locale === siteConfig.defaultLocale) ??
+    forItem[0]
+  );
+}
+
+/**
+ * Published stories and news for the public website.
+ * RLS already limits rows to `status = 'published'` with a past `published_at`.
+ */
+export async function listPublishedStories(
+  options: { limit?: number; locale?: string; contentType?: ContentType } = {},
+): Promise<StorySummary[]> {
+  const locale = options.locale ?? siteConfig.defaultLocale;
+  if (!hasPublicContentAccess()) return [];
+
+  try {
+    const supabase = createPublicClient();
+    let query = supabase
+      .from("content_items")
+      .select("id, slug, content_type, featured, published_at")
+      .eq("status", "published")
+      .lte("published_at", new Date().toISOString())
+      .order("published_at", { ascending: false })
+      .limit(options.limit ?? 12);
+
+    if (options.contentType) {
+      query = query.eq("content_type", options.contentType);
+    }
+
+    const { data: items, error } = await query;
+    if (error) {
+      console.warn("[isnesi] unable to load stories", { code: error.code });
+      return [];
+    }
+    if (!items || items.length === 0) return [];
+
+    const { data: translations, error: translationError } = await supabase
+      .from("content_translations")
+      .select("content_id, locale, title, excerpt")
+      .in(
+        "content_id",
+        items.map((item) => item.id),
+      );
+
+    if (translationError) {
+      console.warn("[isnesi] unable to load story translations", { code: translationError.code });
+    }
+
+    const rows = translations ?? [];
+
+    return items.flatMap((item) => {
+      const translation = pickTranslation(rows, item.id, locale);
+      if (!translation) return [];
+      return [
+        {
+          id: item.id,
+          slug: item.slug,
+          contentType: item.content_type,
+          featured: item.featured,
+          publishedAt: item.published_at,
+          locale: translation.locale,
+          title: translation.title,
+          excerpt: translation.excerpt,
+        },
+      ];
+    });
+  } catch (error) {
+    console.warn("[isnesi] stories unavailable", error);
+    return [];
+  }
+}
+
+/** A single published story, including its structured body. */
+export async function getPublishedStoryBySlug(
+  slug: string,
+  locale: string = siteConfig.defaultLocale,
+): Promise<(StorySummary & { body: Json; seoDescription: string | null }) | null> {
+  if (!hasPublicContentAccess()) return null;
+
+  try {
+    const supabase = createPublicClient();
+
+    const { data: item, error } = await supabase
+      .from("content_items")
+      .select("id, slug, content_type, featured, published_at")
+      .eq("slug", slug)
+      .eq("status", "published")
+      .lte("published_at", new Date().toISOString())
+      .maybeSingle();
+
+    if (error) {
+      console.warn("[isnesi] unable to load story", { slug, code: error.code });
+      return null;
+    }
+    if (!item) return null;
+
+    const { data: translations } = await supabase
+      .from("content_translations")
+      .select("locale, title, excerpt, body, seo_description")
+      .eq("content_id", item.id);
+
+    const rows = translations ?? [];
+    const translation =
+      rows.find((row) => row.locale === locale) ??
+      rows.find((row) => row.locale === siteConfig.defaultLocale) ??
+      rows[0];
+
+    if (!translation) return null;
+
+    return {
+      id: item.id,
+      slug: item.slug,
+      contentType: item.content_type,
+      featured: item.featured,
+      publishedAt: item.published_at,
+      locale: translation.locale,
+      title: translation.title,
+      excerpt: translation.excerpt,
+      seoDescription: translation.seo_description,
+      body: translation.body,
+    };
+  } catch (error) {
+    console.warn("[isnesi] story unavailable", { slug, error });
+    return null;
+  }
+}
