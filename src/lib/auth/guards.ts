@@ -43,3 +43,17 @@ export async function requirePermission(
   const user = await requireAdmin(returnTo);
   return { user, allowed: can(user, permission) };
 }
+
+/**
+ * Authorise a Server Action.
+ *
+ * Actions run outside the page render, so each one must re-check permission for
+ * itself. Returns `null` when the actor may not proceed, which callers turn into
+ * `actionForbidden()`. It deliberately does not redirect: a mutation should
+ * return a result the form can display rather than navigate the user away.
+ */
+export async function assertPermission(permission: PermissionKey): Promise<CurrentUser | null> {
+  const user = await getCurrentUser();
+  if (!user || !canAccessAdmin(user) || !can(user, permission)) return null;
+  return user;
+}

@@ -45,3 +45,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local platform binaries (see README "Supabase CLI on Windows")
+/.tools/

@@ -20,6 +20,16 @@ type ContentTranslation = {
   excerpt: string | null;
 };
 
+const CONTENT_TYPES: readonly ContentType[] = ["story", "news", "announcement", "policy"];
+
+/**
+ * Validate a text column value against the known content types so raw rows
+ * cannot widen the union application code relies on.
+ */
+function asContentType(value: string): ContentType | null {
+  return CONTENT_TYPES.includes(value as ContentType) ? (value as ContentType) : null;
+}
+
 function pickTranslation(
   rows: ContentTranslation[],
   contentId: string,
@@ -80,12 +90,13 @@ export async function listPublishedStories(
 
     return items.flatMap((item) => {
       const translation = pickTranslation(rows, item.id, locale);
-      if (!translation) return [];
+      const contentType = asContentType(item.content_type);
+      if (!translation || !contentType) return [];
       return [
         {
           id: item.id,
           slug: item.slug,
-          contentType: item.content_type,
+          contentType,
           featured: item.featured,
           publishedAt: item.published_at,
           locale: translation.locale,
@@ -137,10 +148,16 @@ export async function getPublishedStoryBySlug(
 
     if (!translation) return null;
 
+    const contentType = asContentType(item.content_type);
+    if (!contentType) {
+      console.warn("[isnesi] story has unknown content_type", { slug: item.slug });
+      return null;
+    }
+
     return {
       id: item.id,
       slug: item.slug,
-      contentType: item.content_type,
+      contentType,
       featured: item.featured,
       publishedAt: item.published_at,
       locale: translation.locale,

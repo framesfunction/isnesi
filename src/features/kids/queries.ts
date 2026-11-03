@@ -13,6 +13,19 @@ export type PublicKidsResource = {
   description: string | null;
 };
 
+const RESOURCE_TYPES: readonly KidsResourceType[] = [
+  "story",
+  "activity",
+  "game",
+  "video",
+  "download",
+];
+
+/** Validate a text column value against the known Kids' Corner resource types. */
+function asResourceType(value: string): KidsResourceType | null {
+  return RESOURCE_TYPES.includes(value as KidsResourceType) ? (value as KidsResourceType) : null;
+}
+
 /**
  * Published Kids' Corner resources.
  *
@@ -50,23 +63,27 @@ export async function listKidsResources(
 
     const rows = translations ?? [];
 
-    return resources.map((resource) => {
+    return resources.flatMap((resource) => {
       const forResource = rows.filter((row) => row.resource_id === resource.id);
       const translation =
         forResource.find((row) => row.locale === locale) ??
         forResource.find((row) => row.locale === siteConfig.defaultLocale) ??
         forResource[0];
+      const resourceType = asResourceType(resource.resource_type);
+      if (!resourceType) return [];
 
-      return {
-        id: resource.id,
-        resourceType: resource.resource_type,
-        minAge: resource.min_age,
-        maxAge: resource.max_age,
-        featured: resource.is_featured,
-        locale: translation?.locale ?? locale,
-        title: translation?.title ?? "Kids' Corner resource",
-        description: translation?.description ?? null,
-      };
+      return [
+        {
+          id: resource.id,
+          resourceType,
+          minAge: resource.min_age,
+          maxAge: resource.max_age,
+          featured: resource.is_featured,
+          locale: translation?.locale ?? locale,
+          title: translation?.title ?? "Kids' Corner resource",
+          description: translation?.description ?? null,
+        },
+      ];
     });
   } catch (error) {
     console.warn("[isnesi] kids resources unavailable", error);

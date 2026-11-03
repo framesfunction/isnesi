@@ -70,8 +70,48 @@ The app starts without Supabase configured: public pages render their real
 | `npm run lint` | ESLint (flat config, Next core-web-vitals + TS) |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm test` | Vitest unit tests |
-| `npm run db:start` / `db:reset` / `db:push` | Supabase CLI wrappers |
-| `npm run db:types` | Generate `Database` types from the live schema |
+| `npm run db:start` / `db:reset` / `db:push` | Supabase CLI wrappers (local stack) |
+| `npm run db:types` | Generate `Database` types from the hosted project into `src/types/database.gen.ts` (reads `SUPABASE_DB_PASSWORD`; see `.env.example`) |
+
+## Supabase CLI on Windows
+
+The `supabase` npm wrapper ships platform binaries as optional dependencies, and on
+constrained networks that download can fail or arrive corrupted — every command then
+dies with `No matching Supabase CLI binary package found for win32-x64`. The local
+wrapper at `npm run supabase` handles this: if an official release binary exists at
+`.tools/supabase.exe` (git-ignored) it is used via the CLI's documented
+`SUPABASE_CLI_BINARY_OVERRIDE` escape hatch. Bootstrap it once:
+
+```bash
+node scripts/supabase.mjs install
+```
+
+## Database operations against the hosted project
+
+The default database host (`db.<ref>.supabase.co`) resolves IPv6-only, so DB
+operations target the **session pooler**. With `SUPABASE_DB_PASSWORD` set in
+`.env.local`:
+
+```bash
+# 1. Probe the session pooler until "select 1" succeeds — that region is the project's.
+#    User = postgres.<project-ref>; replace <urlencoded-password> accordingly.
+#    A wrong region reports "tenant/user postgres.<ref> not found".
+npm run supabase -- db query --remote "postgresql://postgres.<ref>:<urlencoded-password>@aws-0-eu-west-1.pooler.supabase.com:5432/postgres" --read-only "select 1"
+
+# 2. Push migrations
+npm run supabase -- db push --remote <pooler-url> --yes
+
+# 3. Generate types (no manual URL needed)
+npm run db:types
+```
+
+`npm run db:types` always runs against the hosted project (reads
+`NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_DB_PASSWORD`, optional
+`SUPABASE_POOLER_REGION` or a full `SUPABASE_DB_URL` override from `.env.local`)
+and writes `src/types/database.gen.ts`; `src/types/database.ts` re-exports it and
+must never be edited by hand. Migrations are applied with `db push`; seed data is
+applied per statement (`db query -f supabase/seed.sql` accepts only one statement
+per call).
 
 ## Repository layout
 
@@ -174,8 +214,9 @@ These are enforced in code, not just documented:
 
 - Foundation: Next.js, TypeScript strict, Tailwind v4 tokens, shadcn/ui, ESLint,
   Vitest, environment validation, security headers.
-- Data layer: five migrations applied in order, typed model of all 43 public
-  tables, seed data, RLS smoke-test SQL.
+- Data layer: five migrations applied to the hosted project in order, generated
+  schema types (`npm run db:types` → `src/types/database.gen.ts`), seed data,
+  RLS smoke-test SQL.
 - Auth: sign-in/out, PKCE callback, session refresh in the proxy, database-backed
   permission resolution, admin gate and `no-access` handling.
 - Admin: permission-aware shell, live dashboard metrics, and all 15 module routes
@@ -195,7 +236,6 @@ These are enforced in code, not just documented:
 | Payments | Tables and provider-neutral fields exist; **no** provider adapter, so no money can move. |
 | Newsletter delivery | Signup routes to `newsletter-subscribe`, which does not exist yet, so it fails closed. |
 | Safeguarding UI | Blocked on the Edge Functions + an access-matrix test. |
-| Regenerated DB types | `src/types/database.ts` is hand-transcribed; run `npm run db:types` to replace it with generated types. |
 | French UI | Schema supports `en`/`fr`; only English copy is written. |
 | CSP | Needs nonce wiring; headers are otherwise in place. |
 
@@ -205,7 +245,7 @@ These are enforced in code, not just documented:
 npm run typecheck   # clean
 npm run lint        # clean
 npm test            # 36 tests passing
-npm run build       # 19 routes build successfully
+npm run build       # 22 routes build successfully
 ```
 
 Tests cover the pure permission logic (including inactive and missing subjects),

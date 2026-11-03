@@ -51,12 +51,8 @@ export const newsletterSubscribeSchema = z.object({
 
 export type NewsletterSubscribeInput = z.infer<typeof newsletterSubscribeSchema>;
 
-/** Flatten Zod issues into a `field -> message` map for form rendering. */
-export function fieldErrors(error: z.ZodError): Record<string, string> {
-  const result: Record<string, string> = {};
-  for (const issue of error.issues) {
-    const key = String(issue.path[0] ?? "_form");
-    if (!result[key]) result[key] = issue.message;
-  }
-  return result;
-}
+/**
+ * `fieldErrors` now lives in `lib/validation/form.ts` so every module shares one
+ * implementation. Re-exported here so existing imports keep working.
+ */
+export { fieldErrors } from "@/lib/validation/form";
