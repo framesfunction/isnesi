@@ -219,8 +219,15 @@ These are enforced in code, not just documented:
   RLS smoke-test SQL.
 - Auth: sign-in/out, PKCE callback, session refresh in the proxy, database-backed
   permission resolution, admin gate and `no-access` handling.
-- Admin: permission-aware shell, live dashboard metrics, and all 15 module routes
-  with guards and documented contracts.
+- Admin: permission-aware shell, live dashboard metrics, and every module route
+  with guards and documented contracts. Working CRUD is implemented for Pages &
+  sections (with publication safety checks and automatic navigation-link
+  repair), the Media library (Supabase Storage upload/rights/delete),
+  Programmes (bilingual translations, ordering, activation), Stories & news
+  (full editorial workflow: draft → review → approval → scheduled/published,
+  immutable revisions, independent approvals, re-approval on material change),
+  Partners (approval workflow, visibility gate) and Navigation (menus, items,
+  nesting, cycle guard).
 - Public: home (live programmes, stories, partners), programmes, stories list and
   detail with a safe structured-content renderer, partners, Kids' Corner, donate
   (settings-driven, honest about the missing provider), contact and get-involved
@@ -231,7 +238,8 @@ These are enforced in code, not just documented:
 
 | Area | State |
 |---|---|
-| Module CRUD screens | Each route renders its contract; replace the scaffold module by module. |
+| Module CRUD screens | All six website modules are built; remaining modules (users, settings, enquiries, safeguarding, donations, kids-corner, accessibility, audit) still render their documented contract. |
+| Scheduled publishing cron | Items can be parked in `scheduled`; a cron job to flip them live is still to come. |
 | Edge Functions | Specified in `supabase/functions/README.md`; not deployed. |
 | Payments | Tables and provider-neutral fields exist; **no** provider adapter, so no money can move. |
 | Newsletter delivery | Signup routes to `newsletter-subscribe`, which does not exist yet, so it fails closed. |
@@ -244,13 +252,13 @@ These are enforced in code, not just documented:
 ```bash
 npm run typecheck   # clean
 npm run lint        # clean
-npm test            # 36 tests passing
-npm run build       # 22 routes build successfully
+npm test            # 46 tests passing
+npm run build       # all routes build successfully
 ```
 
 Tests cover the pure permission logic (including inactive and missing subjects),
-the rate limiter and its key derivation, currency/date formatting, and the Zod
-schemas plus redirect sanitiser. Security-critical decisions such as "an inactive
+the rate limiter and its key derivation, currency/date formatting, the Zod
+schemas plus redirect sanitiser, and the media-library path/URL helpers. Security-critical decisions such as "an inactive
 profile satisfies no permission" are asserted, not assumed.
 
 ## Decisions still open with the organisation
