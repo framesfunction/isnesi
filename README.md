@@ -239,8 +239,8 @@ These are enforced in code, not just documented:
   (summary, rich body, objectives, activities, beneficiaries, coverage, SEO),
   stories list and detail with a safe structured-content renderer, partners,
   Kids' Corner, donate (settings-driven, honest about the missing provider),
-  contact and get-involved enquiry flows, a designed About page (overridden by a
-  published CMS `about` page), CMS-driven Impact, 404 and error states.
+  contact and get-involved enquiry flows, designed About and Impact pages (each
+  overridden by a matching published CMS page), 404 and error states.
 - PWA, SEO metadata, robots, sitemap, health endpoint.
 
 ## What is deliberately not built yet
