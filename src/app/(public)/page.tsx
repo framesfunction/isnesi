@@ -268,7 +268,7 @@ export default async function HomePage() {
                   <p className="mt-2 text-sm leading-6 text-ink-muted">{programme.summary}</p>
                 ) : null}
                 <Link
-                  href={`/programmes#${programme.key}`}
+                  href={`/programmes/${programme.key}`}
                   className="mt-auto inline-flex items-center gap-2 pt-5 text-sm font-bold text-brand"
                 >
                   Learn more{" "}

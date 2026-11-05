@@ -91,6 +91,33 @@ export async function listPublishedStories(
   }
 }
 
+/**
+ * Count of published stories and news visible on the public website, using the
+ * same filters as `listPublishedStories`.
+ */
+export async function countPublishedStories(): Promise<number> {
+  if (!hasPublicContentAccess()) return 0;
+
+  try {
+    const supabase = createPublicClient();
+    const { count, error } = await supabase
+      .from("content_items")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "published")
+      .lte("published_at", new Date().toISOString());
+
+    if (error) {
+      console.warn("[isnesi] published story count failed", { code: error.code });
+      return 0;
+    }
+
+    return count ?? 0;
+  } catch (error) {
+    console.warn("[isnesi] published story count unavailable", error);
+    return 0;
+  }
+}
+
 /** A single published story, including its structured body. */
 export async function getPublishedStoryBySlug(
   slug: string,

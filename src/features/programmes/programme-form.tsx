@@ -1,5 +1,6 @@
 import { ActionForm } from "@/components/admin/action-form";
 import { extractBlocks } from "@/lib/validation/blocks";
+import { linesToText } from "@/features/programmes/helpers";
 import { saveProgrammeAction } from "@/features/programmes/actions";
 import type { AdminProgrammeDetail } from "@/features/programmes/admin-queries";
 
@@ -17,6 +18,8 @@ const INPUT_CLASS = "min-h-10 rounded-xl border-2 border-line bg-white px-3 text
 
 const TEXTAREA_CLASS =
   "rounded-xl border-2 border-line bg-white px-3 py-2 font-mono text-xs text-ink";
+
+const PLAIN_TEXTAREA_CLASS = "rounded-xl border-2 border-line bg-white px-3 py-2 text-sm text-ink";
 
 const BLOCKS_PLACEHOLDER = '[{ "type": "paragraph", "text": "Programme description" }]';
 
@@ -79,6 +82,64 @@ export function ProgrammeForm({ programme }: { programme?: AdminProgrammeDetail 
 
       <fieldset className="mt-5 rounded-2xl border-2 border-line p-4">
         <legend className="px-2 text-xs font-black uppercase tracking-[0.12em] text-ink-muted">
+          Programme details
+        </legend>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <label className={FIELD_LABELS}>
+            <span>Featured image (media ID)</span>
+            <input
+              type="text"
+              name="featuredImageId"
+              defaultValue={programme?.featuredImageId ?? ""}
+              placeholder="paste a media library asset ID"
+              className={INPUT_CLASS}
+            />
+          </label>
+          <label className={FIELD_LABELS}>
+            <span>Target beneficiaries</span>
+            <input
+              type="text"
+              name="targetBeneficiaries"
+              defaultValue={programme?.targetBeneficiaries ?? ""}
+              placeholder="e.g. children aged 6-12"
+              className={INPUT_CLASS}
+            />
+          </label>
+          <label className={FIELD_LABELS}>
+            <span>Geographic coverage</span>
+            <input
+              type="text"
+              name="geographicCoverage"
+              defaultValue={programme?.geographicCoverage ?? ""}
+              placeholder="e.g. Centre region"
+              className={INPUT_CLASS}
+            />
+          </label>
+        </div>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <label className={FIELD_LABELS}>
+            <span>Objectives (one per line)</span>
+            <textarea
+              name="objectives"
+              rows={4}
+              defaultValue={linesToText(programme?.objectives)}
+              className={PLAIN_TEXTAREA_CLASS}
+            />
+          </label>
+          <label className={FIELD_LABELS}>
+            <span>Activities (one per line)</span>
+            <textarea
+              name="activities"
+              rows={4}
+              defaultValue={linesToText(programme?.activities)}
+              className={PLAIN_TEXTAREA_CLASS}
+            />
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset className="mt-5 rounded-2xl border-2 border-line p-4">
+        <legend className="px-2 text-xs font-black uppercase tracking-[0.12em] text-ink-muted">
           English (required)
         </legend>
         <div className="grid gap-4">
@@ -101,6 +162,26 @@ export function ProgrammeForm({ programme }: { programme?: AdminProgrammeDetail 
               className={INPUT_CLASS}
             />
           </label>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className={FIELD_LABELS}>
+              <span>SEO title</span>
+              <input
+                type="text"
+                name="seoTitleEn"
+                defaultValue={programme?.seoTitle ?? ""}
+                className={INPUT_CLASS}
+              />
+            </label>
+            <label className={FIELD_LABELS}>
+              <span>SEO description</span>
+              <input
+                type="text"
+                name="seoDescriptionEn"
+                defaultValue={programme?.seoDescription ?? ""}
+                className={INPUT_CLASS}
+              />
+            </label>
+          </div>
           <label className={FIELD_LABELS}>
             <span>Body (JSON blocks)</span>
             <textarea

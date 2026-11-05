@@ -147,8 +147,23 @@ export const saveProgrammeSchema = z.object({
   icon: optionalText,
   sortOrder: z.coerce.number().int().min(0).max(999),
   isActive: z.boolean(),
+  featuredImageId: z
+    .string()
+    .trim()
+    .optional()
+    .transform((value) => (value && value.length > 0 ? value : null))
+    .refine(
+      (value) => value === null || z.uuid().safeParse(value).success,
+      "Choose an asset from the media library.",
+    ),
+  objectives: z.array(z.string().trim().min(1)).max(30).optional(),
+  activities: z.array(z.string().trim().min(1)).max(30).optional(),
+  targetBeneficiaries: optionalText,
+  geographicCoverage: optionalText,
   titleEn: z.string().trim().min(1, "Required.").max(TEXT_FIELD_MAX),
   summaryEn: optionalText,
+  seoTitleEn: optionalText,
+  seoDescriptionEn: optionalText,
   bodyEnBlocks: blocksBody,
 });
 export const programmeToggleSchema = z.object({

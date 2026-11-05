@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { safeRedirectPath } from "@/lib/validation/auth";
+import { saveProgrammeSchema } from "@/lib/validation/cms";
 import { enquirySchema, newsletterSubscribeSchema } from "@/lib/validation/enquiry";
 
 const validEnquiry = {
@@ -85,6 +86,48 @@ describe("newsletterSubscribeSchema", () => {
     if (parsed.success) {
       expect(parsed.data.locale).toBe("fr");
     }
+  });
+});
+
+describe("saveProgrammeSchema", () => {
+  const base = {
+    key: "inclusive-education",
+    icon: "",
+    sortOrder: "1",
+    isActive: true,
+    featuredImageId: "",
+    objectives: ["Reach more children"],
+    activities: ["Teacher coaching"],
+    targetBeneficiaries: "Children with disabilities",
+    geographicCoverage: "Cameroon",
+    titleEn: "Inclusive Education",
+    summaryEn: "Equal access to quality education.",
+    seoTitleEn: "",
+    seoDescriptionEn: "",
+    bodyEnBlocks: [{ type: "paragraph", text: "Programme description" }],
+  };
+
+  it("accepts a complete programme and coerces its fields", () => {
+    const parsed = saveProgrammeSchema.safeParse(base);
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data.sortOrder).toBe(1);
+      expect(parsed.data.objectives).toEqual(["Reach more children"]);
+      expect(parsed.data.featuredImageId).toBeNull();
+      expect(parsed.data.seoTitleEn).toBeNull();
+    }
+  });
+
+  it("rejects a malformed key", () => {
+    expect(saveProgrammeSchema.safeParse({ ...base, key: "Not A Slug" }).success).toBe(false);
+  });
+
+  it("rejects an invalid featured image reference", () => {
+    expect(saveProgrammeSchema.safeParse({ ...base, featuredImageId: "123" }).success).toBe(false);
+  });
+
+  it("requires at least one body block", () => {
+    expect(saveProgrammeSchema.safeParse({ ...base, bodyEnBlocks: [] }).success).toBe(false);
   });
 });
 

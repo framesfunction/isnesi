@@ -775,14 +775,14 @@ isOneToOne: false
                   ]
                 },"programme_translations": {
                   Row: {
-                    "body": NonNullable<Json>,"locale": string,"programme_id": string,"summary": string | null,"title": string
+                    "body": NonNullable<Json>,"locale": string,"programme_id": string,"seo_description": string | null,"seo_title": string | null,"summary": string | null,"title": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "body"?: NonNullable<Json>,"locale": string,"programme_id": string,"summary"?: string | null,"title": string
+                    "body"?: NonNullable<Json>,"locale": string,"programme_id": string,"seo_description"?: string | null,"seo_title"?: string | null,"summary"?: string | null,"title": string
                   }
                   Update: {
-                    "body"?: NonNullable<Json>,"locale"?: string,"programme_id"?: string,"summary"?: string | null,"title"?: string
+                    "body"?: NonNullable<Json>,"locale"?: string,"programme_id"?: string,"seo_description"?: string | null,"seo_title"?: string | null,"summary"?: string | null,"title"?: string
                   }
                   Relationships: [
                     {
@@ -795,14 +795,14 @@ isOneToOne: false
                   ]
                 },"programmes": {
                   Row: {
-                    "created_at": string,"icon": string | null,"id": string,"is_active": boolean,"key": string,"sort_order": number,"updated_at": string
+                    "activities": NonNullable<Json>,"created_at": string,"featured_image_id": string | null,"geographic_coverage": string | null,"icon": string | null,"id": string,"is_active": boolean,"key": string,"objectives": NonNullable<Json>,"sort_order": number,"target_beneficiaries": string | null,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"icon"?: string | null,"id"?: string,"is_active"?: boolean,"key": string,"sort_order"?: number,"updated_at"?: string
+                    "activities"?: NonNullable<Json>,"created_at"?: string,"featured_image_id"?: string | null,"geographic_coverage"?: string | null,"icon"?: string | null,"id"?: string,"is_active"?: boolean,"key": string,"objectives"?: NonNullable<Json>,"sort_order"?: number,"target_beneficiaries"?: string | null,"updated_at"?: string
                   }
                   Update: {
-                    "created_at"?: string,"icon"?: string | null,"id"?: string,"is_active"?: boolean,"key"?: string,"sort_order"?: number,"updated_at"?: string
+                    "activities"?: NonNullable<Json>,"created_at"?: string,"featured_image_id"?: string | null,"geographic_coverage"?: string | null,"icon"?: string | null,"id"?: string,"is_active"?: boolean,"key"?: string,"objectives"?: NonNullable<Json>,"sort_order"?: number,"target_beneficiaries"?: string | null,"updated_at"?: string
                   }
                   Relationships: [
                     

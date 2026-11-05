@@ -9,6 +9,7 @@ import { assertPermission } from "@/lib/auth/guards";
 import { isSupabaseConfigured } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 import { parseBlocksField } from "@/lib/validation/blocks";
+import { parseLines } from "@/features/programmes/helpers";
 import {
   deleteProgrammeSchema,
   programmeReorderSchema,
@@ -50,8 +51,15 @@ export async function saveProgrammeAction(
     icon: formData.get("icon") ?? "",
     sortOrder: formData.get("sortOrder"),
     isActive: formData.get("isActive") === "on",
+    featuredImageId: formData.get("featuredImageId") ?? "",
+    objectives: parseLines(formData.get("objectives")),
+    activities: parseLines(formData.get("activities")),
+    targetBeneficiaries: formData.get("targetBeneficiaries") ?? "",
+    geographicCoverage: formData.get("geographicCoverage") ?? "",
     titleEn: formData.get("titleEn"),
     summaryEn: formData.get("summaryEn") ?? "",
+    seoTitleEn: formData.get("seoTitleEn") ?? "",
+    seoDescriptionEn: formData.get("seoDescriptionEn") ?? "",
     bodyEnBlocks: parseBlocksField(formData.get("bodyEnBlocks")),
   });
   if (!parsed.success) {
@@ -70,6 +78,11 @@ export async function saveProgrammeAction(
         icon: input.icon,
         sort_order: input.sortOrder,
         is_active: input.isActive,
+        featured_image_id: input.featuredImageId,
+        objectives: input.objectives ?? [],
+        activities: input.activities ?? [],
+        target_beneficiaries: input.targetBeneficiaries,
+        geographic_coverage: input.geographicCoverage,
       })
       .eq("id", input.programmeId)
       .select("id")
@@ -85,6 +98,11 @@ export async function saveProgrammeAction(
         icon: input.icon,
         sort_order: input.sortOrder,
         is_active: input.isActive,
+        featured_image_id: input.featuredImageId,
+        objectives: input.objectives ?? [],
+        activities: input.activities ?? [],
+        target_beneficiaries: input.targetBeneficiaries,
+        geographic_coverage: input.geographicCoverage,
       })
       .select("id")
       .single();
@@ -98,6 +116,8 @@ export async function saveProgrammeAction(
       locale: "en",
       title: input.titleEn,
       summary: input.summaryEn,
+      seo_title: input.seoTitleEn,
+      seo_description: input.seoDescriptionEn,
       body: { blocks: input.bodyEnBlocks },
     },
     { onConflict: "programme_id,locale" },

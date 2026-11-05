@@ -214,24 +214,28 @@ These are enforced in code, not just documented:
 
 - Foundation: Next.js, TypeScript strict, Tailwind v4 tokens, shadcn/ui, ESLint,
   Vitest, environment validation, security headers.
-- Data layer: five migrations applied to the hosted project in order, generated
-  schema types (`npm run db:types` → `src/types/database.gen.ts`), seed data,
-  RLS smoke-test SQL.
+- Data layer: nine ordered migrations, generated schema types
+  (`npm run db:types` → `src/types/database.gen.ts`), seed data and RLS
+  smoke-test SQL.
 - Auth: sign-in/out, PKCE callback, session refresh in the proxy, database-backed
   permission resolution, admin gate and `no-access` handling.
 - Admin: permission-aware shell, live dashboard metrics, and every module route
   with guards and documented contracts. Working CRUD is implemented for Pages &
   sections (with publication safety checks and automatic navigation-link
   repair), the Media library (Supabase Storage upload/rights/delete),
-  Programmes (bilingual translations, ordering, activation), Stories & news
+  Programmes (bilingual translations, ordering, activation, and the full content
+  model: featured image, objectives, activities, target beneficiaries,
+  geographic coverage and SEO metadata), Stories & news
   (full editorial workflow: draft → review → approval → scheduled/published,
   immutable revisions, independent approvals, re-approval on material change),
   Partners (approval workflow, visibility gate) and Navigation (menus, items,
   nesting, cycle guard, broken-link detection, visibility toggles and ordering).
-- Public: home (live programmes, stories, partners), programmes, stories list and
-  detail with a safe structured-content renderer, partners, Kids' Corner, donate
-  (settings-driven, honest about the missing provider), contact and get-involved
-  enquiry flows, CMS-driven About/Impact, 404 and error states.
+- Public: home (live programmes, stories, partners), programmes list and detail
+  (summary, rich body, objectives, activities, beneficiaries, coverage, SEO),
+  stories list and detail with a safe structured-content renderer, partners,
+  Kids' Corner, donate (settings-driven, honest about the missing provider),
+  contact and get-involved enquiry flows, a designed About page (overridden by a
+  published CMS `about` page), CMS-driven Impact, 404 and error states.
 - PWA, SEO metadata, robots, sitemap, health endpoint.
 
 ## What is deliberately not built yet
@@ -252,15 +256,16 @@ These are enforced in code, not just documented:
 ```bash
 npm run typecheck   # clean
 npm run lint        # clean
-npm test            # 53 tests passing
+npm test            # 113 tests passing
 npm run build       # all routes build successfully
 ```
 
 Tests cover the pure permission logic (including inactive and missing subjects),
 the rate limiter and its key derivation, currency/date formatting, the Zod
-schemas plus redirect sanitiser, the media-library path/URL helpers and the
-navigation link-resolution rule. Security-critical decisions such as "an inactive
-profile satisfies no permission" are asserted, not assumed.
+schemas (including the programme schema and redirect sanitiser), the
+media-library path/URL helpers and the navigation link-resolution rule.
+Security-critical decisions such as "an inactive profile satisfies no permission"
+are asserted, not assumed.
 
 ## Decisions still open with the organisation
 

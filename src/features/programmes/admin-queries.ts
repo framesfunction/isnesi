@@ -26,8 +26,15 @@ export type AdminProgrammeDetail = {
   sortOrder: number;
   isActive: boolean;
   updatedAt: string;
+  featuredImageId: string | null;
+  objectives: string[];
+  activities: string[];
+  targetBeneficiaries: string | null;
+  geographicCoverage: string | null;
   title: string | null;
   summary: string | null;
+  seoTitle: string | null;
+  seoDescription: string | null;
   body: unknown;
 };
 
@@ -40,16 +47,35 @@ type ProgrammeRow = {
   updated_at: string;
 };
 
+type ProgrammeDetailRow = ProgrammeRow & {
+  featured_image_id: string | null;
+  objectives: unknown;
+  activities: unknown;
+  target_beneficiaries: string | null;
+  geographic_coverage: string | null;
+};
+
 type TranslationRow = {
   programme_id: string;
   locale: string;
   title: string;
   summary: string | null;
   body: unknown;
+  seo_title?: string | null;
+  seo_description?: string | null;
 };
 
+function asStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((item): item is string => typeof item === "string");
+}
+
 const PROGRAMME_COLUMNS = "id, key, icon, sort_order, is_active, updated_at";
+const PROGRAMME_DETAIL_COLUMNS =
+  "id, key, icon, sort_order, is_active, updated_at, featured_image_id, objectives, activities, target_beneficiaries, geographic_coverage";
 const TRANSLATION_COLUMNS = "programme_id, locale, title, summary, body";
+const TRANSLATION_DETAIL_COLUMNS =
+  "programme_id, locale, title, summary, body, seo_title, seo_description";
 
 function indexTranslations(rows: TranslationRow[]): Map<string, TranslationRow> {
   const map = new Map<string, TranslationRow>();
@@ -127,7 +153,7 @@ export async function getAdminProgramme(programmeId: string): Promise<AdminProgr
 
   const { data: programme, error } = await supabase
     .from("programmes")
-    .select(PROGRAMME_COLUMNS)
+    .select(PROGRAMME_DETAIL_COLUMNS)
     .eq("id", programmeId)
     .maybeSingle();
 
@@ -139,12 +165,12 @@ export async function getAdminProgramme(programmeId: string): Promise<AdminProgr
 
   const { data: translations } = await supabase
     .from("programme_translations")
-    .select(TRANSLATION_COLUMNS)
+    .select(TRANSLATION_DETAIL_COLUMNS)
     .eq("programme_id", programmeId)
     .eq("locale", "en")
     .maybeSingle();
 
-  const base = programme as ProgrammeRow;
+  const base = programme as ProgrammeDetailRow;
   const translation = translations as TranslationRow | null;
 
   return {
@@ -154,8 +180,15 @@ export async function getAdminProgramme(programmeId: string): Promise<AdminProgr
     sortOrder: base.sort_order,
     isActive: base.is_active,
     updatedAt: base.updated_at,
+    featuredImageId: base.featured_image_id,
+    objectives: asStringArray(base.objectives),
+    activities: asStringArray(base.activities),
+    targetBeneficiaries: base.target_beneficiaries,
+    geographicCoverage: base.geographic_coverage,
     title: translation?.title ?? null,
     summary: translation?.summary ?? null,
+    seoTitle: translation?.seo_title ?? null,
+    seoDescription: translation?.seo_description ?? null,
     body: translation?.body ?? null,
   };
 }

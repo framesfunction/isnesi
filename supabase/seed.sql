@@ -36,3 +36,45 @@ select id,'en',
   else 'Working with government, schools, communities, NGOs and stakeholders.' end
 from public.programmes
 on conflict (programme_id,locale) do nothing;
+
+-- Programme detail content (spec 2.3): structured fields plus a short rich body
+-- so the public programme pages render real content after `supabase db reset`.
+update public.programmes set
+  objectives = case key
+    when 'inclusive-education' then '["Promote enrolment of children with disabilities in mainstream schools","Adapt teaching and learning materials to different needs","Train teachers in inclusive classroom practice"]'::jsonb
+    when 'special-needs-support' then '["Provide individual education plans","Offer psychosocial and developmental support","Guide families to the services they need"]'::jsonb
+    when 'social-innovation' then '["Prototype low-cost assistive tools","Document solutions that work locally","Share what works with partners"]'::jsonb
+    when 'capacity-building' then '["Strengthen teacher and caregiver skills","Build community knowledge of inclusive practice","Support schools to plan sustainably"]'::jsonb
+    when 'advocacy-awareness' then '["Challenge stigma and discrimination","Promote the rights of persons with disabilities","Raise community awareness of inclusion"]'::jsonb
+    else '["Work with government, schools and communities","Extend reach through shared programmes","Report transparently on results"]'::jsonb
+  end,
+  activities = case key
+    when 'inclusive-education' then '["School enrolment support","Classroom adaptations","Teacher coaching"]'::jsonb
+    when 'special-needs-support' then '["Individual assessments","Therapy and learning sessions","Family guidance"]'::jsonb
+    when 'social-innovation' then '["Co-design workshops","Pilot projects","Learning reviews"]'::jsonb
+    when 'capacity-building' then '["Training workshops","Peer learning","Follow-up mentoring"]'::jsonb
+    when 'advocacy-awareness' then '["Community dialogues","Awareness campaigns","Rights information sessions"]'::jsonb
+    else '["Joint planning","Resource sharing","Monitoring and reporting"]'::jsonb
+  end,
+  target_beneficiaries = case key
+    when 'inclusive-education' then 'Children with disabilities and their schools'
+    when 'special-needs-support' then 'Children with disabilities and their families'
+    when 'social-innovation' then 'Persons with disabilities and local innovators'
+    when 'capacity-building' then 'Teachers, parents, caregivers and communities'
+    when 'advocacy-awareness' then 'Communities, leaders and decision-makers'
+    else 'Communities, schools and partner organisations'
+  end,
+  geographic_coverage = 'Cameroon'
+where key in ('inclusive-education','special-needs-support','social-innovation','capacity-building','advocacy-awareness','partnerships');
+
+update public.programme_translations t
+set body = jsonb_build_object('blocks', case p.key
+    when 'inclusive-education' then '[{"type":"paragraph","text":"Inclusive education means children with disabilities learn alongside their peers, with the support that makes participation real."},{"type":"callout","text":"Every barrier we remove is a child moving forward."}]'::jsonb
+    when 'special-needs-support' then '[{"type":"paragraph","text":"Support is shaped around each child: their strengths, their needs and their goals."}]'::jsonb
+    when 'social-innovation' then '[{"type":"paragraph","text":"We design practical, affordable solutions to the barriers children and families face every day."}]'::jsonb
+    when 'capacity-building' then '[{"type":"paragraph","text":"Skills and confidence grow when teachers, parents and communities learn together."}]'::jsonb
+    when 'advocacy-awareness' then '[{"type":"paragraph","text":"We challenge stigma and promote the rights of persons with disabilities."}]'::jsonb
+    else '[{"type":"paragraph","text":"Partnerships let us reach further and learn faster than working alone."}]'::jsonb
+  end)
+from public.programmes p
+where p.id = t.programme_id and t.locale = 'en';
