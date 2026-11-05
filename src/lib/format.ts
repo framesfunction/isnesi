@@ -18,11 +18,11 @@ export function minorUnitDigits(currency: string): number {
   }
 }
 
-export function formatCurrency(amountMinor: number, currency = "XAF", locale = "en"): string {
+export function formatCurrency(amountMinor: number, currency = "XAF"): string {
   const digits = minorUnitDigits(currency);
   const amount = amountMinor / 10 ** digits;
   try {
-    return new Intl.NumberFormat(locale === "fr" ? "fr-CM" : "en-GB", {
+    return new Intl.NumberFormat("en-GB", {
       style: "currency",
       currency,
       maximumFractionDigits: digits,
@@ -32,22 +32,22 @@ export function formatCurrency(amountMinor: number, currency = "XAF", locale = "
   }
 }
 
-export function formatDate(value: string | Date | null | undefined, locale = "en"): string {
+export function formatDate(value: string | Date | null | undefined): string {
   if (!value) return "—";
   const date = typeof value === "string" ? new Date(value) : value;
   if (Number.isNaN(date.getTime())) return "—";
-  return new Intl.DateTimeFormat(locale === "fr" ? "fr-CM" : "en-GB", {
+  return new Intl.DateTimeFormat("en-GB", {
     day: "numeric",
     month: "short",
     year: "numeric",
   }).format(date);
 }
 
-export function formatDateTime(value: string | Date | null | undefined, locale = "en"): string {
+export function formatDateTime(value: string | Date | null | undefined): string {
   if (!value) return "—";
   const date = typeof value === "string" ? new Date(value) : value;
   if (Number.isNaN(date.getTime())) return "—";
-  return new Intl.DateTimeFormat(locale === "fr" ? "fr-CM" : "en-GB", {
+  return new Intl.DateTimeFormat("en-GB", {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -56,8 +56,8 @@ export function formatDateTime(value: string | Date | null | undefined, locale =
   }).format(date);
 }
 
-export function formatNumber(value: number, locale = "en"): string {
-  return new Intl.NumberFormat(locale === "fr" ? "fr-CM" : "en-GB").format(value);
+export function formatNumber(value: number): string {
+  return new Intl.NumberFormat("en-GB").format(value);
 }
 
 export function truncate(value: string, maxLength = 160): string {

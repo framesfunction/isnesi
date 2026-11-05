@@ -7,7 +7,7 @@ import type { AdminProgrammeDetail } from "@/features/programmes/admin-queries";
  * Shared create/edit form for a programme.
  *
  * One component keeps the two screens identical, so a field added here appears
- * everywhere and the English/French pair can never drift apart.
+ * everywhere.
  */
 
 const FIELD_LABELS =
@@ -88,7 +88,7 @@ export function ProgrammeForm({ programme }: { programme?: AdminProgrammeDetail 
               type="text"
               name="titleEn"
               required
-              defaultValue={programme?.en?.title ?? ""}
+              defaultValue={programme?.title ?? ""}
               className={INPUT_CLASS}
             />
           </label>
@@ -97,7 +97,7 @@ export function ProgrammeForm({ programme }: { programme?: AdminProgrammeDetail 
             <input
               type="text"
               name="summaryEn"
-              defaultValue={programme?.en?.summary ?? ""}
+              defaultValue={programme?.summary ?? ""}
               className={INPUT_CLASS}
             />
           </label>
@@ -107,51 +107,11 @@ export function ProgrammeForm({ programme }: { programme?: AdminProgrammeDetail 
               name="bodyEnBlocks"
               rows={6}
               spellCheck={false}
-              defaultValue={programme ? blocksJson(programme.en?.body) : BLOCKS_PLACEHOLDER}
+              defaultValue={programme ? blocksJson(programme.body) : BLOCKS_PLACEHOLDER}
               className={TEXTAREA_CLASS}
             />
           </label>
         </div>
-      </fieldset>
-
-      <fieldset className="mt-4 rounded-2xl border-2 border-line p-4">
-        <legend className="px-2 text-xs font-black uppercase tracking-[0.12em] text-ink-muted">
-          French (optional)
-        </legend>
-        <div className="grid gap-4">
-          <label className={FIELD_LABELS}>
-            <span>Title</span>
-            <input
-              type="text"
-              name="titleFr"
-              defaultValue={programme?.fr?.title ?? ""}
-              className={INPUT_CLASS}
-            />
-          </label>
-          <label className={FIELD_LABELS}>
-            <span>Summary</span>
-            <input
-              type="text"
-              name="summaryFr"
-              defaultValue={programme?.fr?.summary ?? ""}
-              className={INPUT_CLASS}
-            />
-          </label>
-          <label className={FIELD_LABELS}>
-            <span>Body (JSON blocks)</span>
-            <textarea
-              name="bodyFrBlocks"
-              rows={4}
-              spellCheck={false}
-              defaultValue={programme?.fr ? blocksJson(programme.fr.body) : ""}
-              className={TEXTAREA_CLASS}
-            />
-          </label>
-        </div>
-        <p className="mt-2 text-xs text-ink-muted">
-          Leave the French title blank to keep English only. Block types: heading, paragraph, list,
-          quote, callout.
-        </p>
       </fieldset>
     </ActionForm>
   );

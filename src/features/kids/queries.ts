@@ -8,7 +8,6 @@ export type PublicKidsResource = {
   minAge: number | null;
   maxAge: number | null;
   featured: boolean;
-  locale: string;
   title: string;
   description: string | null;
 };
@@ -33,9 +32,7 @@ function asResourceType(value: string): KidsResourceType | null {
  * `safeguarding_approved`, so a resource can never bypass the child-safety
  * review.
  */
-export async function listKidsResources(
-  locale: string = siteConfig.defaultLocale,
-): Promise<PublicKidsResource[]> {
+export async function listKidsResources(): Promise<PublicKidsResource[]> {
   if (!hasPublicContentAccess()) return [];
 
   try {
@@ -66,7 +63,6 @@ export async function listKidsResources(
     return resources.flatMap((resource) => {
       const forResource = rows.filter((row) => row.resource_id === resource.id);
       const translation =
-        forResource.find((row) => row.locale === locale) ??
         forResource.find((row) => row.locale === siteConfig.defaultLocale) ??
         forResource[0];
       const resourceType = asResourceType(resource.resource_type);
@@ -79,7 +75,6 @@ export async function listKidsResources(
           minAge: resource.min_age,
           maxAge: resource.max_age,
           featured: resource.is_featured,
-          locale: translation?.locale ?? locale,
           title: translation?.title ?? "Kids' Corner resource",
           description: translation?.description ?? null,
         },

@@ -1,5 +1,6 @@
 import { isSupabaseConfigured } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
+import { isResolvableInternalHref } from "@/features/navigation/helpers";
 
 /**
  * Admin reads for navigation menus and their items. RLS requires
@@ -15,6 +16,8 @@ export type AdminNavigationItem = {
   sortOrder: number;
   isVisible: boolean;
   openNewTab: boolean;
+  /** True when an internal link points at a published route or page. */
+  resolves: boolean;
 };
 
 export type AdminNavigationMenu = {
@@ -49,6 +52,12 @@ export async function listAdminNavigation(): Promise<AdminNavigationMenu[] | nul
     return null;
   }
 
+  const { data: publishedPages } = await supabase
+    .from("pages")
+    .select("slug")
+    .eq("status", "published");
+  const publishedSlugs = (publishedPages ?? []).map((page) => page.slug);
+
   return (menus ?? []).map((menu) => ({
     id: menu.id,
     key: menu.key,
@@ -64,6 +73,7 @@ export async function listAdminNavigation(): Promise<AdminNavigationMenu[] | nul
         sortOrder: item.sort_order,
         isVisible: item.is_visible,
         openNewTab: item.open_new_tab,
+        resolves: isResolvableInternalHref(item.href, publishedSlugs),
       })),
   }));
 }

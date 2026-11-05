@@ -20,7 +20,7 @@ export type AdminPartnerListItem = {
 };
 
 export type AdminPartnerDetail = AdminPartnerListItem & {
-  descriptions: { en: string | null; fr: string | null };
+  description: string | null;
 };
 
 type PartnerRow = {
@@ -101,9 +101,6 @@ export async function getAdminPartner(partnerId: string): Promise<AdminPartnerDe
 
   return {
     ...toItem(partner as PartnerRow),
-    descriptions: {
-      en: rows.find((row) => row.locale === "en")?.description ?? null,
-      fr: rows.find((row) => row.locale === "fr")?.description ?? null,
-    },
+    description: rows.find((row) => row.locale === "en")?.description ?? null,
   };
 }

@@ -14,7 +14,7 @@ export function SiteFooter() {
 
   return (
     <footer className="mt-24 border-t-2 border-line bg-white">
-      <div className="mx-auto grid w-full max-w-6xl gap-10 px-5 py-14 md:grid-cols-4">
+      <div className="mx-auto grid w-full max-w-6xl gap-10 px-5 py-14 md:grid-cols-2 lg:grid-cols-5">
         <div className="md:col-span-2">
           <BrandMark variant="footer" />
           <p className="mt-4 max-w-sm text-sm text-muted">
@@ -68,15 +68,26 @@ export function SiteFooter() {
                 Kids&apos; Corner
               </Link>
             </li>
-            <li>
-              <Link
-                href="/login"
-                className="rounded transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-              >
-                Staff sign in
-              </Link>
-            </li>
           </ul>
+        </div>
+
+        <nav aria-labelledby="footer-involved" className="text-sm">
+          <h2 id="footer-involved" className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-muted">
+            Get involved
+          </h2>
+          <ul className="grid gap-2 text-ink">
+            <li><Link href="/get-involved" className="hover:text-brand">Volunteer</Link></li>
+            <li><Link href="/partners" className="hover:text-brand">Partner with us</Link></li>
+            <li><Link href="/donate" className="hover:text-brand">Donate</Link></li>
+            <li><Link href="/login" className="text-muted hover:text-brand">Staff access</Link></li>
+          </ul>
+        </nav>
+
+        <div className="text-sm">
+          <h2 className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-muted">Policies</h2>
+          <p className="text-muted">
+            Contact routes, privacy and safeguarding policies apply across the ISNESI website.
+          </p>
         </div>
       </div>
 

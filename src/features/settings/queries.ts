@@ -11,13 +11,11 @@ import type { Json } from "@/types/database";
  */
 export type PublicSiteSettings = {
   organisation: { name: string; tagline: string };
-  locales: { default: string; enabled: string[] };
   donation: { currency: string; enabled: boolean };
 };
 
 const DEFAULTS: PublicSiteSettings = {
   organisation: { name: siteConfig.name, tagline: siteConfig.tagline },
-  locales: { default: siteConfig.defaultLocale, enabled: [...siteConfig.locales] },
   donation: { currency: siteConfig.currency, enabled: false },
 };
 
@@ -33,12 +31,6 @@ function asString(value: unknown, fallback: string): string {
 
 function asBoolean(value: unknown, fallback: boolean): boolean {
   return typeof value === "boolean" ? value : fallback;
-}
-
-function asStringArray(value: unknown, fallback: string[]): string[] {
-  return Array.isArray(value) && value.every((item) => typeof item === "string")
-    ? (value as string[])
-    : fallback;
 }
 
 export async function getPublicSiteSettings(): Promise<PublicSiteSettings> {
@@ -58,17 +50,12 @@ export async function getPublicSiteSettings(): Promise<PublicSiteSettings> {
 
     const settings = new Map((data ?? []).map((row) => [row.key, row.value]));
     const organisation = asRecord(settings.get("organisation"));
-    const locales = asRecord(settings.get("locales"));
     const donation = asRecord(settings.get("donation"));
 
     return {
       organisation: {
         name: asString(organisation.name, DEFAULTS.organisation.name),
         tagline: asString(organisation.tagline, DEFAULTS.organisation.tagline),
-      },
-      locales: {
-        default: asString(locales.default, DEFAULTS.locales.default),
-        enabled: asStringArray(locales.enabled, DEFAULTS.locales.enabled),
       },
       donation: {
         currency: asString(donation.currency, DEFAULTS.donation.currency),

@@ -3,7 +3,7 @@
 import { Heart, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { BrandMark } from "@/components/shared/brand-mark";
 import { primaryCallsToAction, publicNavigation } from "@/lib/site";
@@ -20,7 +20,25 @@ import { primaryCallsToAction, publicNavigation } from "@/lib/site";
 export function SiteHeader() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [menuPath, setMenuPath] = useState(pathname);
   const closeMenu = () => setOpen(false);
+
+  // Close the mobile menu when the route changes. Resetting state during render
+  // (guarded by the previous path) is React's recommended alternative to
+  // calling setState inside an effect.
+  if (menuPath !== pathname) {
+    setMenuPath(pathname);
+    setOpen(false);
+  }
+
+  useEffect(() => {
+    if (!open) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [open]);
 
   return (
     <header className="sticky top-0 z-50 border-b-2 border-line/80 bg-cream/95 backdrop-blur supports-backdrop-filter:bg-cream/80">
@@ -48,12 +66,6 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Link
-            href={primaryCallsToAction.signIn.href}
-            className="hidden rounded-full px-3 py-2 text-sm font-semibold text-muted transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand sm:inline-flex"
-          >
-            {primaryCallsToAction.signIn.label}
-          </Link>
           <Link
             href={primaryCallsToAction.donate.href}
             className="hidden items-center gap-2 rounded-full bg-brand px-5 py-3 text-sm font-bold text-white shadow-[0_4px_0_#10296e] transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand sm:inline-flex"
@@ -97,13 +109,6 @@ export function SiteHeader() {
             >
               <Heart aria-hidden="true" className="size-4" />
               {primaryCallsToAction.donate.label}
-            </Link>
-            <Link
-              href={primaryCallsToAction.signIn.href}
-              onClick={closeMenu}
-              className="inline-flex min-h-12 items-center justify-center rounded-full border-2 border-brand bg-white px-5 text-sm font-bold text-brand"
-            >
-              {primaryCallsToAction.signIn.label}
             </Link>
           </div>
         </div>

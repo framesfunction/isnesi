@@ -8,14 +8,6 @@ export type StorySummary = {
   contentType: ContentType;
   featured: boolean;
   publishedAt: string | null;
-  locale: string;
-  title: string;
-  excerpt: string | null;
-};
-
-type ContentTranslation = {
-  content_id: string;
-  locale: string;
   title: string;
   excerpt: string | null;
 };
@@ -30,27 +22,13 @@ function asContentType(value: string): ContentType | null {
   return CONTENT_TYPES.includes(value as ContentType) ? (value as ContentType) : null;
 }
 
-function pickTranslation(
-  rows: ContentTranslation[],
-  contentId: string,
-  locale: string,
-): ContentTranslation | undefined {
-  const forItem = rows.filter((row) => row.content_id === contentId);
-  return (
-    forItem.find((row) => row.locale === locale) ??
-    forItem.find((row) => row.locale === siteConfig.defaultLocale) ??
-    forItem[0]
-  );
-}
-
 /**
  * Published stories and news for the public website.
  * RLS already limits rows to `status = 'published'` with a past `published_at`.
  */
 export async function listPublishedStories(
-  options: { limit?: number; locale?: string; contentType?: ContentType } = {},
+  options: { limit?: number; contentType?: ContentType } = {},
 ): Promise<StorySummary[]> {
-  const locale = options.locale ?? siteConfig.defaultLocale;
   if (!hasPublicContentAccess()) return [];
 
   try {
@@ -87,9 +65,12 @@ export async function listPublishedStories(
     }
 
     const rows = translations ?? [];
+    const defaultLocale = siteConfig.defaultLocale;
 
     return items.flatMap((item) => {
-      const translation = pickTranslation(rows, item.id, locale);
+      const forItem = rows.filter((row) => row.content_id === item.id);
+      const translation =
+        forItem.find((row) => row.locale === defaultLocale) ?? forItem[0];
       const contentType = asContentType(item.content_type);
       if (!translation || !contentType) return [];
       return [
@@ -99,7 +80,6 @@ export async function listPublishedStories(
           contentType,
           featured: item.featured,
           publishedAt: item.published_at,
-          locale: translation.locale,
           title: translation.title,
           excerpt: translation.excerpt,
         },
@@ -114,7 +94,6 @@ export async function listPublishedStories(
 /** A single published story, including its structured body. */
 export async function getPublishedStoryBySlug(
   slug: string,
-  locale: string = siteConfig.defaultLocale,
 ): Promise<(StorySummary & { body: Json; seoDescription: string | null }) | null> {
   if (!hasPublicContentAccess()) return null;
 
@@ -141,10 +120,9 @@ export async function getPublishedStoryBySlug(
       .eq("content_id", item.id);
 
     const rows = translations ?? [];
+    const defaultLocale = siteConfig.defaultLocale;
     const translation =
-      rows.find((row) => row.locale === locale) ??
-      rows.find((row) => row.locale === siteConfig.defaultLocale) ??
-      rows[0];
+      rows.find((row) => row.locale === defaultLocale) ?? rows[0];
 
     if (!translation) return null;
 
@@ -160,7 +138,6 @@ export async function getPublishedStoryBySlug(
       contentType,
       featured: item.featured,
       publishedAt: item.published_at,
-      locale: translation.locale,
       title: translation.title,
       excerpt: translation.excerpt,
       seoDescription: translation.seo_description,

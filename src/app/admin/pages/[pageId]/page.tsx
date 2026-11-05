@@ -296,28 +296,27 @@ export default async function AdminPageEditorPage({
               </label>
 
               <div className="mt-6 border-t border-line pt-4">
-                <p className="mb-3 font-black uppercase tracking-[0.14em] text-leaf">English</p>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <label className={FIELD_LABELS}>
                     <span>Title</span>
-                    <input type="text" name="titleEn" defaultValue={page.en.title} required className={INPUT_CLASS} />
+                    <input type="text" name="titleEn" defaultValue={page.title} required className={INPUT_CLASS} />
                   </label>
                   <label className={FIELD_LABELS}>
                     <span>Excerpt</span>
-                    <input type="text" name="excerptEn" defaultValue={page.en.excerpt ?? ""} className={INPUT_CLASS} />
+                    <input type="text" name="excerptEn" defaultValue={page.excerpt ?? ""} className={INPUT_CLASS} />
                   </label>
                 </div>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                   <label className={FIELD_LABELS}>
                     <span>SEO title</span>
-                    <input type="text" name="seoTitleEn" defaultValue={page.en.seoTitle ?? ""} className={INPUT_CLASS} />
+                    <input type="text" name="seoTitleEn" defaultValue={page.seoTitle ?? ""} className={INPUT_CLASS} />
                   </label>
                   <label className={FIELD_LABELS}>
                     <span>SEO description</span>
                     <input
                       type="text"
                       name="seoDescriptionEn"
-                      defaultValue={page.en.seoDescription ?? ""}
+                      defaultValue={page.seoDescription ?? ""}
                       className={INPUT_CLASS}
                     />
                   </label>
@@ -328,57 +327,11 @@ export default async function AdminPageEditorPage({
                     <textarea
                       name="bodyEnBlocks"
                       rows={12}
-                      defaultValue={blocksJson(page.en.body)}
+                      defaultValue={blocksJson(page.body)}
                       spellCheck={false}
                       className={TEXTAREA_CLASS}
                     />
                   </label>
-                </div>
-              </div>
-
-              <div className="mt-6 border-t border-line pt-4">
-                <p className="mb-3 font-black uppercase tracking-[0.14em] text-leaf">
-                  French (optional)
-                </p>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <label className={FIELD_LABELS}>
-                    <span>Title</span>
-                    <input type="text" name="titleFr" defaultValue={page.fr?.title ?? ""} className={INPUT_CLASS} />
-                  </label>
-                  <label className={FIELD_LABELS}>
-                    <span>Excerpt</span>
-                    <input type="text" name="excerptFr" defaultValue={page.fr?.excerpt ?? ""} className={INPUT_CLASS} />
-                  </label>
-                </div>
-                <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                  <label className={FIELD_LABELS}>
-                    <span>SEO title</span>
-                    <input type="text" name="seoTitleFr" defaultValue={page.fr?.seoTitle ?? ""} className={INPUT_CLASS} />
-                  </label>
-                  <label className={FIELD_LABELS}>
-                    <span>SEO description</span>
-                    <input
-                      type="text"
-                      name="seoDescriptionFr"
-                      defaultValue={page.fr?.seoDescription ?? ""}
-                      className={INPUT_CLASS}
-                    />
-                  </label>
-                </div>
-                <div className="mt-4">
-                  <label className={FIELD_LABELS}>
-                    <span>Body (JSON blocks)</span>
-                    <textarea
-                      name="bodyFrBlocks"
-                      rows={10}
-                      defaultValue={page.fr ? blocksJson(page.fr.body) : ""}
-                      spellCheck={false}
-                      className={TEXTAREA_CLASS}
-                    />
-                  </label>
-                  <p className="mt-2 text-xs text-ink-muted">
-                    Leave the French title empty to keep the translation out of the site.
-                  </p>
                 </div>
               </div>
             </ActionForm>

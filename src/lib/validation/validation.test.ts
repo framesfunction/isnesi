@@ -46,22 +46,45 @@ describe("enquirySchema", () => {
 });
 
 describe("newsletterSubscribeSchema", () => {
-  it("defaults the locale to English", () => {
-    const parsed = newsletterSubscribeSchema.parse({
-      email: "reader@example.org",
-      consent: true,
-    });
-    expect(parsed.locale).toBe("en");
-  });
-
-  it("rejects an unsupported locale", () => {
+  it("accepts a well-formed subscription", () => {
     expect(
       newsletterSubscribeSchema.safeParse({
         email: "reader@example.org",
         consent: true,
-        locale: "de",
+      }).success,
+    ).toBe(true);
+  });
+
+  it("rejects without consent", () => {
+    expect(
+      newsletterSubscribeSchema.safeParse({
+        email: "reader@example.org",
+        consent: false,
       }).success,
     ).toBe(false);
+  });
+
+  it("defaults the subscriber locale to the site default", () => {
+    const parsed = newsletterSubscribeSchema.safeParse({
+      email: "reader@example.org",
+      consent: true,
+    });
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data.locale).toBe("en");
+    }
+  });
+
+  it("keeps a supplied subscriber locale", () => {
+    const parsed = newsletterSubscribeSchema.safeParse({
+      email: "reader@example.org",
+      consent: true,
+      locale: "fr",
+    });
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data.locale).toBe("fr");
+    }
   });
 });
 

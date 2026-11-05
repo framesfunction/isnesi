@@ -47,7 +47,6 @@ export async function savePartnerAction(
     websiteUrl: formData.get("websiteUrl") ?? "",
     logoMediaId: formData.get("logoMediaId") ?? "",
     descriptionEn: formData.get("descriptionEn") ?? "",
-    descriptionFr: formData.get("descriptionFr") ?? "",
   });
   if (!parsed.success) {
     return actionError("Please correct the highlighted fields.", fieldErrors(parsed.error));
@@ -84,21 +83,15 @@ export async function savePartnerAction(
     partnerId = data.id;
   }
 
-  for (const entry of [
-    { locale: "en", description: input.descriptionEn },
-    { locale: "fr", description: input.descriptionFr },
-  ] as const) {
-    if (entry.description === null) continue;
-    const { error } = await supabase.from("partner_translations").upsert(
-      {
-        partner_id: partnerId,
-        locale: entry.locale,
-        description: entry.description,
-      },
-      { onConflict: "partner_id,locale" },
-    );
-    if (error) return dbErrorMessage(error, "partner translation save");
-  }
+  const { error } = await supabase.from("partner_translations").upsert(
+    {
+      partner_id: partnerId,
+      locale: "en",
+      description: input.descriptionEn,
+    },
+    { onConflict: "partner_id,locale" },
+  );
+  if (error) return dbErrorMessage(error, "partner translation save");
 
   revalidatePartners();
   return actionOk("Partner saved.", { partnerId });
@@ -113,7 +106,8 @@ export async function partnerDecisionAction(_state: unknown, formData: FormData)
   const input = partnerApprovalSchema.safeParse({
     partnerId: formData.get("partnerId"),
     decision: formData.get("decision"),
-    publicVisible: formData.get("publicVisible") === "on",
+    publicVisible:
+      formData.get("publicVisible") === "on" || formData.get("publicVisible") === "true",
   });
   if (!input.success) return actionError("Malformed request.");
 
@@ -173,7 +167,8 @@ export async function togglePartnerVisibilityAction(
     })
     .safeParse({
       partnerId: formData.get("partnerId"),
-      publicVisible: formData.get("publicVisible") === "on",
+      publicVisible:
+        formData.get("publicVisible") === "on" || formData.get("publicVisible") === "true",
     });
   if (!parsed.success) return actionError("Malformed request.");
 

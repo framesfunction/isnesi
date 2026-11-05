@@ -53,9 +53,6 @@ export async function saveProgrammeAction(
     titleEn: formData.get("titleEn"),
     summaryEn: formData.get("summaryEn") ?? "",
     bodyEnBlocks: parseBlocksField(formData.get("bodyEnBlocks")),
-    titleFr: formData.get("titleFr") ?? "",
-    summaryFr: formData.get("summaryFr") ?? "",
-    bodyFrBlocks: parseBlocksField(formData.get("bodyFrBlocks")),
   });
   if (!parsed.success) {
     return actionError("Please correct the highlighted fields.", fieldErrors(parsed.error));
@@ -106,20 +103,6 @@ export async function saveProgrammeAction(
     { onConflict: "programme_id,locale" },
   );
   if (enError) return dbErrorMessage(enError, "programme translation create");
-
-  if (input.titleFr && input.titleFr.trim().length > 0) {
-    const { error: frError } = await supabase.from("programme_translations").upsert(
-      {
-        programme_id: programmeId,
-        locale: "fr",
-        title: input.titleFr,
-        summary: input.summaryFr,
-        body: { blocks: input.bodyFrBlocks ?? [] },
-      },
-      { onConflict: "programme_id,locale" },
-    );
-    if (frError) return dbErrorMessage(frError, "programme translation create");
-  }
 
   revalidateProgrammes();
   return actionOk("Programme saved.", { programmeId });

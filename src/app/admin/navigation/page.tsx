@@ -8,7 +8,12 @@ import { EmptyState } from "@/components/admin/empty-state";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requirePermission } from "@/lib/auth/guards";
 import { listAdminNavigation, type AdminNavigationMenu } from "@/features/navigation/admin-queries";
-import { deleteNavigationItemAction, saveNavigationItemAction } from "@/features/navigation/actions";
+import {
+  deleteNavigationItemAction,
+  reorderNavigationItemAction,
+  saveNavigationItemAction,
+  setNavigationItemVisibilityAction,
+} from "@/features/navigation/actions";
 
 export const metadata: Metadata = { title: "Navigation" };
 
@@ -28,9 +33,28 @@ function ItemRow({ menu, item }: { menu: AdminNavigationMenu; item: AdminNavigat
         {item.isVisible ? <Badge variant="success">Visible</Badge> : <Badge variant="warning">Hidden</Badge>}
         {item.openNewTab ? <Badge variant="outline">New tab</Badge> : null}
         {item.parentId ? <Badge variant="neutral">Nested</Badge> : null}
+        {item.resolves ? null : <Badge variant="danger">Link not found</Badge>}
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
+        <ActionButton
+          action={reorderNavigationItemAction}
+          hidden={{ itemId: item.id, direction: "up" }}
+          label="Move up"
+          variant="outline"
+        />
+        <ActionButton
+          action={reorderNavigationItemAction}
+          hidden={{ itemId: item.id, direction: "down" }}
+          label="Move down"
+          variant="outline"
+        />
+        <ActionButton
+          action={setNavigationItemVisibilityAction}
+          hidden={{ itemId: item.id, isVisible: !item.isVisible }}
+          label={item.isVisible ? "Hide" : "Show"}
+          variant="ghost"
+        />
         <ActionButton
           action={deleteNavigationItemAction}
           hidden={{ itemId: item.id }}

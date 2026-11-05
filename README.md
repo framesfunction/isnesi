@@ -227,7 +227,7 @@ These are enforced in code, not just documented:
   (full editorial workflow: draft → review → approval → scheduled/published,
   immutable revisions, independent approvals, re-approval on material change),
   Partners (approval workflow, visibility gate) and Navigation (menus, items,
-  nesting, cycle guard).
+  nesting, cycle guard, broken-link detection, visibility toggles and ordering).
 - Public: home (live programmes, stories, partners), programmes, stories list and
   detail with a safe structured-content renderer, partners, Kids' Corner, donate
   (settings-driven, honest about the missing provider), contact and get-involved
@@ -238,7 +238,7 @@ These are enforced in code, not just documented:
 
 | Area | State |
 |---|---|
-| Module CRUD screens | All six website modules are built; remaining modules (users, settings, enquiries, safeguarding, donations, kids-corner, accessibility, audit) still render their documented contract. |
+| Module CRUD screens | All six website modules plus Enquiries are built; remaining modules (users, settings, safeguarding, donations, kids-corner, accessibility, audit) still render their documented contract. |
 | Scheduled publishing cron | Items can be parked in `scheduled`; a cron job to flip them live is still to come. |
 | Edge Functions | Specified in `supabase/functions/README.md`; not deployed. |
 | Payments | Tables and provider-neutral fields exist; **no** provider adapter, so no money can move. |
@@ -252,13 +252,14 @@ These are enforced in code, not just documented:
 ```bash
 npm run typecheck   # clean
 npm run lint        # clean
-npm test            # 46 tests passing
+npm test            # 53 tests passing
 npm run build       # all routes build successfully
 ```
 
 Tests cover the pure permission logic (including inactive and missing subjects),
 the rate limiter and its key derivation, currency/date formatting, the Zod
-schemas plus redirect sanitiser, and the media-library path/URL helpers. Security-critical decisions such as "an inactive
+schemas plus redirect sanitiser, the media-library path/URL helpers and the
+navigation link-resolution rule. Security-critical decisions such as "an inactive
 profile satisfies no permission" are asserted, not assumed.
 
 ## Decisions still open with the organisation

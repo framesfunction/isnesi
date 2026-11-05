@@ -50,7 +50,7 @@ export default async function AdminProgrammeDetailPage({
 
       <AdminPageHeader
         eyebrow="Programmes"
-        title={programme.en?.title ?? programme.key}
+        title={programme.title ?? programme.key}
         description={`Key: ${programme.key}`}
         actions={
           programme.isActive ? (

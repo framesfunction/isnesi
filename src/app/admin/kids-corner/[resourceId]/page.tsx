@@ -92,7 +92,7 @@ export default async function AdminKidsResourceDetailPage({
       <AdminPageHeader
         eyebrow="Engagement"
         title="Edit kids resource"
-        description={`Review and update ${resource.titleEn ?? "(untitled)"}.`}
+        description={`Review and update ${resource.title ?? "(untitled)"}.`}
       />
 
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
@@ -127,6 +127,16 @@ export default async function AdminKidsResourceDetailPage({
             <input type="hidden" name="resourceId" value={resource.id} />
             <div className="grid gap-4 sm:grid-cols-2">
               <label className={FIELD_LABELS}>
+                <span>Title</span>
+                <input
+                  type="text"
+                  name="title"
+                  defaultValue={resource.title ?? ""}
+                  required
+                  className={INPUT_CLASS}
+                />
+              </label>
+              <label className={FIELD_LABELS}>
                 <span>Type</span>
                 <select name="resourceType" defaultValue={resource.resourceType} className={INPUT_CLASS}>
                   {KIDS_RESOURCE_TYPES.map((value) => (
@@ -135,25 +145,6 @@ export default async function AdminKidsResourceDetailPage({
                     </option>
                   ))}
                 </select>
-              </label>
-              <label className={FIELD_LABELS}>
-                <span>English title</span>
-                <input
-                  type="text"
-                  name="titleEn"
-                  defaultValue={resource.titleEn ?? ""}
-                  required
-                  className={INPUT_CLASS}
-                />
-              </label>
-              <label className={FIELD_LABELS}>
-                <span>French title</span>
-                <input
-                  type="text"
-                  name="titleFr"
-                  defaultValue={resource.titleFr ?? ""}
-                  className={INPUT_CLASS}
-                />
               </label>
             </div>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -178,20 +169,11 @@ export default async function AdminKidsResourceDetailPage({
             </div>
             <div className="mt-4 space-y-3">
               <label className={FIELD_LABELS}>
-                <span>English description</span>
+                <span>Description</span>
                 <textarea
-                  name="descriptionEn"
+                  name="description"
                   rows={4}
-                  defaultValue={resource.descriptionEn ?? ""}
-                  className="rounded-xl border-2 border-line bg-white px-3 py-2 text-sm text-ink"
-                />
-              </label>
-              <label className={FIELD_LABELS}>
-                <span>French description</span>
-                <textarea
-                  name="descriptionFr"
-                  rows={3}
-                  defaultValue={resource.descriptionFr ?? ""}
+                  defaultValue={resource.description ?? ""}
                   className="rounded-xl border-2 border-line bg-white px-3 py-2 text-sm text-ink"
                 />
               </label>

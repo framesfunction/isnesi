@@ -52,7 +52,7 @@ const blocksBody = z
   .refine((blocks) => blocks.length > 0, "Add at least one block.");
 
 /** Same vocabulary, but an empty body is allowed (unfinished translations). */
-const optionalBlocksBody = z.array(blockSchema).max(100);
+export const optionalBlocksBody = z.array(blockSchema).max(100);
 
 /** JSON.parse helper that co-operates with `transform` for text areas. */
 export function parseJsonOr(value: string): { ok: true; value: unknown } | { ok: false } {
@@ -63,11 +63,6 @@ export function parseJsonOr(value: string): { ok: true; value: unknown } | { ok:
     return { ok: false };
   }
 }
-
-/* ------------------------------- Locales ---------------------------------- */
-
-export const CONTENT_LOCALES = ["en", "fr"] as const;
-export type ContentLocale = (typeof CONTENT_LOCALES)[number];
 
 /* -------------------------------- Pages ----------------------------------- */
 
@@ -95,11 +90,6 @@ export const updatePageSchema = z.object({
   seoTitleEn: optionalText,
   seoDescriptionEn: optionalText,
   bodyEnBlocks: blocksBody,
-  titleFr: z.string().trim().max(TEXT_FIELD_MAX).optional(),
-  excerptFr: optionalText,
-  seoTitleFr: optionalText,
-  seoDescriptionFr: optionalText,
-  bodyFrBlocks: optionalBlocksBody.optional(),
 });
 
 export const pageSectionSchema = z
@@ -160,9 +150,6 @@ export const saveProgrammeSchema = z.object({
   titleEn: z.string().trim().min(1, "Required.").max(TEXT_FIELD_MAX),
   summaryEn: optionalText,
   bodyEnBlocks: blocksBody,
-  titleFr: z.string().trim().max(TEXT_FIELD_MAX).optional(),
-  summaryFr: optionalText,
-  bodyFrBlocks: optionalBlocksBody.optional(),
 });
 export const programmeToggleSchema = z.object({
   programmeId: z.string().uuid(),
@@ -197,11 +184,6 @@ export const saveContentSchema = z.object({
   seoTitleEn: optionalText,
   seoDescriptionEn: optionalText,
   bodyEnBlocks: blocksBody,
-  titleFr: z.string().trim().max(TEXT_FIELD_MAX).optional(),
-  excerptFr: optionalText,
-  seoTitleFr: optionalText,
-  seoDescriptionFr: optionalText,
-  bodyFrBlocks: optionalBlocksBody.optional(),
 });
 
 export const contentWorkflowSchema = z.object({
@@ -284,7 +266,6 @@ export const savePartnerSchema = z.object({
       "Choose an asset from the media library.",
     ),
   descriptionEn: optionalText,
-  descriptionFr: optionalText,
 });
 
 export const partnerApprovalSchema = z.object({
@@ -292,6 +273,8 @@ export const partnerApprovalSchema = z.object({
   decision: z.enum(["approve", "reject"]),
   publicVisible: z.boolean(),
 });
+
+export const deletePartnerSchema = z.object({ partnerId: z.string().uuid() });
 
 /* ------------------------------- Navigation ------------------------------- */
 
@@ -322,4 +305,14 @@ export const saveNavigationItemSchema = z
   );
 
 export const deleteNavigationItemSchema = z.object({ itemId: z.string().uuid() });
+
+export const navigationItemVisibilitySchema = z.object({
+  itemId: z.string().uuid(),
+  isVisible: z.boolean(),
+});
+
+export const navigationItemReorderSchema = z.object({
+  itemId: z.string().uuid(),
+  direction: z.enum(["up", "down"]),
+});
 

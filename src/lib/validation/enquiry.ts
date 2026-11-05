@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { siteConfig } from "@/lib/site";
+
 /**
  * Shared validation schemas.
  *
@@ -45,8 +47,16 @@ export const NEWSLETTER_SOURCES = ["website", "event", "partner_referral"] as co
 export const newsletterSubscribeSchema = z.object({
   email: z.string().trim().max(254).email("Enter a valid email address"),
   fullName: z.string().trim().max(120).optional().or(z.literal("")),
-  consent: z.boolean(),
-  locale: z.enum(["en", "fr"]).default("en"),
+  consent: z.boolean().refine((v) => v === true, "You must consent to receive emails."),
+  // The subscriber's preferred language is recorded on the subscriber record
+  // (spec 3.10); the public form does not submit one yet, so it defaults to the
+  // site default.
+  locale: z
+    .string()
+    .trim()
+    .max(10)
+    .optional()
+    .transform((value) => (value && value.length > 0 ? value : siteConfig.defaultLocale)),
 });
 
 export type NewsletterSubscribeInput = z.infer<typeof newsletterSubscribeSchema>;

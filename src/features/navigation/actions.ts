@@ -8,7 +8,12 @@ import { dbErrorMessage } from "@/lib/admin/db-error";
 import { assertPermission } from "@/lib/auth/guards";
 import { isSupabaseConfigured } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
-import { deleteNavigationItemSchema, saveNavigationItemSchema } from "@/lib/validation/cms";
+import {
+  deleteNavigationItemSchema,
+  navigationItemReorderSchema,
+  navigationItemVisibilitySchema,
+  saveNavigationItemSchema,
+} from "@/lib/validation/cms";
 import { fieldErrors } from "@/lib/validation/form";
 
 /**
@@ -157,4 +162,95 @@ export async function deleteNavigationItemAction(
 
   revalidateNavigation();
   return actionOk("Menu item deleted (with any nested children).");
+}
+
+export async function setNavigationItemVisibilityAction(
+  _state: unknown,
+  formData: FormData,
+): Promise<ActionResult> {
+  const user = await assertPermission("pages.manage");
+  if (!user) return actionForbidden();
+
+  if (!isSupabaseConfigured()) return actionNotConfigured();
+
+  const parsed = navigationItemVisibilitySchema.safeParse({
+    itemId: formData.get("itemId"),
+    isVisible: formData.get("isVisible") === "on" || formData.get("isVisible") === "true",
+  });
+  if (!parsed.success) return actionError("Malformed request.");
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("navigation_items")
+    .update({ is_visible: parsed.data.isVisible })
+    .eq("id", parsed.data.itemId);
+  if (error) return dbErrorMessage(error, "navigation item visibility");
+
+  revalidateNavigation();
+  return actionOk(parsed.data.isVisible ? "Menu item shown." : "Menu item hidden.");
+}
+
+/**
+ * Swap sort_order with a sibling in the same menu and at the same nesting
+ * level, so reordering never disturbs a different submenu.
+ */
+export async function reorderNavigationItemAction(
+  _state: unknown,
+  formData: FormData,
+): Promise<ActionResult> {
+  const user = await assertPermission("pages.manage");
+  if (!user) return actionForbidden();
+
+  if (!isSupabaseConfigured()) return actionNotConfigured();
+
+  const parsed = navigationItemReorderSchema.safeParse({
+    itemId: formData.get("itemId"),
+    direction: formData.get("direction"),
+  });
+  if (!parsed.success) return actionError("Malformed request.");
+
+  const supabase = await createClient();
+  const { data: item } = await supabase
+    .from("navigation_items")
+    .select("id, menu_id, parent_id")
+    .eq("id", parsed.data.itemId)
+    .maybeSingle();
+  if (!item) return actionForbidden();
+
+  let siblingsQuery = supabase
+    .from("navigation_items")
+    .select("id, sort_order")
+    .eq("menu_id", item.menu_id);
+  siblingsQuery =
+    item.parent_id === null
+      ? siblingsQuery.is("parent_id", null)
+      : siblingsQuery.eq("parent_id", item.parent_id);
+
+  const { data: siblings } = await siblingsQuery
+    .order("sort_order", { ascending: true })
+    .order("id", { ascending: true });
+
+  const ordered = siblings ?? [];
+  const index = ordered.findIndex((row) => row.id === item.id);
+  const target = parsed.data.direction === "up" ? index - 1 : index + 1;
+
+  if (index === -1 || target < 0 || target >= ordered.length) {
+    return actionOk("Already at the edge.");
+  }
+
+  const moves = [
+    { id: item.id, next: ordered[target].sort_order },
+    { id: ordered[target].id, next: ordered[index].sort_order },
+  ];
+
+  for (const move of moves) {
+    const { error } = await supabase
+      .from("navigation_items")
+      .update({ sort_order: move.next })
+      .eq("id", move.id);
+    if (error) return dbErrorMessage(error, "navigation item reorder");
+  }
+
+  revalidateNavigation();
+  return actionOk("Menu order updated.");
 }

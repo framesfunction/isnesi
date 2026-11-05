@@ -128,7 +128,7 @@ function Row({ resource }: { resource: AdminKidsResourceListItem }) {
   return (
     <tr key={resource.id} className="border-t border-line/70">
       <td className="px-3 py-3 align-top font-bold text-ink">
-        {resource.titleEn ?? "(untitled)"}
+        {resource.title ?? "(untitled)"}
       </td>
       <td className="px-3 py-3 align-top text-xs text-ink-muted">
         {TYPE_LABELS[resource.resourceType] ?? resource.resourceType}
@@ -314,12 +314,8 @@ export default async function AdminKidsCornerPage({
                 </select>
               </label>
               <label className={FIELD_LABELS}>
-                <span>English title</span>
-                <input type="text" name="titleEn" required className={INPUT_CLASS} />
-              </label>
-              <label className={FIELD_LABELS}>
-                <span>French title (optional)</span>
-                <input type="text" name="titleFr" className={INPUT_CLASS} />
+                <span>Title</span>
+                <input type="text" name="title" required className={INPUT_CLASS} />
               </label>
             </div>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -344,18 +340,10 @@ export default async function AdminKidsCornerPage({
             </div>
             <div className="mt-4 space-y-3">
               <label className={FIELD_LABELS}>
-                <span>English description</span>
+                <span>Description</span>
                 <textarea
-                  name="descriptionEn"
+                  name="description"
                   rows={4}
-                  className="rounded-xl border-2 border-line bg-white px-3 py-2 text-sm text-ink"
-                />
-              </label>
-              <label className={FIELD_LABELS}>
-                <span>French description (optional)</span>
-                <textarea
-                  name="descriptionFr"
-                  rows={3}
                   className="rounded-xl border-2 border-line bg-white px-3 py-2 text-sm text-ink"
                 />
               </label>

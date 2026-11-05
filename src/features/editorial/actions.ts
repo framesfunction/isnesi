@@ -61,11 +61,6 @@ export async function saveContentAction(
     seoTitleEn: formData.get("seoTitleEn") ?? "",
     seoDescriptionEn: formData.get("seoDescriptionEn") ?? "",
     bodyEnBlocks: parseBlocksField(formData.get("bodyEnBlocks")),
-    titleFr: formData.get("titleFr") ?? "",
-    excerptFr: formData.get("excerptFr") ?? "",
-    seoTitleFr: formData.get("seoTitleFr") ?? "",
-    seoDescriptionFr: formData.get("seoDescriptionFr") ?? "",
-    bodyFrBlocks: parseBlocksField(formData.get("bodyFrBlocks")),
   });
   if (!parsed.success) {
     return actionError("Please correct the highlighted fields.", fieldErrors(parsed.error));
@@ -148,22 +143,6 @@ export async function saveContentAction(
     { onConflict: "content_id,locale" },
   );
   if (enError) return dbErrorMessage(enError, "content translation save");
-
-  if (input.titleFr && input.titleFr.trim().length > 0) {
-    const { error: frError } = await supabase.from("content_translations").upsert(
-      {
-        content_id: contentId,
-        locale: "fr",
-        title: input.titleFr,
-        excerpt: input.excerptFr,
-        seo_title: input.seoTitleFr,
-        seo_description: input.seoDescriptionFr,
-        body: { blocks: input.bodyFrBlocks ?? [] },
-      },
-      { onConflict: "content_id,locale" },
-    );
-    if (frError) return dbErrorMessage(frError, "content translation save");
-  }
 
   revalidateStories();
   const returnedToDraft =

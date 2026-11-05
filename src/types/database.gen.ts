@@ -16,9 +16,7 @@ export type Database = {
                   Update: {
                     "action"?: string,"actor_id"?: string | null,"created_at"?: string,"id"?: never,"metadata"?: NonNullable<Json>,"new_data"?: Json | null,"old_data"?: Json | null,"record_id"?: string | null,"table_name"?: string
                   }
-                  Relationships: [
-                    
-                  ]
+                  Relationships: []
                 },"categories": {
                   Row: {
                     "created_at": string,"id": string,"key": string
@@ -30,9 +28,7 @@ export type Database = {
                   Update: {
                     "created_at"?: string,"id"?: string,"key"?: string
                   }
-                  Relationships: [
-                    
-                  ]
+                  Relationships: []
                 },"category_translations": {
                   Row: {
                     "category_id": string,"label": string,"locale": string
@@ -116,9 +112,7 @@ isOneToOne: false
                   Update: {
                     "allow_comments"?: boolean,"author_id"?: string | null,"content_type"?: string,"created_at"?: string,"featured"?: boolean,"id"?: string,"published_at"?: string | null,"reviewer_id"?: string | null,"scheduled_at"?: string | null,"slug"?: string,"status"?: Database["public"]['Enums']["content_status"],"updated_at"?: string
                   }
-                  Relationships: [
-                    
-                  ]
+                  Relationships: []
                 },"content_relationships": {
                   Row: {
                     "relationship": string,"source_id": string,"target_id": string
@@ -242,19 +236,17 @@ isOneToOne: false
                   Update: {
                     "created_at"?: string,"ends_at"?: string | null,"id"?: string,"is_active"?: boolean,"key"?: string,"starts_at"?: string | null
                   }
-                  Relationships: [
-                    
-                  ]
+                  Relationships: []
                 },"donation_refunds": {
                   Row: {
-                    "amount_minor": number,"created_at": string,"donation_id": string,"id": string,"provider_refund_id": string | null,"reason": string | null,"requested_by": string | null,"status": string
+                    "amount_minor": number,"approved_at": string | null,"approved_by": string | null,"created_at": string,"donation_id": string,"id": string,"provider_refund_id": string | null,"provider_status": string | null,"reason": string | null,"requested_by": string | null,"status": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "amount_minor": number,"created_at"?: string,"donation_id": string,"id"?: string,"provider_refund_id"?: string | null,"reason"?: string | null,"requested_by"?: string | null,"status"?: string
+                    "amount_minor": number,"approved_at"?: string | null,"approved_by"?: string | null,"created_at"?: string,"donation_id": string,"id"?: string,"provider_refund_id"?: string | null,"provider_status"?: string | null,"reason"?: string | null,"requested_by"?: string | null,"status"?: string
                   }
                   Update: {
-                    "amount_minor"?: number,"created_at"?: string,"donation_id"?: string,"id"?: string,"provider_refund_id"?: string | null,"reason"?: string | null,"requested_by"?: string | null,"status"?: string
+                    "amount_minor"?: number,"approved_at"?: string | null,"approved_by"?: string | null,"created_at"?: string,"donation_id"?: string,"id"?: string,"provider_refund_id"?: string | null,"provider_status"?: string | null,"reason"?: string | null,"requested_by"?: string | null,"status"?: string
                   }
                   Relationships: [
                     {
@@ -267,14 +259,14 @@ isOneToOne: false
                   ]
                 },"donations": {
                   Row: {
-                    "amount_minor": number,"campaign_id": string | null,"created_at": string,"currency": string,"donation_type": string,"donor_email": string | null,"donor_name": string | null,"id": string,"is_anonymous": boolean,"paid_at": string | null,"payment_status": Database["public"]['Enums']["payment_status"],"provider_key": string | null,"provider_transaction_id": string | null,"public_reference": string,"receipt_number": string | null
+                    "amount_minor": number,"campaign_id": string | null,"created_at": string,"currency": string,"donation_type": string,"donor_email": string | null,"donor_name": string | null,"id": string,"is_anonymous": boolean,"paid_at": string | null,"payment_status": Database["public"]['Enums']["payment_status"],"provider_key": string | null,"provider_transaction_id": string | null,"public_reference": string,"receipt_issued_at": string | null,"receipt_number": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "amount_minor": number,"campaign_id"?: string | null,"created_at"?: string,"currency"?: string,"donation_type"?: string,"donor_email"?: string | null,"donor_name"?: string | null,"id"?: string,"is_anonymous"?: boolean,"paid_at"?: string | null,"payment_status"?: Database["public"]['Enums']["payment_status"],"provider_key"?: string | null,"provider_transaction_id"?: string | null,"public_reference"?: string,"receipt_number"?: string | null
+                    "amount_minor": number,"campaign_id"?: string | null,"created_at"?: string,"currency"?: string,"donation_type"?: string,"donor_email"?: string | null,"donor_name"?: string | null,"id"?: string,"is_anonymous"?: boolean,"paid_at"?: string | null,"payment_status"?: Database["public"]['Enums']["payment_status"],"provider_key"?: string | null,"provider_transaction_id"?: string | null,"public_reference"?: string,"receipt_issued_at"?: string | null,"receipt_number"?: string | null
                   }
                   Update: {
-                    "amount_minor"?: number,"campaign_id"?: string | null,"created_at"?: string,"currency"?: string,"donation_type"?: string,"donor_email"?: string | null,"donor_name"?: string | null,"id"?: string,"is_anonymous"?: boolean,"paid_at"?: string | null,"payment_status"?: Database["public"]['Enums']["payment_status"],"provider_key"?: string | null,"provider_transaction_id"?: string | null,"public_reference"?: string,"receipt_number"?: string | null
+                    "amount_minor"?: number,"campaign_id"?: string | null,"created_at"?: string,"currency"?: string,"donation_type"?: string,"donor_email"?: string | null,"donor_name"?: string | null,"id"?: string,"is_anonymous"?: boolean,"paid_at"?: string | null,"payment_status"?: Database["public"]['Enums']["payment_status"],"provider_key"?: string | null,"provider_transaction_id"?: string | null,"public_reference"?: string,"receipt_issued_at"?: string | null,"receipt_number"?: string | null
                   }
                   Relationships: [
                     {
@@ -282,6 +274,46 @@ isOneToOne: false
       columns: ["campaign_id"]
 isOneToOne: false
       referencedRelation: "donation_campaigns"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"enquiry_assignments": {
+                  Row: {
+                    "assigned_at": string,"assigned_by": string | null,"assigned_from": string | null,"assigned_to": string,"enquiry_id": string,"id": string,"reason": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "assigned_at"?: string,"assigned_by"?: string | null,"assigned_from"?: string | null,"assigned_to": string,"enquiry_id": string,"id"?: string,"reason"?: string | null
+                  }
+                  Update: {
+                    "assigned_at"?: string,"assigned_by"?: string | null,"assigned_from"?: string | null,"assigned_to"?: string,"enquiry_id"?: string,"id"?: string,"reason"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "enquiry_assignments_enquiry_id_fkey"
+      columns: ["enquiry_id"]
+isOneToOne: false
+      referencedRelation: "general_enquiries"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"enquiry_messages": {
+                  Row: {
+                    "body": string | null,"channel": string,"delivery_status": string,"direction": string,"enquiry_id": string,"id": string,"message_reference": string | null,"sent_at": string,"sent_by": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "body"?: string | null,"channel"?: string,"delivery_status"?: string,"direction": string,"enquiry_id": string,"id"?: string,"message_reference"?: string | null,"sent_at"?: string,"sent_by"?: string | null
+                  }
+                  Update: {
+                    "body"?: string | null,"channel"?: string,"delivery_status"?: string,"direction"?: string,"enquiry_id"?: string,"id"?: string,"message_reference"?: string | null,"sent_at"?: string,"sent_by"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "enquiry_messages_enquiry_id_fkey"
+      columns: ["enquiry_id"]
+isOneToOne: false
+      referencedRelation: "general_enquiries"
       referencedColumns: ["id"]
     }
                   ]
@@ -316,9 +348,7 @@ isOneToOne: false
                   Update: {
                     "created_at"?: string,"created_by"?: string | null,"currency"?: string,"id"?: string,"notes"?: string | null,"period_end"?: string,"period_start"?: string,"provider_key"?: string | null,"statement_reference"?: string | null,"status"?: string,"total_minor"?: number
                   }
-                  Relationships: [
-                    
-                  ]
+                  Relationships: []
                 },"general_enquiries": {
                   Row: {
                     "assigned_to": string | null,"closed_at": string | null,"consent_to_contact": boolean,"created_at": string,"email": string | null,"enquiry_type": string,"full_name": string,"id": string,"message": string,"phone": string | null,"reference_code": string,"source": string,"status": Database["public"]['Enums']["enquiry_status"],"updated_at": string
@@ -330,9 +360,7 @@ isOneToOne: false
                   Update: {
                     "assigned_to"?: string | null,"closed_at"?: string | null,"consent_to_contact"?: boolean,"created_at"?: string,"email"?: string | null,"enquiry_type"?: string,"full_name"?: string,"id"?: string,"message"?: string,"phone"?: string | null,"reference_code"?: string,"source"?: string,"status"?: Database["public"]['Enums']["enquiry_status"],"updated_at"?: string
                   }
-                  Relationships: [
-                    
-                  ]
+                  Relationships: []
                 },"kids_resource_translations": {
                   Row: {
                     "content": NonNullable<Json>,"description": string | null,"locale": string,"resource_id": string,"title": string
@@ -364,9 +392,7 @@ isOneToOne: false
                   Update: {
                     "created_at"?: string,"created_by"?: string | null,"id"?: string,"is_featured"?: boolean,"max_age"?: number | null,"min_age"?: number | null,"resource_type"?: string,"safeguarding_approved"?: boolean,"status"?: Database["public"]['Enums']["content_status"],"updated_at"?: string
                   }
-                  Relationships: [
-                    
-                  ]
+                  Relationships: []
                 },"media_assets": {
                   Row: {
                     "alt_text": string | null,"bucket_id": string,"byte_size": number | null,"caption": string | null,"consent_reference": string | null,"created_at": string,"credit": string | null,"file_name": string,"height": number | null,"id": string,"mime_type": string | null,"object_path": string,"rights_reference": string | null,"rights_status": string,"safeguarding_reviewed": boolean,"uploaded_by": string | null,"width": number | null
@@ -443,28 +469,28 @@ isOneToOne: false
                   ]
                 },"newsletter_campaigns": {
                   Row: {
-                    "body": NonNullable<Json>,"created_at": string,"created_by": string | null,"id": string,"name": string,"scheduled_at": string | null,"sent_at": string | null,"status": string,"subject": string
+                    "approved_at": string | null,"approved_by": string | null,"body": NonNullable<Json>,"created_at": string,"created_by": string | null,"id": string,"name": string,"provider_campaign_reference": string | null,"scheduled_at": string | null,"sent_at": string | null,"status": string,"subject": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "body"?: NonNullable<Json>,"created_at"?: string,"created_by"?: string | null,"id"?: string,"name": string,"scheduled_at"?: string | null,"sent_at"?: string | null,"status"?: string,"subject": string
+                    "approved_at"?: string | null,"approved_by"?: string | null,"body"?: NonNullable<Json>,"created_at"?: string,"created_by"?: string | null,"id"?: string,"name": string,"provider_campaign_reference"?: string | null,"scheduled_at"?: string | null,"sent_at"?: string | null,"status"?: string,"subject": string
                   }
                   Update: {
-                    "body"?: NonNullable<Json>,"created_at"?: string,"created_by"?: string | null,"id"?: string,"name"?: string,"scheduled_at"?: string | null,"sent_at"?: string | null,"status"?: string,"subject"?: string
+                    "approved_at"?: string | null,"approved_by"?: string | null,"body"?: NonNullable<Json>,"created_at"?: string,"created_by"?: string | null,"id"?: string,"name"?: string,"provider_campaign_reference"?: string | null,"scheduled_at"?: string | null,"sent_at"?: string | null,"status"?: string,"subject"?: string
                   }
                   Relationships: [
                     
                   ]
                 },"newsletter_consents": {
                   Row: {
-                    "id": string,"ip_hash": string | null,"policy_version": string | null,"recorded_at": string,"source": string,"status": Database["public"]['Enums']["consent_status"],"subscriber_id": string,"user_agent": string | null
+                    "evidence_reference": string | null,"id": string,"ip_hash": string | null,"policy_version": string | null,"recorded_at": string,"revoked_at": string | null,"source": string,"status": Database["public"]['Enums']["consent_status"],"subscriber_id": string,"user_agent": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "id"?: string,"ip_hash"?: string | null,"policy_version"?: string | null,"recorded_at"?: string,"source": string,"status": Database["public"]['Enums']["consent_status"],"subscriber_id": string,"user_agent"?: string | null
+                    "evidence_reference"?: string | null,"id"?: string,"ip_hash"?: string | null,"policy_version"?: string | null,"recorded_at"?: string,"revoked_at"?: string | null,"source": string,"status": Database["public"]['Enums']["consent_status"],"subscriber_id": string,"user_agent"?: string | null
                   }
                   Update: {
-                    "id"?: string,"ip_hash"?: string | null,"policy_version"?: string | null,"recorded_at"?: string,"source"?: string,"status"?: Database["public"]['Enums']["consent_status"],"subscriber_id"?: string,"user_agent"?: string | null
+                    "evidence_reference"?: string | null,"id"?: string,"ip_hash"?: string | null,"policy_version"?: string | null,"recorded_at"?: string,"revoked_at"?: string | null,"source"?: string,"status"?: Database["public"]['Enums']["consent_status"],"subscriber_id"?: string,"user_agent"?: string | null
                   }
                   Relationships: [
                     {
@@ -501,19 +527,109 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"newsletter_subscribers": {
+                },"newsletter_segment_members": {
                   Row: {
-                    "confirmed_at": string | null,"created_at": string,"email": string,"full_name": string | null,"id": string,"locale": string,"status": string,"unsubscribed_at": string | null
+                    "added_at": string,"segment_id": string,"subscriber_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "confirmed_at"?: string | null,"created_at"?: string,"email": string,"full_name"?: string | null,"id"?: string,"locale"?: string,"status"?: string,"unsubscribed_at"?: string | null
+                    "added_at"?: string,"segment_id": string,"subscriber_id": string
                   }
                   Update: {
-                    "confirmed_at"?: string | null,"created_at"?: string,"email"?: string,"full_name"?: string | null,"id"?: string,"locale"?: string,"status"?: string,"unsubscribed_at"?: string | null
+                    "added_at"?: string,"segment_id"?: string,"subscriber_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "newsletter_segment_members_segment_id_fkey"
+      columns: ["segment_id"]
+isOneToOne: false
+      referencedRelation: "newsletter_segments"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "newsletter_segment_members_subscriber_id_fkey"
+      columns: ["subscriber_id"]
+isOneToOne: false
+      referencedRelation: "newsletter_subscribers"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"newsletter_segments": {
+                  Row: {
+                    "created_at": string,"description": string | null,"id": string,"name": string,"status": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"description"?: string | null,"id"?: string,"name": string,"status"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"description"?: string | null,"id"?: string,"name"?: string,"status"?: string
+                  }
+                  Relationships: []
+                },"newsletter_subscribers": {
+                  Row: {
+                    "confirmed_at": string | null,"created_at": string,"email": string,"full_name": string | null,"id": string,"locale": string,"provider_contact_reference": string | null,"status": string,"subscribed_at": string | null,"unsubscribed_at": string | null,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "confirmed_at"?: string | null,"created_at"?: string,"email": string,"full_name"?: string | null,"id"?: string,"locale"?: string,"provider_contact_reference"?: string | null,"status"?: string,"subscribed_at"?: string | null,"unsubscribed_at"?: string | null,"updated_at"?: string
+                  }
+                  Update: {
+                    "confirmed_at"?: string | null,"created_at"?: string,"email"?: string,"full_name"?: string | null,"id"?: string,"locale"?: string,"provider_contact_reference"?: string | null,"status"?: string,"subscribed_at"?: string | null,"unsubscribed_at"?: string | null,"updated_at"?: string
                   }
                   Relationships: [
                     
+                  ]
+                },"notification_delivery_attempts": {
+                  Row: {
+                    "attempt_number": number,"attempted_at": string,"error_code": string | null,"id": number,"notification_id": string,"provider_reference": string | null,"result": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "attempt_number"?: number,"attempted_at"?: string,"error_code"?: string | null,"id"?: never,"notification_id": string,"provider_reference"?: string | null,"result": string
+                  }
+                  Update: {
+                    "attempt_number"?: number,"attempted_at"?: string,"error_code"?: string | null,"id"?: never,"notification_id"?: string,"provider_reference"?: string | null,"result"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "notification_delivery_attempts_notification_id_fkey"
+      columns: ["notification_id"]
+isOneToOne: false
+      referencedRelation: "notifications"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"notification_templates": {
+                  Row: {
+                    "body_template": string,"channel": string,"id": string,"language_code": string,"status": string,"subject": string,"template_key": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "body_template": string,"channel": string,"id"?: string,"language_code"?: string,"status"?: string,"subject": string,"template_key": string
+                  }
+                  Update: {
+                    "body_template"?: string,"channel"?: string,"id"?: string,"language_code"?: string,"status"?: string,"subject"?: string,"template_key"?: string
+                  }
+                  Relationships: []
+                },"notifications": {
+                  Row: {
+                    "channel": string,"created_at": string,"delivery_status": string,"id": string,"notification_type": string,"recipient_user_id": string,"related_entity_id": string | null,"related_entity_type": string | null,"sent_at": string | null,"template_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "channel": string,"created_at"?: string,"delivery_status"?: string,"id"?: string,"notification_type": string,"recipient_user_id": string,"related_entity_id"?: string | null,"related_entity_type"?: string | null,"sent_at"?: string | null,"template_id"?: string | null
+                  }
+                  Update: {
+                    "channel"?: string,"created_at"?: string,"delivery_status"?: string,"id"?: string,"notification_type"?: string,"recipient_user_id"?: string,"related_entity_id"?: string | null,"related_entity_type"?: string | null,"sent_at"?: string | null,"template_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "notifications_template_id_fkey"
+      columns: ["template_id"]
+isOneToOne: false
+      referencedRelation: "notification_templates"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"page_sections": {
                   Row: {

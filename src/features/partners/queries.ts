@@ -18,9 +18,7 @@ export type PublicPartner = {
  * `public_visible = true`, so a logo is never presented as an endorsement before
  * approval is recorded.
  */
-export async function listPublicPartners(
-  locale: string = siteConfig.defaultLocale,
-): Promise<PublicPartner[]> {
+export async function listPublicPartners(): Promise<PublicPartner[]> {
   if (!hasPublicContentAccess()) return [];
 
   try {
@@ -70,7 +68,6 @@ export async function listPublicPartners(
     return partners.map((partner) => {
       const forPartner = translationRows.filter((row) => row.partner_id === partner.id);
       const translation =
-        forPartner.find((row) => row.locale === locale) ??
         forPartner.find((row) => row.locale === siteConfig.defaultLocale) ??
         forPartner[0];
 

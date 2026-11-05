@@ -31,8 +31,11 @@ export type AdminPageSection = {
 };
 
 export type AdminPageDetail = AdminPageListItem & {
-  en: { title: string; excerpt: string | null; seoTitle: string | null; seoDescription: string | null; body: unknown };
-  fr: { title: string | null; excerpt: string | null; seoTitle: string | null; seoDescription: string | null; body: unknown } | null;
+  title: string;
+  excerpt: string | null;
+  seoTitle: string | null;
+  seoDescription: string | null;
+  body: unknown;
   sections: AdminPageSection[];
 };
 
@@ -122,8 +125,7 @@ export async function getAdminPage(pageId: string): Promise<AdminPageDetail | nu
     .eq("page_id", pageId);
 
   const rows = translations ?? [];
-  const en = rows.find((row) => row.locale === "en") ?? null;
-  const fr = rows.find((row) => row.locale === "fr") ?? null;
+  const translation = rows.find((row) => row.locale === "en") ?? null;
 
   const { data: sections } = await supabase
     .from("page_sections")
@@ -142,23 +144,11 @@ export async function getAdminPage(pageId: string): Promise<AdminPageDetail | nu
     sortOrder: base.sort_order,
     publishedAt: base.published_at,
     updatedAt: base.updated_at,
-    title: en?.title ?? null,
-    en: {
-      title: en?.title ?? "",
-      excerpt: en?.excerpt ?? null,
-      seoTitle: en?.seo_title ?? null,
-      seoDescription: en?.seo_description ?? null,
-      body: en?.body ?? {},
-    },
-    fr: fr
-      ? {
-          title: fr.title,
-          excerpt: fr.excerpt,
-          seoTitle: fr.seo_title,
-          seoDescription: fr.seo_description,
-          body: fr.body,
-        }
-      : null,
+    title: translation?.title ?? "",
+    excerpt: translation?.excerpt ?? null,
+    seoTitle: translation?.seo_title ?? null,
+    seoDescription: translation?.seo_description ?? null,
+    body: translation?.body ?? {},
     sections: (sections ?? []).map((section) => ({
       id: section.id,
       sectionKey: section.section_key,

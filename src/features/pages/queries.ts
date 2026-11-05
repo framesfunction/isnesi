@@ -14,7 +14,6 @@ export type PublicPageContent = {
   id: string;
   slug: string;
   pageType: string;
-  locale: string;
   title: string;
   excerpt: string | null;
   seoTitle: string | null;
@@ -30,7 +29,6 @@ export type PublicPageContent = {
  */
 export async function getPublicPage(
   slug: string,
-  locale: string = siteConfig.defaultLocale,
 ): Promise<PublicPageContent | null> {
   if (!hasPublicContentAccess()) return null;
 
@@ -56,10 +54,9 @@ export async function getPublicPage(
       .eq("page_id", page.id);
 
     const rows = translations ?? [];
+    const defaultLocale = siteConfig.defaultLocale;
     const translation =
-      rows.find((row) => row.locale === locale) ??
-      rows.find((row) => row.locale === siteConfig.defaultLocale) ??
-      rows[0];
+      rows.find((row) => row.locale === defaultLocale) ?? rows[0];
 
     const { data: sections } = await supabase
       .from("page_sections")
@@ -72,7 +69,6 @@ export async function getPublicPage(
       id: page.id,
       slug: page.slug,
       pageType: page.page_type,
-      locale: translation?.locale ?? locale,
       title: translation?.title ?? page.slug,
       excerpt: translation?.excerpt ?? null,
       seoTitle: translation?.seo_title ?? null,

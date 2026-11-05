@@ -153,20 +153,11 @@ export default async function AdminPartnerEditorPage({
               </div>
               <div className="mt-4 space-y-3">
                 <label className={FIELD_LABELS}>
-                  <span>English description</span>
+                  <span>Description</span>
                   <textarea
-                    name="descriptionEn"
+                    name="description"
                     rows={5}
-                    defaultValue={partner.descriptions.en ?? ""}
-                    className="rounded-xl border-2 border-line bg-white px-3 py-2 text-sm text-ink"
-                  />
-                </label>
-                <label className={FIELD_LABELS}>
-                  <span>French description</span>
-                  <textarea
-                    name="descriptionFr"
-                    rows={4}
-                    defaultValue={partner.descriptions.fr ?? ""}
+                    defaultValue={partner.description ?? ""}
                     className="rounded-xl border-2 border-line bg-white px-3 py-2 text-sm text-ink"
                   />
                 </label>

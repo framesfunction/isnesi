@@ -40,13 +40,6 @@ export type AdminContentDetail = AdminContentListItem & {
     seoDescription: string | null;
     body: unknown;
   };
-  fr: {
-    title: string | null;
-    excerpt: string | null;
-    seoTitle: string | null;
-    seoDescription: string | null;
-    body: unknown;
-  } | null;
   revisions: AdminContentRevision[];
   approvals: { id: string; decision: string; note: string | null; decidedAt: string; reviewerId: string }[];
 };
@@ -146,7 +139,6 @@ export async function getAdminContent(contentId: string): Promise<AdminContentDe
 
   const rows = translations ?? [];
   const en = rows.find((row) => row.locale === "en") ?? null;
-  const fr = rows.find((row) => row.locale === "fr") ?? null;
 
   const { data: revisions } = await supabase
     .from("content_revisions")
@@ -172,15 +164,6 @@ export async function getAdminContent(contentId: string): Promise<AdminContentDe
       seoDescription: en?.seo_description ?? null,
       body: en?.body ?? {},
     },
-    fr: fr
-      ? {
-          title: fr.title,
-          excerpt: fr.excerpt,
-          seoTitle: fr.seo_title,
-          seoDescription: fr.seo_description,
-          body: fr.body,
-        }
-      : null,
     revisions: (revisions ?? []).map((revision) => ({
       id: revision.id,
       revisionNo: revision.revision_no,

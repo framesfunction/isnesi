@@ -266,53 +266,25 @@ export default async function AdminContentEditorPage({
                       />
                     </label>
                   </div>
-                  <div className="mt-4">
-                    <label className={FIELD_LABELS}>
-                      <span>Body (JSON blocks)</span>
-                      <textarea
-                        name="bodyEnBlocks"
-                        rows={12}
-                        defaultValue={blocksJson(item.en.body)}
-                        spellCheck={false}
-                        className={TEXTAREA_CLASS}
-                      />
-                    </label>
-                  </div>
+                <div className="mt-4">
+                  <label className={FIELD_LABELS}>
+                    <span>Body (JSON blocks)</span>
+                    <textarea
+                      name="bodyEnBlocks"
+                      rows={12}
+                      defaultValue={blocksJson(item.en.body)}
+                      spellCheck={false}
+                      className={TEXTAREA_CLASS}
+                    />
+                  </label>
                 </div>
+              </div>
 
-                <div className="mt-6 border-t border-line pt-4">
-                  <p className="mb-3 font-black uppercase tracking-[0.14em] text-leaf">
-                    French (optional)
-                  </p>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <label className={FIELD_LABELS}>
-                      <span>Title</span>
-                      <input type="text" name="titleFr" defaultValue={item.fr?.title ?? ""} className={INPUT_CLASS} />
-                    </label>
-                    <label className={FIELD_LABELS}>
-                      <span>Excerpt</span>
-                      <input type="text" name="excerptFr" defaultValue={item.fr?.excerpt ?? ""} className={INPUT_CLASS} />
-                    </label>
-                  </div>
-                  <div className="mt-4">
-                    <label className={FIELD_LABELS}>
-                      <span>Body (JSON blocks)</span>
-                      <textarea
-                        name="bodyFrBlocks"
-                        rows={8}
-                        defaultValue={item.fr ? blocksJson(item.fr.body) : ""}
-                        spellCheck={false}
-                        className={TEXTAREA_CLASS}
-                      />
-                    </label>
-                  </div>
-                </div>
-
-                {item.status !== "draft" ? (
-                  <p className="mt-4 text-xs font-bold text-coral">
-                    Saving a material change returns this item to draft for re-approval.
-                  </p>
-                ) : null}
+              {item.status !== "draft" ? (
+                <p className="mt-4 text-xs font-bold text-coral">
+                  Saving a material change returns this item to draft for re-approval.
+                </p>
+              ) : null}
               </ActionForm>
             ) : (
               <p className="text-sm text-ink-muted">

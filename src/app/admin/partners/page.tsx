@@ -173,18 +173,10 @@ export default async function AdminPartnersListPage({
             </div>
             <div className="mt-4 space-y-3">
               <label className={FIELD_LABELS}>
-                <span>English description</span>
+                <span>Description</span>
                 <textarea
-                  name="descriptionEn"
+                  name="description"
                   rows={4}
-                  className="rounded-xl border-2 border-line bg-white px-3 py-2 text-sm text-ink"
-                />
-              </label>
-              <label className={FIELD_LABELS}>
-                <span>French description (optional)</span>
-                <textarea
-                  name="descriptionFr"
-                  rows={3}
                   className="rounded-xl border-2 border-line bg-white px-3 py-2 text-sm text-ink"
                 />
               </label>

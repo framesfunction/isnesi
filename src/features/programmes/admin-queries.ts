@@ -9,12 +9,6 @@ import { createClient } from "@/lib/supabase/server";
  * is not configured so the page can say so instead of showing an empty list.
  */
 
-export type AdminProgrammeTranslation = {
-  title: string;
-  summary: string | null;
-  body: unknown;
-};
-
 export type AdminProgrammeListItem = {
   id: string;
   key: string;
@@ -22,9 +16,7 @@ export type AdminProgrammeListItem = {
   sortOrder: number;
   isActive: boolean;
   updatedAt: string;
-  titleEn: string | null;
-  titleFr: string | null;
-  hasFr: boolean;
+  title: string | null;
 };
 
 export type AdminProgrammeDetail = {
@@ -34,8 +26,9 @@ export type AdminProgrammeDetail = {
   sortOrder: number;
   isActive: boolean;
   updatedAt: string;
-  en: AdminProgrammeTranslation | null;
-  fr: AdminProgrammeTranslation | null;
+  title: string | null;
+  summary: string | null;
+  body: unknown;
 };
 
 type ProgrammeRow = {
@@ -55,27 +48,20 @@ type TranslationRow = {
   body: unknown;
 };
 
-type TranslationIndex = { en?: TranslationRow; fr?: TranslationRow };
-
 const PROGRAMME_COLUMNS = "id, key, icon, sort_order, is_active, updated_at";
 const TRANSLATION_COLUMNS = "programme_id, locale, title, summary, body";
 
-function toTranslation(row: TranslationRow): AdminProgrammeTranslation {
-  return { title: row.title, summary: row.summary, body: row.body };
-}
-
-function indexTranslations(rows: TranslationRow[]): Map<string, TranslationIndex> {
-  const map = new Map<string, TranslationIndex>();
+function indexTranslations(rows: TranslationRow[]): Map<string, TranslationRow> {
+  const map = new Map<string, TranslationRow>();
   for (const row of rows) {
-    const entry = map.get(row.programme_id) ?? {};
-    if (row.locale === "en") entry.en = row;
-    if (row.locale === "fr") entry.fr = row;
-    map.set(row.programme_id, entry);
+    if (row.locale === "en") {
+      map.set(row.programme_id, row);
+    }
   }
   return map;
 }
 
-/** Programmes with their English and French titles; optional key/title search. */
+/** Programmes with their English titles; optional key/title search. */
 export async function listAdminProgrammes(search: string): Promise<AdminProgrammeListItem[] | null> {
   if (!isSupabaseConfigured()) return null;
 
@@ -98,6 +84,7 @@ export async function listAdminProgrammes(search: string): Promise<AdminProgramm
   const { data: translations, error: translationError } = await supabase
     .from("programme_translations")
     .select(TRANSLATION_COLUMNS)
+    .eq("locale", "en")
     .in(
       "programme_id",
       rows.map((row) => row.id),
@@ -120,22 +107,19 @@ export async function listAdminProgrammes(search: string): Promise<AdminProgramm
         sortOrder: row.sort_order,
         isActive: row.is_active,
         updatedAt: row.updated_at,
-        titleEn: entry?.en?.title ?? null,
-        titleFr: entry?.fr?.title ?? null,
-        hasFr: Boolean(entry?.fr),
+        title: entry?.title ?? null,
       };
     })
     .filter((item) => {
       if (needle.length === 0) return true;
       return (
         item.key.includes(needle) ||
-        (item.titleEn ?? "").toLowerCase().includes(needle) ||
-        (item.titleFr ?? "").toLowerCase().includes(needle)
+        (item.title ?? "").toLowerCase().includes(needle)
       );
     });
 }
 
-/** One programme with both translations, or null when unavailable. */
+/** One programme with its English translation, or null when unavailable. */
 export async function getAdminProgramme(programmeId: string): Promise<AdminProgrammeDetail | null> {
   if (!isSupabaseConfigured()) return null;
 
@@ -156,12 +140,12 @@ export async function getAdminProgramme(programmeId: string): Promise<AdminProgr
   const { data: translations } = await supabase
     .from("programme_translations")
     .select(TRANSLATION_COLUMNS)
-    .eq("programme_id", programmeId);
+    .eq("programme_id", programmeId)
+    .eq("locale", "en")
+    .maybeSingle();
 
-  const rows = (translations ?? []) as TranslationRow[];
-  const en = rows.find((row) => row.locale === "en") ?? null;
-  const fr = rows.find((row) => row.locale === "fr") ?? null;
   const base = programme as ProgrammeRow;
+  const translation = translations as TranslationRow | null;
 
   return {
     id: base.id,
@@ -170,7 +154,8 @@ export async function getAdminProgramme(programmeId: string): Promise<AdminProgr
     sortOrder: base.sort_order,
     isActive: base.is_active,
     updatedAt: base.updated_at,
-    en: en ? toTranslation(en) : null,
-    fr: fr ? toTranslation(fr) : null,
+    title: translation?.title ?? null,
+    summary: translation?.summary ?? null,
+    body: translation?.body ?? null,
   };
 }

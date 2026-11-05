@@ -99,7 +99,7 @@ export const ADMIN_MODULES: AdminModule[] = [
     capabilities: [
       "Create, edit, reorder, hide and archive pages",
       "Structured section editing (section_type plus validated section config)",
-      "Per-locale translations with translation status",
+      "Translation status",
       "SEO title, description, canonical URL and open-graph fields",
       "Draft to review to scheduled to published workflow with timestamps",
       "Redirect suggestion when a slug changes",
@@ -124,7 +124,7 @@ export const ADMIN_MODULES: AdminModule[] = [
       "Create, edit, reorder and deactivate programmes",
       "Objectives, activities, beneficiaries and geographic coverage",
       "Featured image selection from the media library",
-      "English and French programme translations",
+      "Programme translations",
     ],
     security: [
       "Deletion is blocked while content, media or reporting references exist",
@@ -194,7 +194,7 @@ export const ADMIN_MODULES: AdminModule[] = [
     capabilities: [
       "Partner name, relationship type, website and logo",
       "Approval workflow before public visibility",
-      "Per-locale descriptions",
+      "Descriptions",
     ],
     security: [
       "A partner is never presented as an endorsement without recorded approval",

@@ -7,7 +7,6 @@ export type ProgrammeSummary = {
   icon: string | null;
   sortOrder: number;
   isActive: boolean;
-  locale: string;
   title: string;
   summary: string | null;
 };
@@ -19,17 +18,13 @@ type ProgrammeTranslation = {
   summary: string | null;
 };
 
-/** Pick the requested locale, falling back to English, then anything available. */
 function pickTranslation(
   translations: ProgrammeTranslation[],
   programmeId: string,
-  locale: string,
 ): ProgrammeTranslation | undefined {
   const forProgramme = translations.filter((row) => row.programme_id === programmeId);
   return (
-    forProgramme.find((row) => row.locale === locale) ??
-    forProgramme.find((row) => row.locale === siteConfig.defaultLocale) ??
-    forProgramme[0]
+    forProgramme.find((row) => row.locale === siteConfig.defaultLocale) ?? forProgramme[0]
   );
 }
 
@@ -40,9 +35,8 @@ function pickTranslation(
  * active programmes.
  */
 export async function listProgrammes(
-  options: { locale?: string; includeInactive?: boolean } = {},
+  options: { includeInactive?: boolean } = {},
 ): Promise<ProgrammeSummary[]> {
-  const locale = options.locale ?? siteConfig.defaultLocale;
   if (!hasPublicContentAccess()) return [];
 
   try {
@@ -80,7 +74,7 @@ export async function listProgrammes(
     const rows = translations ?? [];
 
     return programmes.flatMap((programme) => {
-      const translation = pickTranslation(rows, programme.id, locale);
+      const translation = pickTranslation(rows, programme.id);
       if (!translation) return [];
       return [
         {
@@ -89,7 +83,6 @@ export async function listProgrammes(
           icon: programme.icon,
           sortOrder: programme.sort_order,
           isActive: programme.is_active,
-          locale: translation.locale,
           title: translation.title,
           summary: translation.summary,
         },

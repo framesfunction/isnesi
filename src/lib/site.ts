@@ -5,7 +5,7 @@ export const siteConfig = {
   description:
     "ISNESI helps every child learn, belong and thrive through inclusive education and community-led support.",
   defaultLocale: "en" as const,
-  locales: ["en", "fr"] as const,
+  locales: ["en"] as const,
   currency: "XAF" as const,
   themeColor: "#1B3FA0",
 } as const;

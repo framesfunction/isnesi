@@ -1,3 +1,4 @@
+// app/(public)/layout.tsx
 import type { ReactNode } from "react";
 
 import { SiteFooter } from "@/components/public/site-footer";

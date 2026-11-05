@@ -100,18 +100,13 @@ export default async function AdminProgrammesPage({
                   <td className="px-3 py-3 align-top">
                     <p className="font-bold text-ink">
                       {programme.icon ? `${programme.icon} ` : ""}
-                      {programme.titleEn ?? "(untitled)"}
+                      {programme.title ?? "(untitled)"}
                     </p>
                     <p className="font-mono text-xs text-ink-muted">{programme.key}</p>
                   </td>
                   <td className="px-3 py-3 align-top">
                     <div className="flex flex-wrap gap-1.5">
                       <Badge variant="neutral">EN</Badge>
-                      {programme.hasFr ? (
-                        <Badge variant="success">FR</Badge>
-                      ) : (
-                        <Badge variant="outline">FR missing</Badge>
-                      )}
                     </div>
                   </td>
                   <td className="px-3 py-3 text-center align-top text-xs text-ink-muted">

@@ -20,7 +20,7 @@ const supabaseSchema = z.object({
 
 const publicEnvSchema = supabaseSchema.extend({
   NEXT_PUBLIC_SITE_URL: nonEmpty.default("http://localhost:3000"),
-  NEXT_PUBLIC_DEFAULT_LOCALE: z.enum(["en", "fr"]).default("en"),
+  NEXT_PUBLIC_DEFAULT_LOCALE: z.literal("en").default("en"),
 });
 
 const serverEnvSchema = z.object({
@@ -31,7 +31,7 @@ export type PublicEnv = {
   supabaseUrl: string;
   supabaseAnonKey: string;
   siteUrl: string;
-  defaultLocale: "en" | "fr";
+  defaultLocale: "en";
 };
 
 export type ServerEnv = {
