@@ -16,7 +16,9 @@ export type Database = {
                   Update: {
                     "action"?: string,"actor_id"?: string | null,"created_at"?: string,"id"?: never,"metadata"?: NonNullable<Json>,"new_data"?: Json | null,"old_data"?: Json | null,"record_id"?: string | null,"table_name"?: string
                   }
-                  Relationships: []
+                  Relationships: [
+                    
+                  ]
                 },"categories": {
                   Row: {
                     "created_at": string,"id": string,"key": string
@@ -28,7 +30,9 @@ export type Database = {
                   Update: {
                     "created_at"?: string,"id"?: string,"key"?: string
                   }
-                  Relationships: []
+                  Relationships: [
+                    
+                  ]
                 },"category_translations": {
                   Row: {
                     "category_id": string,"label": string,"locale": string
@@ -112,7 +116,9 @@ isOneToOne: false
                   Update: {
                     "allow_comments"?: boolean,"author_id"?: string | null,"content_type"?: string,"created_at"?: string,"featured"?: boolean,"id"?: string,"published_at"?: string | null,"reviewer_id"?: string | null,"scheduled_at"?: string | null,"slug"?: string,"status"?: Database["public"]['Enums']["content_status"],"updated_at"?: string
                   }
-                  Relationships: []
+                  Relationships: [
+                    
+                  ]
                 },"content_relationships": {
                   Row: {
                     "relationship": string,"source_id": string,"target_id": string
@@ -236,7 +242,9 @@ isOneToOne: false
                   Update: {
                     "created_at"?: string,"ends_at"?: string | null,"id"?: string,"is_active"?: boolean,"key"?: string,"starts_at"?: string | null
                   }
-                  Relationships: []
+                  Relationships: [
+                    
+                  ]
                 },"donation_refunds": {
                   Row: {
                     "amount_minor": number,"approved_at": string | null,"approved_by": string | null,"created_at": string,"donation_id": string,"id": string,"provider_refund_id": string | null,"provider_status": string | null,"reason": string | null,"requested_by": string | null,"status": string
@@ -348,7 +356,9 @@ isOneToOne: false
                   Update: {
                     "created_at"?: string,"created_by"?: string | null,"currency"?: string,"id"?: string,"notes"?: string | null,"period_end"?: string,"period_start"?: string,"provider_key"?: string | null,"statement_reference"?: string | null,"status"?: string,"total_minor"?: number
                   }
-                  Relationships: []
+                  Relationships: [
+                    
+                  ]
                 },"general_enquiries": {
                   Row: {
                     "assigned_to": string | null,"closed_at": string | null,"consent_to_contact": boolean,"created_at": string,"email": string | null,"enquiry_type": string,"full_name": string,"id": string,"message": string,"phone": string | null,"reference_code": string,"source": string,"status": Database["public"]['Enums']["enquiry_status"],"updated_at": string
@@ -360,7 +370,9 @@ isOneToOne: false
                   Update: {
                     "assigned_to"?: string | null,"closed_at"?: string | null,"consent_to_contact"?: boolean,"created_at"?: string,"email"?: string | null,"enquiry_type"?: string,"full_name"?: string,"id"?: string,"message"?: string,"phone"?: string | null,"reference_code"?: string,"source"?: string,"status"?: Database["public"]['Enums']["enquiry_status"],"updated_at"?: string
                   }
-                  Relationships: []
+                  Relationships: [
+                    
+                  ]
                 },"kids_resource_translations": {
                   Row: {
                     "content": NonNullable<Json>,"description": string | null,"locale": string,"resource_id": string,"title": string
@@ -392,7 +404,9 @@ isOneToOne: false
                   Update: {
                     "created_at"?: string,"created_by"?: string | null,"id"?: string,"is_featured"?: boolean,"max_age"?: number | null,"min_age"?: number | null,"resource_type"?: string,"safeguarding_approved"?: boolean,"status"?: Database["public"]['Enums']["content_status"],"updated_at"?: string
                   }
-                  Relationships: []
+                  Relationships: [
+                    
+                  ]
                 },"media_assets": {
                   Row: {
                     "alt_text": string | null,"bucket_id": string,"byte_size": number | null,"caption": string | null,"consent_reference": string | null,"created_at": string,"credit": string | null,"file_name": string,"height": number | null,"id": string,"mime_type": string | null,"object_path": string,"rights_reference": string | null,"rights_status": string,"safeguarding_reviewed": boolean,"uploaded_by": string | null,"width": number | null
@@ -564,7 +578,9 @@ isOneToOne: false
                   Update: {
                     "created_at"?: string,"description"?: string | null,"id"?: string,"name"?: string,"status"?: string
                   }
-                  Relationships: []
+                  Relationships: [
+                    
+                  ]
                 },"newsletter_subscribers": {
                   Row: {
                     "confirmed_at": string | null,"created_at": string,"email": string,"full_name": string | null,"id": string,"locale": string,"provider_contact_reference": string | null,"status": string,"subscribed_at": string | null,"unsubscribed_at": string | null,"updated_at": string
@@ -610,7 +626,9 @@ isOneToOne: false
                   Update: {
                     "body_template"?: string,"channel"?: string,"id"?: string,"language_code"?: string,"status"?: string,"subject"?: string,"template_key"?: string
                   }
-                  Relationships: []
+                  Relationships: [
+                    
+                  ]
                 },"notifications": {
                   Row: {
                     "channel": string,"created_at": string,"delivery_status": string,"id": string,"notification_type": string,"recipient_user_id": string,"related_entity_id": string | null,"related_entity_type": string | null,"sent_at": string | null,"template_id": string | null
@@ -805,7 +823,13 @@ isOneToOne: false
                     "activities"?: NonNullable<Json>,"created_at"?: string,"featured_image_id"?: string | null,"geographic_coverage"?: string | null,"icon"?: string | null,"id"?: string,"is_active"?: boolean,"key"?: string,"objectives"?: NonNullable<Json>,"sort_order"?: number,"target_beneficiaries"?: string | null,"updated_at"?: string
                   }
                   Relationships: [
-                    
+                    {
+      foreignKeyName: "programmes_featured_image_id_fkey"
+      columns: ["featured_image_id"]
+isOneToOne: false
+      referencedRelation: "media_assets"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"role_permissions": {
                   Row: {

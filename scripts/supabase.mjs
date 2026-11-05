@@ -46,8 +46,8 @@ const RELEASE_ASSETS = {
 /** Download a URL to a file, following one redirect level. */
 function download(url, outFile) {
   return new Promise((resolve, reject) => {
-    const request = (target) =>
-      get(target, (response) => {
+    const request = (target) => {
+      const req = get(target, (response) => {
         if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
           response.resume();
           request(new URL(response.headers.location, target).toString());
@@ -63,7 +63,9 @@ function download(url, outFile) {
         stream.on("finish", () => stream.close(resolve));
         stream.on("error", reject);
       });
-    request.on("error", reject);
+      req.on("error", reject);
+      return req;
+    };
     request(url);
   });
 }

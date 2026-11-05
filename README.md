@@ -70,7 +70,8 @@ The app starts without Supabase configured: public pages render their real
 | `npm run lint` | ESLint (flat config, Next core-web-vitals + TS) |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm test` | Vitest unit tests |
-| `npm run db:start` / `db:reset` / `db:push` | Supabase CLI wrappers (local stack) |
+| `npm run db:start` / `db:reset` | Local Supabase stack (Docker) via the CLI shim |
+| `npm run db:push` | Apply pending migrations to the hosted project (reads `.env.local`; supports `-- --dry-run` and `-- --include-seed`) |
 | `npm run db:types` | Generate `Database` types from the hosted project into `src/types/database.gen.ts` (reads `SUPABASE_DB_PASSWORD`; see `.env.example`) |
 
 ## Supabase CLI on Windows
@@ -80,7 +81,9 @@ constrained networks that download can fail or arrive corrupted — every comman
 dies with `No matching Supabase CLI binary package found for win32-x64`. The local
 wrapper at `npm run supabase` handles this: if an official release binary exists at
 `.tools/supabase.exe` (git-ignored) it is used via the CLI's documented
-`SUPABASE_CLI_BINARY_OVERRIDE` escape hatch. Bootstrap it once:
+`SUPABASE_CLI_BINARY_OVERRIDE` escape hatch. Every `db:*` script routes through
+this shim, so `npm run db:push` works against the hosted project too. Bootstrap
+the binary once:
 
 ```bash
 node scripts/supabase.mjs install
@@ -98,8 +101,10 @@ operations target the **session pooler**. With `SUPABASE_DB_PASSWORD` set in
 #    A wrong region reports "tenant/user postgres.<ref> not found".
 npm run supabase -- db query --remote "postgresql://postgres.<ref>:<urlencoded-password>@aws-0-eu-west-1.pooler.supabase.com:5432/postgres" --read-only "select 1"
 
-# 2. Push migrations
-npm run supabase -- db push --remote <pooler-url> --yes
+# 2. Apply pending migrations to the hosted project (reads .env.local).
+#    Add -- --dry-run to preview, or -- --include-seed to also load seed.sql.
+npm run db:push
+#    Equivalent manual form: npm run supabase -- db push --remote <pooler-url> --yes
 
 # 3. Generate types (no manual URL needed)
 npm run db:types
