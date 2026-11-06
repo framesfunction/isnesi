@@ -1,5 +1,6 @@
 import {
   Accessibility,
+  BookOpen,
   HandCoins,
   Handshake,
   Images,
@@ -14,6 +15,8 @@ import {
   ShieldCheck,
   Smile,
   Sparkles,
+  Tags,
+  TrendingUp,
   Users,
 } from "lucide-react";
 import Link from "next/link";
@@ -54,6 +57,9 @@ const ICONS: Record<string, ReactNode> = {
   settings: <Settings className="size-4" />,
   accessibility: <Accessibility className="size-4" />,
   "scroll-text": <ScrollText className="size-4" />,
+  "trending-up": <TrendingUp className="size-4" />,
+  tags: <Tags className="size-4" />,
+  "book-open": <BookOpen className="size-4" />,
 };
 function initials(name: string | null, email: string | null): string {
   const source = (name ?? email ?? "IS").trim();
@@ -74,7 +80,7 @@ function initials(name: string | null, email: string | null): string {
       {" "}
       <div className="lg:grid lg:min-h-dvh lg:grid-cols-[264px_minmax(0,1fr)]">
         {" "}
-        <aside className="bg-brand-strong text-white lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col lg:gap-6 lg:overflow-y-auto lg:p-5">
+        <aside className="admin-scroll bg-brand-strong text-white lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col lg:gap-6 lg:overflow-y-auto lg:p-5">
           {" "}
           <div className="flex items-center justify-between gap-3 px-4 py-4 lg:px-0 lg:py-0">
             {" "}
@@ -111,7 +117,7 @@ function initials(name: string | null, email: string | null): string {
           </div>{" "}
           <nav
             aria-label="Admin sections"
-            className="flex gap-4 overflow-x-auto px-4 pb-4 lg:block lg:flex-1 lg:space-y-5 lg:px-0 lg:pb-0"
+            className="admin-scroll flex gap-4 overflow-x-auto px-4 pb-4 lg:block lg:flex-1 lg:space-y-5 lg:px-0 lg:pb-0"
           >
             {" "}
             {groups.map((group) => (
@@ -189,6 +195,13 @@ function initials(name: string | null, email: string | null): string {
             </p>{" "}
             <div className="flex items-center gap-2">
               {" "}
+              <Link
+                href="/admin/help"
+                className="hidden rounded-full border border-line px-4 py-2 text-xs font-bold text-ink-muted transition-colors hover:border-brand hover:text-brand sm:inline-flex"
+              >
+                {" "}
+                How to use this{" "}
+              </Link>{" "}
               <Link
                 href="/"
                 className="hidden rounded-full border border-line px-4 py-2 text-xs font-bold text-ink-muted transition-colors hover:border-brand hover:text-brand sm:inline-flex"

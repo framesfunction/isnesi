@@ -97,7 +97,7 @@ export function SiteHeader() {
                 className="rounded-xl px-3 py-3 text-base font-semibold text-ink transition-colors hover:bg-brand-soft hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
               >
                 <span className="block">{item.label}</span>
-                <span className="block text-xs font-normal text-muted">{item.description}</span>
+                <span className="block text-xs font-normal text-ink-muted">{item.description}</span>
               </Link>
             ))}
           </nav>

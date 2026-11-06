@@ -20,15 +20,15 @@ export function ContentPlaceholder({ cmsSlug, summary, steps }: ContentPlacehold
       <h2 className="mt-3 text-2xl font-black tracking-tight text-brand">
         This page is connected to the CMS
       </h2>
-      <p className="mt-3 max-w-2xl text-muted">{summary}</p>
+      <p className="mt-3 max-w-2xl text-ink-muted">{summary}</p>
 
       <dl className="mt-6 grid gap-4 sm:grid-cols-2">
         <div className="rounded-2xl bg-brand-soft p-4">
-          <dt className="text-xs font-bold uppercase tracking-[0.12em] text-muted">CMS page slug</dt>
+          <dt className="text-xs font-bold uppercase tracking-[0.12em] text-ink-muted">CMS page slug</dt>
           <dd className="mt-1 font-mono text-sm text-brand">{cmsSlug}</dd>
         </div>
         <div className="rounded-2xl bg-brand-soft p-4">
-          <dt className="text-xs font-bold uppercase tracking-[0.12em] text-muted">Managed in</dt>
+          <dt className="text-xs font-bold uppercase tracking-[0.12em] text-ink-muted">Managed in</dt>
           <dd className="mt-1 text-sm text-brand">Admin → Pages &amp; sections</dd>
         </div>
       </dl>
@@ -49,7 +49,7 @@ export function ContentPlaceholder({ cmsSlug, summary, steps }: ContentPlacehold
         </ol>
       ) : null}
 
-      <p className="mt-6 text-xs text-muted">
+      <p className="mt-6 text-xs text-ink-muted">
         Nothing here is hard-coded: as soon as an editor publishes this page, the public site renders
         the published sections instead of this notice.
       </p>

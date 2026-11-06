@@ -18,14 +18,14 @@ export function SiteFooter() {
       <div className="mx-auto grid w-full max-w-6xl gap-10 px-5 py-14 md:grid-cols-2 lg:grid-cols-5">
         <div className="md:col-span-2">
           <BrandMark variant="footer" />
-          <p className="mt-4 max-w-sm text-sm text-muted">
+          <p className="mt-4 max-w-sm text-sm text-ink-muted">
             {siteConfig.description}
           </p>
           <p className="mt-4 text-sm font-semibold text-brand">{siteConfig.tagline}</p>
         </div>
 
         <nav aria-labelledby="footer-explore" className="text-sm">
-          <h2 id="footer-explore" className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-muted">
+          <h2 id="footer-explore" className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-ink-muted">
             Explore
           </h2>
           <ul className="grid gap-2">
@@ -41,14 +41,6 @@ export function SiteFooter() {
             ))}
             <li>
               <Link
-                href="/donate"
-                className="rounded text-ink transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-              >
-                Donate
-              </Link>
-            </li>
-            <li>
-              <Link
                 href="/kids-corner"
                 className="rounded text-ink transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
               >
@@ -59,7 +51,7 @@ export function SiteFooter() {
         </nav>
 
         <nav aria-labelledby="footer-involved" className="text-sm">
-          <h2 id="footer-involved" className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-muted">
+          <h2 id="footer-involved" className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-ink-muted">
             Get involved
           </h2>
           <ul className="grid gap-2">
@@ -90,7 +82,7 @@ export function SiteFooter() {
             <li>
               <Link
                 href="/login"
-                className="rounded text-muted transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                className="rounded text-ink-muted transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
               >
                 Staff access
               </Link>
@@ -99,14 +91,14 @@ export function SiteFooter() {
         </nav>
 
         <div className="text-sm">
-          <h2 className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-muted">
+          <h2 className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-ink-muted">
             Safeguarding
           </h2>
           <p className="text-ink">
             If a child is at immediate risk, contact your local emergency or child-protection
             services <strong>first</strong>.
           </p>
-          <p className="mt-3 text-muted">
+          <p className="mt-3 text-ink-muted">
             Do not use website forms to report a child at risk. Our referral route goes through
             designated safeguarding officers —{" "}
             <Link href="/contact" className="rounded text-brand hover:underline">
@@ -118,11 +110,14 @@ export function SiteFooter() {
       </div>
 
       <div className="border-t border-line">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 px-5 py-6 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 px-5 py-6 text-xs text-ink-muted sm:flex-row sm:items-center sm:justify-between">
           <p>
             © {year} {siteConfig.legalName}. All rights reserved.
           </p>
-          <p>Registered non-profit organisation. Privacy and safeguarding policies apply.</p>
+          <p>
+            Registered non-profit organisation. Safeguarding policy applies to all our work with
+            children.
+          </p>
         </div>
       </div>
     </footer>

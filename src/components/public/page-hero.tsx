@@ -54,7 +54,7 @@ export function PageHero({ eyebrow, title, description, breadcrumb, children }: 
           {title}
         </h1>
         {description ? (
-          <p className="mt-5 max-w-2xl text-lg text-muted">{description}</p>
+          <p className="mt-5 max-w-2xl text-lg text-ink-muted">{description}</p>
         ) : null}
         {children ? <div className="mt-8 flex flex-wrap items-center gap-3">{children}</div> : null}
       </div>
@@ -81,7 +81,7 @@ export function Section({ id, title, description, action, children, className }:
             {title ? (
               <h2 className="text-3xl font-black tracking-tight text-brand">{title}</h2>
             ) : null}
-            {description ? <p className="mt-2 max-w-2xl text-muted">{description}</p> : null}
+            {description ? <p className="mt-2 max-w-2xl text-ink-muted">{description}</p> : null}
           </div>
           {action}
         </div>
