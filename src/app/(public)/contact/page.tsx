@@ -1,3 +1,4 @@
+import { Accessibility, Clock, Lock, TriangleAlert } from "lucide-react";
 import type { Metadata } from "next";
 
 import { EnquiryForm } from "@/components/public/enquiry-form";
@@ -11,14 +12,17 @@ export const metadata: Metadata = {
 
 const expectations = [
   {
+    icon: Clock,
     title: "What happens next",
     body: "Your message is stored in the enquiries queue. A staff member triages it, assigns an owner and replies using the contact details you provide.",
   },
   {
+    icon: Lock,
     title: "Your information",
     body: "We only ask for what we need to reply. Enquiries are kept separate from safeguarding casework and are never published.",
   },
   {
+    icon: Accessibility,
     title: "Accessibility",
     body: "If any part of this site is difficult to use, tell us and we will provide the information in another format.",
   },
@@ -38,18 +42,37 @@ export default function ContactPage() {
           <EnquiryForm kinds={["contact", "media", "other"]} title="Contact ISNESI" />
 
           <div className="grid content-start gap-4">
-            {expectations.map((item) => (
-              <div key={item.title} className="rounded-2xl border-2 border-line bg-white p-5">
-                <h2 className="font-display text-base font-extrabold text-brand">{item.title}</h2>
-                <p className="mt-2 text-sm text-ink-muted">{item.body}</p>
+            {expectations.map(({ icon: Icon, title, body }) => (
+              <div
+                key={title}
+                className="rounded-[1.75rem] border border-line bg-white p-6 shadow-[0_12px_40px_rgba(24,36,67,0.06)]"
+              >
+                <div className="flex items-center gap-3">
+                  <span
+                    aria-hidden="true"
+                    className="inline-grid size-10 shrink-0 place-items-center rounded-xl bg-brand-soft"
+                  >
+                    <Icon className="size-5 text-brand" />
+                  </span>
+                  <h2 className="font-display text-base font-extrabold text-brand">{title}</h2>
+                </div>
+                <p className="mt-3 text-sm leading-6 text-ink-muted">{body}</p>
               </div>
             ))}
 
-            <div className="rounded-2xl border-2 border-coral/40 bg-white p-5">
-              <h2 className="font-display text-base font-extrabold text-brand">
-                Reporting a concern about a child
-              </h2>
-              <p className="mt-2 text-sm text-ink-muted">
+            <div className="rounded-[1.75rem] border border-coral/40 bg-white p-6 shadow-[0_12px_40px_rgba(24,36,67,0.06)]">
+              <div className="flex items-center gap-3">
+                <span
+                  aria-hidden="true"
+                  className="inline-grid size-10 shrink-0 place-items-center rounded-xl bg-coral/15"
+                >
+                  <TriangleAlert aria-hidden="true" className="size-5 text-coral-strong" />
+                </span>
+                <h2 className="font-display text-base font-extrabold text-brand">
+                  Reporting a concern about a child
+                </h2>
+              </div>
+              <p className="mt-3 text-sm leading-6 text-ink-muted">
                 Do not use this form. Contact local emergency or child-protection services
                 immediately. ISNESI handles referrals through a separate, restricted channel with
                 authorised safeguarding officers.
