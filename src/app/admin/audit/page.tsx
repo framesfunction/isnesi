@@ -36,35 +36,27 @@ function Row({ event }: { event: AdminAuditEvent }) {
     : "—";
   return (
     <tr key={event.id} className="border-t border-line/70">
-      {" "}
       <td className="px-3 py-3 align-top text-[11px] font-mono text-ink-muted">
-        {" "}
-        {formatDateTime(event.createdAt)}{" "}
-      </td>{" "}
+        {formatDateTime(event.createdAt)}
+      </td>
       <td className="px-3 py-3 align-top text-sm font-bold text-ink">
-        {" "}
-        {event.action}{" "}
-      </td>{" "}
+        {event.action}
+      </td>
       <td className="px-3 py-3 align-top text-xs text-ink-muted">
-        {" "}
-        {event.tableName}{" "}
-      </td>{" "}
+        {event.tableName}
+      </td>
       <td className="px-3 py-3 align-top text-xs font-mono text-ink-muted">
-        {" "}
-        {event.recordId ?? "—"}{" "}
-      </td>{" "}
+        {event.recordId ?? "—"}
+      </td>
       <td className="px-3 py-3 align-top text-xs text-ink-muted">
-        {" "}
-        {event.actorId ?? "system"}{" "}
-      </td>{" "}
+        {event.actorId ?? "system"}
+      </td>
       <td className="px-3 py-3 align-top text-xs text-ink-muted">
-        {" "}
-        {oldJson}{" "}
-      </td>{" "}
+        {oldJson}
+      </td>
       <td className="px-3 py-3 align-top text-xs text-ink-muted">
-        {" "}
-        {newJson}{" "}
-      </td>{" "}
+        {newJson}
+      </td>
     </tr>
   );
 }

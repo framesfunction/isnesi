@@ -94,61 +94,48 @@ export default async function AdminProgrammesPage({
         />
       ) : (
         <Card className="border border-line">
-          {" "}
           <CardContent>
-            {" "}
             <DataTable columns={COLUMNS} caption="Programmes" isEmpty={false}>
-              {" "}
               {programmes.map((programme) => (
                 <tr key={programme.id} className="border-t border-line/70">
-                  {" "}
                   <td className="px-3 py-3 align-top">
-                    {" "}
                     <p className="font-bold text-ink">
-                      {" "}
-                      {programme.icon ? `${programme.icon} ` : ""}{" "}
-                      {programme.title ?? "(untitled)"}{" "}
-                    </p>{" "}
+                      {programme.icon ? `${programme.icon} ` : ""}
+                      {programme.title ?? "(untitled)"}
+                    </p>
                     <p className="font-mono text-xs text-ink-muted">
                       {programme.key}
-                    </p>{" "}
-                  </td>{" "}
+                    </p>
+                  </td>
                   <td className="px-3 py-3 align-top">
-                    {" "}
                     <div className="flex flex-wrap gap-1.5">
-                      {" "}
-                      <Badge variant="neutral">EN</Badge>{" "}
-                    </div>{" "}
-                  </td>{" "}
+                      <Badge variant="neutral">EN</Badge>
+                    </div>
+                  </td>
                   <td className="px-3 py-3 text-center align-top text-xs text-ink-muted">
-                    {" "}
-                    {programme.sortOrder}{" "}
-                  </td>{" "}
+                    {programme.sortOrder}
+                  </td>
                   <td className="px-3 py-3 align-top">
-                    {" "}
                     {programme.isActive ? (
                       <Badge variant="success">Active</Badge>
                     ) : (
                       <Badge variant="outline">Inactive</Badge>
-                    )}{" "}
-                  </td>{" "}
+                    )}
+                  </td>
                   <td className="px-3 py-3 align-top text-xs text-ink-muted">
-                    {" "}
-                    {formatDate(programme.updatedAt)}{" "}
-                  </td>{" "}
+                    {formatDate(programme.updatedAt)}
+                  </td>
                   <td className="px-3 py-3 text-right align-top">
-                    {" "}
                     <Link
                       href={`/admin/programmes/${programme.id}`}
                       className="font-bold text-brand hover:underline"
                     >
-                      {" "}
-                      Edit{" "}
-                    </Link>{" "}
-                  </td>{" "}
+                      Edit
+                    </Link>
+                  </td>
                 </tr>
-              ))}{" "}
-            </DataTable>{" "}
+              ))}
+            </DataTable>
           </CardContent>{" "}
         </Card>
       )}{" "}
