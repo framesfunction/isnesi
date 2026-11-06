@@ -373,6 +373,20 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"impact_metrics": {
+                  Row: {
+                    "approved_at": string | null,"created_at": string,"created_by": string | null,"currency": string | null,"description": string | null,"evidence_url": string | null,"id": string,"is_published": boolean,"key": string,"label": string,"reporting_period": string | null,"sort_order": number,"source_note": string | null,"unit": string,"updated_at": string,"updated_by": string | null,"value": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "approved_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"currency"?: string | null,"description"?: string | null,"evidence_url"?: string | null,"id"?: string,"is_published"?: boolean,"key": string,"label": string,"reporting_period"?: string | null,"sort_order"?: number,"source_note"?: string | null,"unit": string,"updated_at"?: string,"updated_by"?: string | null,"value": number
+                  }
+                  Update: {
+                    "approved_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"currency"?: string | null,"description"?: string | null,"evidence_url"?: string | null,"id"?: string,"is_published"?: boolean,"key"?: string,"label"?: string,"reporting_period"?: string | null,"sort_order"?: number,"source_note"?: string | null,"unit"?: string,"updated_at"?: string,"updated_by"?: string | null,"value"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"kids_resource_translations": {
                   Row: {
                     "content": NonNullable<Json>,"description": string | null,"locale": string,"resource_id": string,"title": string

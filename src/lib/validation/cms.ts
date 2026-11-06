@@ -199,6 +199,10 @@ export const saveContentSchema = z.object({
   seoTitleEn: optionalText,
   seoDescriptionEn: optionalText,
   bodyEnBlocks: blocksBody,
+  /** Present only when the editor submitted the taxonomy fieldset. */
+  taxonomyPresent: z.boolean().default(false),
+  categoryIds: z.array(z.string().uuid()).max(50).default([]),
+  tagIds: z.array(z.string().uuid()).max(50).default([]),
 });
 
 export const contentWorkflowSchema = z.object({
@@ -330,4 +334,69 @@ export const navigationItemReorderSchema = z.object({
   itemId: z.string().uuid(),
   direction: z.enum(["up", "down"]),
 });
+
+/* ----------------------------- Impact metrics ----------------------------- */
+
+export const IMPACT_METRIC_UNITS = ["count", "percentage", "currency"] as const;
+export type ImpactMetricUnitInput = (typeof IMPACT_METRIC_UNITS)[number];
+
+/** Optional ISO-4217 code: empty string normalises to `null`, otherwise upper-cased. */
+const metricCurrency = z
+  .string()
+  .trim()
+  .max(3)
+  .transform((value) => (value.length === 0 ? null : value.toUpperCase()))
+  .refine(
+    (value) => value === null || /^[A-Z]{3}$/.test(value),
+    "Use a three-letter currency code.",
+  );
+
+export const saveImpactMetricSchema = z
+  .object({
+    metricId: z.string().uuid().optional(),
+    key: slug,
+    label: z.string().trim().min(1, "Required.").max(TEXT_FIELD_MAX),
+    value: z.coerce
+      .number()
+      .refine((value) => Number.isFinite(value), "Enter a number.")
+      .min(0, "Figures cannot be negative.")
+      .max(1_000_000_000, "That figure is too large."),
+    unit: z.enum(IMPACT_METRIC_UNITS),
+    currency: metricCurrency,
+    description: optionalText,
+    sourceNote: optionalText,
+    evidenceUrl: optionalUrl,
+    reportingPeriod: optionalText,
+    sortOrder: z.coerce.number().int().min(0).max(999),
+    isPublished: z.boolean(),
+  })
+  .refine((metric) => metric.unit !== "currency" || metric.currency !== null, {
+    message: "Choose the currency for a currency figure.",
+    path: ["currency"],
+  });
+
+export const deleteImpactMetricSchema = z.object({ metricId: z.string().uuid() });
+
+export const impactMetricPublishSchema = z.object({
+  metricId: z.string().uuid(),
+  isPublished: z.boolean(),
+});
+
+/* ---------------------------- Categories & tags --------------------------- */
+
+export const saveCategorySchema = z.object({
+  categoryId: z.string().uuid().optional(),
+  key: slug,
+  labelEn: z.string().trim().min(1, "Required.").max(TEXT_FIELD_MAX),
+});
+
+export const saveTagSchema = z.object({
+  tagId: z.string().uuid().optional(),
+  key: slug,
+  labelEn: z.string().trim().min(1, "Required.").max(TEXT_FIELD_MAX),
+});
+
+export const deleteCategorySchema = z.object({ categoryId: z.string().uuid() });
+
+export const deleteTagSchema = z.object({ tagId: z.string().uuid() });
 

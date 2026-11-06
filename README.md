@@ -233,14 +233,25 @@ These are enforced in code, not just documented:
   geographic coverage and SEO metadata), Stories & news
   (full editorial workflow: draft → review → approval → scheduled/published,
   immutable revisions, independent approvals, re-approval on material change),
-  Partners (approval workflow, visibility gate) and Navigation (menus, items,
-  nesting, cycle guard, broken-link detection, visibility toggles and ordering).
+  Partners (approval workflow, visibility gate), Navigation (menus, items,
+  nesting, cycle guard, broken-link detection, visibility toggles and ordering)
+  and Categories & tags (terms authored once with an English label and a usage
+  count, then attached to a story from the editor).
 - Public: home (live programmes, stories, partners), programmes list and detail
   (summary, rich body, objectives, activities, beneficiaries, coverage, SEO),
-  stories list and detail with a safe structured-content renderer, partners,
-  Kids' Corner, donate (settings-driven, honest about the missing provider),
-  contact and get-involved enquiry flows, designed About and Impact pages (each
-  overridden by a matching published CMS page), 404 and error states.
+  a Stories & News index (featured spotlight, path-based type filters with live
+  counts, per-type routes that stay static, honest empty states) and story detail
+  (breadcrumb, category/tag chips, reading time, related stories, article
+  JSON-LD, safe structured-content renderer), partners, Kids' Corner, donate
+  (settings-driven, honest about the missing provider), a designed Get Involved
+  page (four ways to help, "what happens next", a safeguarding-first enquiry form
+  with an honest FAQ and ContactPage JSON-LD), the contact enquiry flow, designed
+  About and Impact pages (each overridden by a matching published CMS page), 404
+  and error states.
+- Impact metrics: an English-only, approval-gated `impact_metrics` table that the
+  public Impact page prefers over live record counts, managed from
+  Admin → Impact metrics (counts, percentages and currency, each with a source
+  and an evidence link).
 - PWA, SEO metadata, robots, sitemap, health endpoint.
 
 ## What is deliberately not built yet
@@ -261,14 +272,18 @@ These are enforced in code, not just documented:
 ```bash
 npm run typecheck   # clean
 npm run lint        # clean
-npm test            # 113 tests passing
+npm test            # 165 tests passing
 npm run build       # all routes build successfully
 ```
 
 Tests cover the pure permission logic (including inactive and missing subjects),
 the rate limiter and its key derivation, currency/date formatting, the Zod
-schemas (including the programme schema and redirect sanitiser), the
-media-library path/URL helpers and the navigation link-resolution rule.
+schemas (including the programme and impact-metric schemas and the redirect
+sanitiser), the media-library path/URL helpers, the Impact page's figure, metric
+value and JSON-LD builders, the Stories & News type labels, reading-time estimate
+and article JSON-LD builders, the enquiry type labels and ContactPage JSON-LD
+builder, the category/tag and content-taxonomy schemas, and the navigation
+link-resolution rule.
 Security-critical decisions such as "an inactive profile satisfies no permission"
 are asserted, not assumed.
 

@@ -85,6 +85,7 @@ This is a strong initial database baseline, not a complete production certificat
 | CMS | pages, page_translations, page_sections, site_settings, navigation_* |
 | Editorial | content_items, content_translations, content_revisions, content_approvals, categories, tags |
 | Programmes & partners | programmes, programme_translations, partners, partner_translations |
+| Impact | impact_metrics (English-only, approval-gated public figures) |
 | Media | media_assets, media_usage, Storage buckets |
 | General enquiries | general_enquiries, enquiry_notes |
 | Finance | donation_campaigns, donations, payment_events, donation_refunds, finance_reconciliations |

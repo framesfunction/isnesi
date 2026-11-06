@@ -61,6 +61,9 @@ export async function saveContentAction(
     seoTitleEn: formData.get("seoTitleEn") ?? "",
     seoDescriptionEn: formData.get("seoDescriptionEn") ?? "",
     bodyEnBlocks: parseBlocksField(formData.get("bodyEnBlocks")),
+    taxonomyPresent: formData.get("taxonomyPresent") === "1",
+    categoryIds: formData.getAll("categoryIds").map((value) => String(value)),
+    tagIds: formData.getAll("tagIds").map((value) => String(value)),
   });
   if (!parsed.success) {
     return actionError("Please correct the highlighted fields.", fieldErrors(parsed.error));
@@ -143,6 +146,42 @@ export async function saveContentAction(
     { onConflict: "content_id,locale" },
   );
   if (enError) return dbErrorMessage(enError, "content translation save");
+
+  // Categories and tags are replaced as a set, and only when the editor actually
+  // submitted the taxonomy fieldset: an author without `content.edit_any` never
+  // sees those controls, so their save must not silently clear the terms.
+  if (input.taxonomyPresent && user.permissions.includes("content.edit_any")) {
+    const { error: clearCategoriesError } = await supabase
+      .from("content_categories")
+      .delete()
+      .eq("content_id", contentId);
+    if (clearCategoriesError) return dbErrorMessage(clearCategoriesError, "content categories clear");
+
+    if (input.categoryIds.length > 0) {
+      const { error } = await supabase
+        .from("content_categories")
+        .insert(
+          input.categoryIds.map((categoryId) => ({
+            content_id: contentId,
+            category_id: categoryId,
+          })),
+        );
+      if (error) return dbErrorMessage(error, "content categories save");
+    }
+
+    const { error: clearTagsError } = await supabase
+      .from("content_tags")
+      .delete()
+      .eq("content_id", contentId);
+    if (clearTagsError) return dbErrorMessage(clearTagsError, "content tags clear");
+
+    if (input.tagIds.length > 0) {
+      const { error } = await supabase
+        .from("content_tags")
+        .insert(input.tagIds.map((tagId) => ({ content_id: contentId, tag_id: tagId })));
+      if (error) return dbErrorMessage(error, "content tags save");
+    }
+  }
 
   revalidateStories();
   const returnedToDraft =

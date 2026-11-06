@@ -20,6 +20,8 @@ export type AdminModuleKey =
   | "media"
   | "partners"
   | "navigation"
+  | "impact-metrics"
+  | "taxonomies"
   | "enquiries"
   | "safeguarding"
   | "donations"
@@ -220,6 +222,59 @@ export const ADMIN_MODULES: AdminModule[] = [
     security: [
       "Navigation cannot point at unpublished pages on the public site",
       "External links render with safe rel attributes",
+    ],
+  },
+  {
+    key: "impact-metrics",
+    label: "Impact metrics",
+    href: "/admin/impact-metrics",
+    icon: "trending-up",
+    group: "website",
+    description: "Approved figures published on the public Impact page",
+    permission: "pages.manage",
+    purpose:
+      "Approve and publish the impact figures shown to the public, each with a source and an approval record.",
+    tables: ["impact_metrics"],
+    capabilities: [
+      "Counts, percentages and currency figures with an explicit unit",
+      "Source note, reporting period and evidence link per figure",
+      "Publication requires an approval date; unpublishing removes it",
+      "Display order control for the public figure band",
+    ],
+    security: [
+      "A figure is public only when it is published AND approved",
+      "Unapproved or illustrative numbers can never be shown to visitors",
+      "Every create, change, publish and delete is audited",
+    ],
+  },
+  {
+    key: "taxonomies",
+    label: "Categories & tags",
+    href: "/admin/taxonomies",
+    icon: "tags",
+    group: "website",
+    description: "Reusable categories and tags applied to stories and news",
+    permission: "content.edit_any",
+    purpose:
+      "Author the categories and tags that group stories and news, and see where each one is used.",
+    tables: [
+      "categories",
+      "category_translations",
+      "tags",
+      "tag_translations",
+      "content_categories",
+      "content_tags",
+    ],
+    capabilities: [
+      "Create, rename and delete categories and tags",
+      "An English label per term plus a stable key for filtering",
+      "Usage count showing how many items reference each term",
+      "Attach categories and tags to a story from the story editor",
+    ],
+    security: [
+      "Only content.edit_any holders may author or attach terms",
+      "Deleting a term removes it from every item that used it",
+      "Terms are never applied to a story without an explicit selection",
     ],
   },
   {
