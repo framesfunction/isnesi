@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { ActionButton } from "@/components/admin/action-button";
 import { AdminPageHeader } from "@/components/admin/page-header";
 import { EmptyState } from "@/components/admin/empty-state";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAdminCampaign } from "@/features/newsletter/admin-queries";
+import { deleteCampaignAction } from "@/features/newsletter/actions";
 import { requirePermission } from "@/lib/auth/guards";
 import { formatDateTime } from "@/lib/format";
 
@@ -101,6 +103,35 @@ export default async function AdminNewsletterCampaignPage({
               ))}
             </ul>
           )}
+        </CardContent>
+      </Card>
+
+      <Card className="border border-coral/40">
+        <CardHeader>
+          <CardTitle className="font-display text-base font-extrabold text-brand">
+            Delete campaign
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-ink-muted">
+            Only draft or cancelled campaigns can be deleted. Deleting is
+            permanent.
+          </p>
+          <div className="mt-3">
+            <ActionButton
+              action={deleteCampaignAction}
+              hidden={{ campaignId: campaign.id }}
+              label="Delete campaign"
+              variant="danger"
+              disabled={!["draft", "cancelled"].includes(campaign.status)}
+              confirm={`Delete "${campaign.name}" permanently? This cannot be undone.`}
+            />
+          </div>
+          {!["draft", "cancelled"].includes(campaign.status) ? (
+            <p className="mt-2 text-xs text-ink-muted">
+              Cancel the campaign before deleting it.
+            </p>
+          ) : null}
         </CardContent>
       </Card>
     </div>

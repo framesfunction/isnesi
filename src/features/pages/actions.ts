@@ -24,6 +24,7 @@ import {
   parseBlocksField,
   repairNavigationLinks,
 } from "@/features/pages/helpers";
+import { deletePageSchema } from "@/lib/validation/cms";
 import type { Json } from "@/types/database";
 
 /**
@@ -439,4 +440,50 @@ export async function archivePageAction(_state: unknown, formData: FormData): Pr
   revalidatePath("/admin/pages");
   revalidatePath("/");
   return actionOk("Page archived. Navigation entries that pointed at it are hidden.");
+}
+
+/* -------------------------------- Delete page -------------------------------- */
+
+export async function deletePageAction(_state: unknown, formData: FormData): Promise<ActionResult> {
+  const user = await assertPermission("pages.manage");
+  if (!user) return actionForbidden();
+
+  if (!isSupabaseConfigured()) return actionNotConfigured();
+
+  const parsed = deletePageSchema.safeParse({ pageId: formData.get("pageId") });
+  if (!parsed.success) return actionError("Malformed request.");
+
+  const supabase = await createClient();
+
+  const { data: page } = await supabase
+    .from("pages")
+    .select("slug, show_in_navigation")
+    .eq("id", parsed.data.pageId)
+    .maybeSingle();
+  if (!page) return actionForbidden();
+
+  // A page that is referenced by navigation cannot be deleted: the cascade
+  // would silently sever menu entries. Archive instead.
+  const { count, error: navError } = await supabase
+    .from("navigation_items")
+    .select("id", { count: "exact", head: true })
+    .eq("href", "/" + page.slug);
+
+  if (navError) return dbErrorMessage(navError, "page navigation check");
+  if ((count ?? 0) > 0) {
+    return actionError(
+      "This page is referenced by a navigation menu. Remove those entries or archive the page instead.",
+    );
+  }
+
+  const { error } = await supabase.from("pages").delete().eq("id", parsed.data.pageId);
+  if (error) return dbErrorMessage(error, "page delete");
+
+  if (page.show_in_navigation) {
+    await repairNavigationLinks(supabase, page.slug, null);
+  }
+
+  revalidatePath("/admin/pages");
+  revalidatePath("/");
+  return actionOk("Page deleted.");
 }

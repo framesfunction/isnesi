@@ -11,7 +11,11 @@ import { createClient } from "@/lib/supabase/server";
 import {
   approveDonationRefundSchema,
   createDonationIntentSchema,
+  deleteDonationSchema,
   deleteDonationCampaignSchema,
+  deletePaymentEventSchema,
+  deleteReconciliationSchema,
+  deleteRefundSchema,
   requestDonationRefundSchema,
   saveDonationCampaignSchema,
   saveReconciliationSchema,
@@ -278,4 +282,131 @@ export async function approveDonationRefundAction(
 
   revalidatePath("/admin/donations");
   return actionOk("Refund approved.");
+}
+
+/* ---------------------------------- Delete ---------------------------------- */
+
+export async function deleteDonationAction(
+  _state: unknown,
+  formData: FormData,
+): Promise<ActionResult> {
+  const user = await assertPermission("donations.manage");
+  if (!user || !isSupabaseConfigured()) return actionNotConfigured();
+
+  const parsed = deleteDonationSchema.safeParse({ donationId: formData.get("donationId") });
+  if (!parsed.success) return actionError("Malformed request.");
+
+  const supabase = await createClient();
+
+  const { data: donation } = await supabase
+    .from("donations")
+    .select("id, payment_status")
+    .eq("id", parsed.data.donationId)
+    .maybeSingle();
+  if (!donation) return actionForbidden();
+
+  // Only created or failed donations can be deleted; succeeded ones must be refunded.
+  if (donation.payment_status === "succeeded") {
+    return actionError("Succeeded donations cannot be deleted. Issue a refund instead.");
+  }
+
+  const { error } = await supabase
+    .from("donations")
+    .delete()
+    .eq("id", parsed.data.donationId);
+  if (error) return dbErrorMessage(error, "donation delete");
+
+  revalidatePath("/admin/donations");
+  return actionOk("Donation deleted.");
+}
+
+export async function deleteRefundAction(
+  _state: unknown,
+  formData: FormData,
+): Promise<ActionResult> {
+  const user = await assertPermission("donations.manage");
+  if (!user || !isSupabaseConfigured()) return actionNotConfigured();
+
+  const parsed = deleteRefundSchema.safeParse({ refundId: formData.get("refundId") });
+  if (!parsed.success) return actionError("Malformed request.");
+
+  const supabase = await createClient();
+
+  const { data: refund } = await supabase
+    .from("donation_refunds")
+    .select("id, status")
+    .eq("id", parsed.data.refundId)
+    .maybeSingle();
+  if (!refund) return actionForbidden();
+
+  // Only requested or failed refunds can be deleted.
+  if (!["requested", "failed"].includes(refund.status)) {
+    return actionError("Only requested or failed refunds can be deleted.");
+  }
+
+  const { error } = await supabase
+    .from("donation_refunds")
+    .delete()
+    .eq("id", parsed.data.refundId);
+  if (error) return dbErrorMessage(error, "refund delete");
+
+  revalidatePath("/admin/donations");
+  return actionOk("Refund deleted.");
+}
+
+export async function deleteReconciliationAction(
+  _state: unknown,
+  formData: FormData,
+): Promise<ActionResult> {
+  const user = await assertPermission("donations.manage");
+  if (!user || !isSupabaseConfigured()) return actionNotConfigured();
+
+  const parsed = deleteReconciliationSchema.safeParse({
+    reconciliationId: formData.get("reconciliationId"),
+  });
+  if (!parsed.success) return actionError("Malformed request.");
+
+  const supabase = await createClient();
+
+  const { data: reconciliation } = await supabase
+    .from("finance_reconciliations")
+    .select("id, status")
+    .eq("id", parsed.data.reconciliationId)
+    .maybeSingle();
+  if (!reconciliation) return actionForbidden();
+
+  // Only open or disputed reconciliations can be deleted.
+  if (!["open", "disputed"].includes(reconciliation.status)) {
+    return actionError("Only open or disputed reconciliations can be deleted.");
+  }
+
+  const { error } = await supabase
+    .from("finance_reconciliations")
+    .delete()
+    .eq("id", parsed.data.reconciliationId);
+  if (error) return dbErrorMessage(error, "reconciliation delete");
+
+  revalidatePath("/admin/donations");
+  return actionOk("Reconciliation deleted.");
+}
+
+export async function deletePaymentEventAction(
+  _state: unknown,
+  formData: FormData,
+): Promise<ActionResult> {
+  const user = await assertPermission("donations.manage");
+  if (!user || !isSupabaseConfigured()) return actionNotConfigured();
+
+  const parsed = deletePaymentEventSchema.safeParse({ eventId: formData.get("eventId") });
+  if (!parsed.success) return actionError("Malformed request.");
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("payment_events")
+    .delete()
+    .eq("id", Number(parsed.data.eventId));
+  if (error) return dbErrorMessage(error, "payment event delete");
+
+  revalidatePath("/admin/donations");
+  return actionOk("Payment event deleted.");
 }

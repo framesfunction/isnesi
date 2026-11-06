@@ -10,6 +10,7 @@ import { isSupabaseConfigured } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 import {
   assignUserRoleSchema,
+  deleteProfileSchema,
   revokeUserRoleSchema,
   setUserActiveSchema,
   updateUserProfileSchema,
@@ -184,4 +185,43 @@ export async function updateUserProfileAction(
 
   revalidateUsers();
   return actionOk("User profile updated.");
+}
+
+/* ---------------------------------- Delete ---------------------------------- */
+
+export async function deleteProfileAction(
+  _state: unknown,
+  formData: FormData,
+): Promise<ActionResult> {
+  const user = await assertPermission("users.manage");
+  if (!user) return actionForbidden();
+
+  if (!isSupabaseConfigured()) return actionNotConfigured();
+
+  const parsed = deleteProfileSchema.safeParse({ userId: formData.get("userId") });
+  if (!parsed.success) return actionError("Malformed request.");
+
+  // An actor may not delete their own profile.
+  if (parsed.data.userId === user.id) {
+    return actionError("You cannot delete your own profile.");
+  }
+
+  const supabase = await createClient();
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id, is_active")
+    .eq("id", parsed.data.userId)
+    .maybeSingle();
+  if (!profile) return actionForbidden();
+
+  // Deactivate instead of hard delete: the auth user record is managed by Supabase Auth.
+  const { error } = await supabase
+    .from("profiles")
+    .update({ is_active: false })
+    .eq("id", parsed.data.userId);
+  if (error) return dbErrorMessage(error, "user profile delete");
+
+  revalidateUsers();
+  return actionOk("Account deactivated. Sessions are revoked.");
 }

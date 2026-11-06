@@ -48,3 +48,5 @@ export const inviteUserSchema = z.object({
   roleId: z.string().uuid(),
   expiresAt: optionalId,
 });
+
+export const deleteProfileSchema = z.object({ userId: z.string().uuid() });

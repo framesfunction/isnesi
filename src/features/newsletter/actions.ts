@@ -16,6 +16,9 @@ import type { NewsletterFormState } from "@/features/newsletter/state";
 import {
   campaignWorkflowSchema,
   consentRecordSchema,
+  deleteCampaignSchema,
+  deleteSegmentSchema,
+  deleteSubscriberSchema,
   saveCampaignSchema,
   segmentMembershipSchema,
   segmentSchema,
@@ -525,4 +528,97 @@ export async function scheduleCampaignAction(_state: unknown, formData: FormData
   return actionOk(
     "Campaign scheduled. Delivery runs through the newsletter provider once that integration is connected.",
   );
+}
+
+/* ---------------------------------- Delete ---------------------------------- */
+
+export async function deleteSubscriberAction(
+  _state: unknown,
+  formData: FormData,
+): Promise<ActionResult> {
+  const user = await assertPermission("newsletter.manage");
+  if (!user) return actionForbidden();
+
+  if (!isSupabaseConfigured()) return actionNotConfigured();
+
+  const parsed = deleteSubscriberSchema.safeParse({ subscriberId: formData.get("subscriberId") });
+  if (!parsed.success) return actionError("Malformed request.");
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("newsletter_subscribers")
+    .delete()
+    .eq("id", parsed.data.subscriberId);
+  if (error) return dbErrorMessage(error, "subscriber delete");
+
+  revalidateNewsletter(["/admin/newsletter"]);
+  return actionOk("Subscriber deleted.");
+}
+
+export async function deleteCampaignAction(
+  _state: unknown,
+  formData: FormData,
+): Promise<ActionResult> {
+  const user = await assertPermission("newsletter.manage");
+  if (!user) return actionForbidden();
+
+  if (!isSupabaseConfigured()) return actionNotConfigured();
+
+  const parsed = deleteCampaignSchema.safeParse({ campaignId: formData.get("campaignId") });
+  if (!parsed.success) return actionError("Malformed request.");
+
+  const supabase = await createClient();
+  const { data: campaign } = await supabase
+    .from("newsletter_campaigns")
+    .select("status")
+    .eq("id", parsed.data.campaignId)
+    .maybeSingle();
+  if (!campaign) return actionForbidden();
+
+  // Only draft or cancelled campaigns can be deleted.
+  if (!["draft", "cancelled"].includes(campaign.status)) {
+    return actionError("Only draft or cancelled campaigns can be deleted.");
+  }
+
+  const { error } = await supabase
+    .from("newsletter_campaigns")
+    .delete()
+    .eq("id", parsed.data.campaignId);
+  if (error) return dbErrorMessage(error, "campaign delete");
+
+  revalidateNewsletter(["/admin/newsletter/campaigns"]);
+  return actionOk("Campaign deleted.");
+}
+
+export async function deleteSegmentAction(
+  _state: unknown,
+  formData: FormData,
+): Promise<ActionResult> {
+  const user = await assertPermission("newsletter.manage");
+  if (!user) return actionForbidden();
+
+  if (!isSupabaseConfigured()) return actionNotConfigured();
+
+  const parsed = deleteSegmentSchema.safeParse({ segmentId: formData.get("segmentId") });
+  if (!parsed.success) return actionError("Malformed request.");
+
+  const supabase = await createClient();
+
+  // A segment that still has members cannot be deleted.
+  const { count } = await supabase
+    .from("newsletter_segment_members")
+    .select("subscriber_id", { count: "exact", head: true })
+    .eq("segment_id", parsed.data.segmentId);
+  if ((count ?? 0) > 0) {
+    return actionError("Remove all members from the segment before deleting it.");
+  }
+
+  const { error } = await supabase
+    .from("newsletter_segments")
+    .delete()
+    .eq("id", parsed.data.segmentId);
+  if (error) return dbErrorMessage(error, "segment delete");
+
+  revalidateNewsletter(["/admin/newsletter"]);
+  return actionOk("Segment deleted.");
 }

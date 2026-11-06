@@ -13,6 +13,10 @@ import { createClient } from "@/lib/supabase/server";
 import { enquirySchema, fieldErrors } from "@/lib/validation/enquiry";
 import {
   assignEnquirySchema,
+  deleteEnquiryAssignmentSchema,
+  deleteEnquiryMessageSchema,
+  deleteEnquiryNoteSchema,
+  deleteEnquirySchema,
   enquiryMessageSchema,
   enquiryNoteSchema,
   enquiryStatusSchema,
@@ -311,4 +315,113 @@ export async function recordEnquiryMessageAction(
       ? "Response recorded. Delivery through an email provider is not connected yet."
       : "Inbound message recorded.",
   );
+}
+
+/* ---------------------------------- Delete ---------------------------------- */
+
+export async function deleteEnquiryAction(
+  _state: unknown,
+  formData: FormData,
+): Promise<ActionResult> {
+  const user = await assertPermission("enquiries.manage");
+  if (!user) return actionForbidden();
+
+  if (!isSupabaseConfigured()) return actionNotConfigured();
+
+  const parsed = deleteEnquirySchema.safeParse({ enquiryId: formData.get("enquiryId") });
+  if (!parsed.success) return actionError("Malformed request.");
+
+  const supabase = await createClient();
+
+  const { data: enquiry } = await supabase
+    .from("general_enquiries")
+    .select("id, status")
+    .eq("id", parsed.data.enquiryId)
+    .maybeSingle();
+  if (!enquiry) return actionForbidden();
+
+  // Only closed or spam enquiries may be deleted; active ones must be closed first.
+  if (!["closed", "spam"].includes(enquiry.status)) {
+    return actionError("Close or mark the enquiry as spam before deleting it.");
+  }
+
+  const { error } = await supabase
+    .from("general_enquiries")
+    .delete()
+    .eq("id", parsed.data.enquiryId);
+  if (error) return dbErrorMessage(error, "enquiry delete");
+
+  revalidateEnquiries();
+  return actionOk("Enquiry deleted.");
+}
+
+export async function deleteEnquiryNoteAction(
+  _state: unknown,
+  formData: FormData,
+): Promise<ActionResult> {
+  const user = await assertPermission("enquiries.manage");
+  if (!user) return actionForbidden();
+
+  if (!isSupabaseConfigured()) return actionNotConfigured();
+
+  const parsed = deleteEnquiryNoteSchema.safeParse({ noteId: formData.get("noteId") });
+  if (!parsed.success) return actionError("Malformed request.");
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("enquiry_notes")
+    .delete()
+    .eq("id", parsed.data.noteId);
+  if (error) return dbErrorMessage(error, "enquiry note delete");
+
+  revalidateEnquiries();
+  return actionOk("Note deleted.");
+}
+
+export async function deleteEnquiryMessageAction(
+  _state: unknown,
+  formData: FormData,
+): Promise<ActionResult> {
+  const user = await assertPermission("enquiries.manage");
+  if (!user) return actionForbidden();
+
+  if (!isSupabaseConfigured()) return actionNotConfigured();
+
+  const parsed = deleteEnquiryMessageSchema.safeParse({ messageId: formData.get("messageId") });
+  if (!parsed.success) return actionError("Malformed request.");
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("enquiry_messages")
+    .delete()
+    .eq("id", parsed.data.messageId);
+  if (error) return dbErrorMessage(error, "enquiry message delete");
+
+  revalidateEnquiries();
+  return actionOk("Message deleted.");
+}
+
+export async function deleteEnquiryAssignmentAction(
+  _state: unknown,
+  formData: FormData,
+): Promise<ActionResult> {
+  const user = await assertPermission("enquiries.manage");
+  if (!user) return actionForbidden();
+
+  if (!isSupabaseConfigured()) return actionNotConfigured();
+
+  const parsed = deleteEnquiryAssignmentSchema.safeParse({
+    assignmentId: formData.get("assignmentId"),
+  });
+  if (!parsed.success) return actionError("Malformed request.");
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("enquiry_assignments")
+    .delete()
+    .eq("id", parsed.data.assignmentId);
+  if (error) return dbErrorMessage(error, "enquiry assignment delete");
+
+  revalidateEnquiries();
+  return actionOk("Assignment record deleted.");
 }

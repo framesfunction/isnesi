@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { ActionButton } from "@/components/admin/action-button";
 import { ActionForm } from "@/components/admin/action-form";
 import { AdminPageHeader } from "@/components/admin/page-header";
 import { EmptyState } from "@/components/admin/empty-state";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
+  deleteProfileAction,
   setUserActiveAction,
   updateUserProfileAction,
 } from "@/features/users/actions";
@@ -212,6 +214,29 @@ export default async function AdminUserDetailPage({
             {user.roleGrants.length === 0 && (
               <p className="text-xs text-ink-muted">No role grants assigned.</p>
             )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border border-coral/40">
+        <CardHeader>
+          <CardTitle className="font-display text-base font-extrabold text-brand">
+            Delete account
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-ink-muted">
+            Deactivating the account revokes sessions and blocks future sign-in.
+            The profile is preserved for audit purposes.
+          </p>
+          <div className="mt-3">
+            <ActionButton
+              action={deleteProfileAction}
+              hidden={{ userId: user.id }}
+              label="Deactivate account"
+              variant="danger"
+              confirm={`Deactivate ${user.displayName ?? user.email ?? "this account"}? Sessions will be revoked.`}
+            />
           </div>
         </CardContent>
       </Card>

@@ -59,6 +59,14 @@ export const enquiryMessageSchema = z.object({
   body: z.string().trim().min(1, "Write the message.").max(20000),
 });
 
+export const deleteEnquiryNoteSchema = z.object({ noteId: z.string().uuid() });
+
+export const deleteEnquiryMessageSchema = z.object({ messageId: z.string().uuid() });
+
+export const deleteEnquiryAssignmentSchema = z.object({ assignmentId: z.string().uuid() });
+
+export const deleteEnquirySchema = z.object({ enquiryId: z.string().uuid() });
+
 /* ------------------------------- Newsletter -------------------------------- */
 
 export const SUBSCRIBER_STATUSES = [
@@ -110,3 +118,9 @@ export const campaignWorkflowSchema = z.object({
   campaignId: z.string().uuid(),
   action: z.enum(["approve", "cancel"]),
 });
+
+export const deleteSubscriberSchema = z.object({ subscriberId: z.string().uuid() });
+
+export const deleteCampaignSchema = z.object({ campaignId: z.string().uuid() });
+
+export const deleteSegmentSchema = z.object({ segmentId: z.string().uuid() });

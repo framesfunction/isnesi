@@ -113,6 +113,14 @@ export const saveReconciliationSchema = z.object({
   notes: optionalText(1000),
 });
 
+export const deleteDonationSchema = z.object({ donationId: z.string().uuid() });
+
+export const deleteRefundSchema = z.object({ refundId: z.string().uuid() });
+
+export const deleteReconciliationSchema = z.object({ reconciliationId: z.string().uuid() });
+
+export const deletePaymentEventSchema = z.object({ eventId: z.string().trim().min(1) });
+
 /* ------------------------------ Payment intents --------------------------- */
 
 export const createDonationIntentSchema = z.object({

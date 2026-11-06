@@ -382,6 +382,14 @@ export const impactMetricPublishSchema = z.object({
   isPublished: z.boolean(),
 });
 
+/* ------------------------------- Pages ------------------------------------ */
+
+export const deletePageSchema = z.object({ pageId: z.string().uuid() });
+
+/* ------------------------------- Stories ---------------------------------- */
+
+export const deleteContentSchema = z.object({ contentId: z.string().uuid() });
+
 /* ---------------------------- Categories & tags --------------------------- */
 
 export const saveCategorySchema = z.object({

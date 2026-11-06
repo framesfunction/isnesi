@@ -19,6 +19,7 @@ import {
 } from "@/features/pages/admin-queries";
 import {
   archivePageAction,
+  deletePageAction,
   deleteSectionAction,
   publishPageAction,
   reorderSectionAction,
@@ -276,6 +277,29 @@ export default async function AdminPageEditorPage({
                 the content.publish permission.
               </p>
             )}
+          </CardContent>
+        </Card>
+
+        <Card className="mt-6 border border-coral/40">
+          <CardHeader>
+            <CardTitle className="font-display text-base font-extrabold text-brand">
+              Delete page
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-ink-muted">
+              Deleting is permanent. Pages referenced by navigation cannot be
+              deleted — archive them instead.
+            </p>
+            <div className="mt-3">
+              <ActionButton
+                action={deletePageAction}
+                hidden={{ pageId: page.id }}
+                label="Delete page"
+                variant="danger"
+                confirm={`Delete "${page.title ?? page.slug}" permanently? This cannot be undone.`}
+              />
+            </div>
           </CardContent>
         </Card>
 

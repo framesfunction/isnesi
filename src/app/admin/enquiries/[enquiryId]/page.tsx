@@ -16,6 +16,10 @@ import {
 import {
   addEnquiryNoteAction,
   assignEnquiryAction,
+  deleteEnquiryAction,
+  deleteEnquiryAssignmentAction,
+  deleteEnquiryMessageAction,
+  deleteEnquiryNoteAction,
   recordEnquiryMessageAction,
   updateEnquiryStatusAction,
 } from "@/features/enquiries/actions";
@@ -184,13 +188,20 @@ export default async function AdminEnquiryDetailPage({
                 </p>
                 <ul className="space-y-1.5 text-xs text-ink-muted">
                   {enquiry.assignments.map((assignment) => (
-                    <li key={assignment.id}>
+                    <li key={assignment.id} className="flex items-center justify-between gap-2">
                       <span className="font-mono text-[10px]">
                         {assignment.assignedFrom ?? "unassigned"} →{" "}
                         {assignment.assignedTo}
                       </span>{" "}
                       - {formatDateTime(assignment.assignedAt)}
                       {assignment.reason ? ` - ${assignment.reason}` : ""}
+                      <ActionButton
+                        action={deleteEnquiryAssignmentAction}
+                        hidden={{ assignmentId: assignment.id }}
+                        label="Delete"
+                        variant="danger"
+                        confirm="Delete this assignment record?"
+                      />
                     </li>
                   ))}
                 </ul>
@@ -218,23 +229,32 @@ export default async function AdminEnquiryDetailPage({
                     key={message.id}
                     className="rounded-xl border border-line bg-white p-4"
                   >
-                    <div className="flex flex-wrap items-center gap-2 text-xs">
-                      <Badge
-                        variant={
-                          message.direction === "outbound"
-                            ? "success"
-                            : "neutral"
-                        }
-                      >
-                        {message.direction}
-                      </Badge>
-                      <span className="text-ink-muted">{message.channel}</span>
-                      <span className="text-ink-muted">
-                        {message.deliveryStatus}
-                      </span>
-                      <span className="text-ink-muted">
-                        {formatDateTime(message.sentAt)}
-                      </span>
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge
+                          variant={
+                            message.direction === "outbound"
+                              ? "success"
+                              : "neutral"
+                          }
+                        >
+                          {message.direction}
+                        </Badge>
+                        <span className="text-ink-muted">{message.channel}</span>
+                        <span className="text-ink-muted">
+                          {message.deliveryStatus}
+                        </span>
+                        <span className="text-ink-muted">
+                          {formatDateTime(message.sentAt)}
+                        </span>
+                      </div>
+                      <ActionButton
+                        action={deleteEnquiryMessageAction}
+                        hidden={{ messageId: message.id }}
+                        label="Delete"
+                        variant="danger"
+                        confirm="Delete this message?"
+                      />
                     </div>
                     {message.body ? (
                       <p className="mt-2 whitespace-pre-wrap text-sm text-ink">
@@ -313,6 +333,13 @@ export default async function AdminEnquiryDetailPage({
                       {formatDateTime(note.createdAt)} -{" "}
                       {note.authorId ?? "unknown author"}
                     </p>
+                    <ActionButton
+                      action={deleteEnquiryNoteAction}
+                      hidden={{ noteId: note.id }}
+                      label="Delete"
+                      variant="danger"
+                      confirm="Delete this note?"
+                    />
                   </li>
                 ))}
               </ul>
@@ -332,6 +359,35 @@ export default async function AdminEnquiryDetailPage({
                 </label>
               </ActionForm>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border border-coral/40">
+          <CardHeader>
+            <CardTitle className="font-display text-base font-extrabold text-brand">
+              Delete enquiry
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-ink-muted">
+              Only closed or spam enquiries can be deleted. Deleting is permanent
+              and removes the enquiry, its notes, messages and assignment history.
+            </p>
+            <div className="mt-3">
+              <ActionButton
+                action={deleteEnquiryAction}
+                hidden={{ enquiryId: enquiry.id }}
+                label="Delete enquiry"
+                variant="danger"
+                disabled={!["closed", "spam"].includes(enquiry.status)}
+                confirm={`Delete enquiry "${enquiry.referenceCode}" permanently? This cannot be undone.`}
+              />
+            </div>
+            {!["closed", "spam"].includes(enquiry.status) ? (
+              <p className="mt-2 text-xs text-ink-muted">
+                Close or mark this enquiry as spam before deleting it.
+              </p>
+            ) : null}
           </CardContent>
         </Card>
       </div>

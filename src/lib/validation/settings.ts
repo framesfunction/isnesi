@@ -11,3 +11,5 @@ export const saveSiteSettingSchema = z.object({
   value: z.string().trim(),
   isPublic: z.boolean(),
 });
+
+export const deleteSiteSettingSchema = z.object({ key: z.string().trim().min(1, "Required.") });

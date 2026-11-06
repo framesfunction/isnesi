@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { ActionButton } from "@/components/admin/action-button";
 import { ActionForm } from "@/components/admin/action-form";
 import { AdminPageHeader } from "@/components/admin/page-header";
 import { EmptyState } from "@/components/admin/empty-state";
@@ -10,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import {
+  deleteKidsResourceAction,
   reviewKidsResourceAction,
   saveKidsResourceAction,
 } from "@/features/kids/actions";
@@ -271,6 +273,28 @@ export default async function AdminKidsResourceDetailPage({
               </p>
             </>
           )}
+        </CardContent>
+      </Card>
+
+      <Card className="border border-coral/40">
+        <CardHeader>
+          <CardTitle className="font-display text-base font-extrabold text-brand">
+            Delete resource
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-ink-muted">
+            Deleting is permanent and removes the resource and its translations.
+          </p>
+          <div className="mt-3">
+            <ActionButton
+              action={deleteKidsResourceAction}
+              hidden={{ resourceId: resource.id }}
+              label="Delete resource"
+              variant="danger"
+              confirm={`Delete "${resource.title ?? "(untitled)"}" permanently? This cannot be undone.`}
+            />
+          </div>
         </CardContent>
       </Card>
 

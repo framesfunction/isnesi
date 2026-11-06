@@ -20,6 +20,7 @@ import { getAdminContent } from "@/features/editorial/admin-queries";
 import { listTaxonomyOptions } from "@/features/taxonomy/admin-queries";
 import {
   archiveContentAction,
+  deleteContentAction,
   publishContentAction,
   reviewContentAction,
   saveContentAction,
@@ -175,6 +176,29 @@ export default async function AdminContentEditorPage({
                 re-approval.
               </p>
             ) : null}
+          </CardContent>
+        </Card>
+
+        <Card className="mt-6 border border-coral/40">
+          <CardHeader>
+            <CardTitle className="font-display text-base font-extrabold text-brand">
+              Delete content
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-ink-muted">
+              Deleting is permanent. Published items must be unpublished or
+              archived first.
+            </p>
+            <div className="mt-3">
+              <ActionButton
+                action={deleteContentAction}
+                hidden={{ contentId: item.id }}
+                label="Delete content"
+                variant="danger"
+                confirm={`Delete "${item.title ?? item.slug}" permanently? This cannot be undone.`}
+              />
+            </div>
           </CardContent>
         </Card>
 

@@ -8,7 +8,7 @@ import { dbErrorMessage } from "@/lib/admin/db-error";
 import { assertPermission } from "@/lib/auth/guards";
 import { isSupabaseConfigured } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
-import { saveSiteSettingSchema } from "@/lib/validation/settings";
+import { deleteSiteSettingSchema, saveSiteSettingSchema } from "@/lib/validation/settings";
 import { fieldErrors } from "@/lib/validation/form";
 
 function revalidateSettings(): void {
@@ -54,4 +54,36 @@ export async function saveSiteSettingAction(
 
   revalidateSettings();
   return actionOk("Setting saved.");
+}
+
+/* ---------------------------------- Delete ---------------------------------- */
+
+export async function deleteSiteSettingAction(
+  _state: unknown,
+  formData: FormData,
+): Promise<ActionResult> {
+  const user = await assertPermission("settings.manage");
+  if (!user) return actionForbidden();
+
+  if (!isSupabaseConfigured()) return actionNotConfigured();
+
+  const parsed = deleteSiteSettingSchema.safeParse({ key: formData.get("key") });
+  if (!parsed.success) return actionError("Malformed request.");
+
+  // Protect core settings from deletion.
+  const protectedKeys = ["organisation", "locales", "donation"];
+  if (protectedKeys.includes(parsed.data.key)) {
+    return actionError("This setting cannot be deleted.");
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("site_settings")
+    .delete()
+    .eq("key", parsed.data.key);
+  if (error) return dbErrorMessage(error, "site setting delete");
+
+  revalidateSettings();
+  revalidatePath("/");
+  return actionOk("Setting deleted.");
 }

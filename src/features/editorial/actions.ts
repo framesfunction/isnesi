@@ -10,7 +10,7 @@ import { assertPermission } from "@/lib/auth/guards";
 import { isSupabaseConfigured } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 import { parseBlocksField } from "@/lib/validation/blocks";
-import { contentWorkflowSchema, saveContentSchema } from "@/lib/validation/cms";
+import { contentWorkflowSchema, deleteContentSchema, saveContentSchema } from "@/lib/validation/cms";
 import { fieldErrors } from "@/lib/validation/form";
 import type { Database } from "@/types/database";
 
@@ -400,4 +400,42 @@ export async function archiveContentAction(_state: unknown, formData: FormData):
 
   revalidateStories();
   return actionOk("Archived. It is no longer shown publicly and stays out of the workflow.");
+}
+
+/* -------------------------------- Delete content -------------------------------- */
+
+export async function deleteContentAction(
+  _state: unknown,
+  formData: FormData,
+): Promise<ActionResult> {
+  const user = await assertPermission("content.edit_any");
+  if (!user) return actionForbidden();
+
+  if (!isSupabaseConfigured()) return actionNotConfigured();
+
+  const parsed = deleteContentSchema.safeParse({ contentId: formData.get("contentId") });
+  if (!parsed.success) return actionError("Malformed request.");
+
+  const supabase = await createClient();
+
+  const { data: item } = await supabase
+    .from("content_items")
+    .select("status, slug")
+    .eq("id", parsed.data.contentId)
+    .maybeSingle();
+  if (!item) return actionForbidden();
+
+  // Published items must be unpublished first; deletion is permanent.
+  if (item.status === "published") {
+    return actionError("Unpublish this item before deleting it.");
+  }
+
+  const { error } = await supabase
+    .from("content_items")
+    .delete()
+    .eq("id", parsed.data.contentId);
+  if (error) return dbErrorMessage(error, "content delete");
+
+  revalidateStories();
+  return actionOk("Content deleted.");
 }
