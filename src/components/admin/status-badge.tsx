@@ -10,7 +10,8 @@ export const CONTENT_STATUS_LABELS: Record<string, string> = {
   archived: "Archived",
 };
 
-export type BadgeVariant = "default" | "success" | "warning" | "danger" | "neutral" | "outline";
+export type BadgeVariant =
+  "default" | "success" | "warning" | "danger" | "neutral" | "outline";
 
 export const STATUS_VARIANTS: Record<string, BadgeVariant> = {
   draft: "neutral",
@@ -57,9 +58,5 @@ export function StatusBadge({
   status: string;
   labels?: Record<string, string>;
 }) {
-  return (
-    <Badge variant={variantFor(status)}>
-      {labels[status] ?? status}
-    </Badge>
-  );
+  return <Badge variant={variantFor(status)}>{labels[status] ?? status}</Badge>;
 }

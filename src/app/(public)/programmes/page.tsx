@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
+import { EmptyNote } from "@/components/public/empty-note";
 import { PageHero, Section } from "@/components/public/page-hero";
 import { listProgrammes } from "@/features/programmes/queries";
 
@@ -27,13 +28,10 @@ export default async function ProgrammesPage() {
 
       <Section>
         {programmes.length === 0 ? (
-          <div className="rounded-3xl border-2 border-dashed border-line bg-white p-8">
-            <h2 className="text-xl font-black text-brand">No programmes published</h2>
-            <p className="mt-2 max-w-2xl text-sm text-ink-muted">
-              Programme information is loaded from the database. Publish or activate programmes from
-              Admin → Programmes and they will appear here within a few minutes.
-            </p>
-          </div>
+          <EmptyNote title="No programmes published">
+            Programme information is loaded from the database. Publish or activate programmes from
+            Admin &rarr; Programmes and they will appear here within a few minutes.
+          </EmptyNote>
         ) : (
           <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {programmes.map((programme, index) => (

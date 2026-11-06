@@ -39,7 +39,11 @@ export function ListToolbar({
   submitLabel?: string;
 }) {
   return (
-    <form method="get" action={action} className="flex flex-wrap items-end gap-3">
+    <form
+      method="get"
+      action={action}
+      className="flex flex-wrap items-end gap-3"
+    >
       {Object.entries(hidden).map(([name, value]) => (
         <input key={name} type="hidden" name={name} value={value} />
       ))}
@@ -59,7 +63,11 @@ export function ListToolbar({
               className="min-h-10 w-64 max-w-full"
             />
           ) : (
-            <Select name={filter.name} defaultValue={filter.value} className="min-h-10 w-48">
+            <Select
+              name={filter.name}
+              defaultValue={filter.value}
+              className="min-h-10 w-48"
+            >
               {filter.options.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}

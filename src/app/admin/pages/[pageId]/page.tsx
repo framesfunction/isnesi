@@ -4,9 +4,7 @@ import { notFound } from "next/navigation";
 
 import { ActionButton } from "@/components/admin/action-button";
 import { ActionForm } from "@/components/admin/action-form";
-import {
-  AdminPageHeader,
-} from "@/components/admin/page-header";
+import { AdminPageHeader } from "@/components/admin/page-header";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { EmptyState } from "@/components/admin/empty-state";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +13,10 @@ import { PAGE_TYPES } from "@/lib/validation/cms";
 import { requirePermission } from "@/lib/auth/guards";
 import { getCurrentUser } from "@/lib/auth/session";
 import { can } from "@/lib/permissions/can";
-import { getAdminPage, type AdminPageSection } from "@/features/pages/admin-queries";
+import {
+  getAdminPage,
+  type AdminPageSection,
+} from "@/features/pages/admin-queries";
 import {
   archivePageAction,
   deleteSectionAction,
@@ -38,21 +39,30 @@ const JSON_PLACEHOLDER = '[{ "type": "paragraph", "text": "Section content" }]';
 const FIELD_LABELS =
   "flex flex-col gap-1.5 text-xs font-black uppercase tracking-[0.12em] text-ink-muted";
 
-const INPUT_CLASS = "min-h-10 rounded-xl border-2 border-line bg-white px-3 text-sm text-ink";
+const INPUT_CLASS =
+  "min-h-10 rounded-xl border border-line bg-white px-3 text-sm text-ink";
 const TEXTAREA_CLASS =
-  "rounded-xl border-2 border-line bg-white px-3 py-2 font-mono text-xs text-ink";
+  "rounded-xl border border-line bg-white px-3 py-2 font-mono text-xs text-ink";
 
 function blocksJson(body: unknown): string {
   const blocks = extractBlocks(body);
   return JSON.stringify(blocks ?? [], null, 2);
 }
 
-function SectionCard({ pageId, section, order }: { pageId: string; section: AdminPageSection; order: number }) {
+function SectionCard({
+  pageId,
+  section,
+  order,
+}: {
+  pageId: string;
+  section: AdminPageSection;
+  order: number;
+}) {
   const isText = section.sectionType === "text";
   const config = section.config;
 
   return (
-    <Card className="border-2 border-line">
+    <Card className="border border-line">
       <CardHeader>
         <CardTitle className="flex flex-wrap items-center gap-3 font-display text-sm font-extrabold text-brand">
           <span>#{section.sortOrder}</span>
@@ -88,7 +98,12 @@ function SectionCard({ pageId, section, order }: { pageId: string; section: Admi
             </label>
             <label className={FIELD_LABELS}>
               <span>Sort order</span>
-              <input type="number" name="sortOrder" defaultValue={section.sortOrder} className={INPUT_CLASS} />
+              <input
+                type="number"
+                name="sortOrder"
+                defaultValue={section.sortOrder}
+                className={INPUT_CLASS}
+              />
             </label>
             <label className={`${FIELD_LABELS} justify-start`}>
               <span>Enabled</span>
@@ -96,7 +111,7 @@ function SectionCard({ pageId, section, order }: { pageId: string; section: Admi
                 type="checkbox"
                 name="isEnabled"
                 defaultChecked={section.isEnabled}
-                className="size-5 rounded border-2 border-line"
+                className="size-5 rounded border border-line"
               />
             </label>
           </div>
@@ -109,8 +124,9 @@ function SectionCard({ pageId, section, order }: { pageId: string; section: Admi
                   type="text"
                   name="heading"
                   defaultValue={
-                    typeof (config as { heading?: unknown })?.heading === "string"
-                      ? ((config as { heading: string }).heading)
+                    typeof (config as { heading?: unknown })?.heading ===
+                    "string"
+                      ? (config as { heading: string }).heading
                       : ""
                   }
                   className={INPUT_CLASS}
@@ -126,7 +142,7 @@ function SectionCard({ pageId, section, order }: { pageId: string; section: Admi
                       ? (config as { text: string }).text
                       : ""
                   }
-                  className="rounded-xl border-2 border-line bg-white px-3 py-2 text-sm text-ink"
+                  className="rounded-xl border border-line bg-white px-3 py-2 text-sm text-ink"
                 />
               </label>
             </div>
@@ -160,7 +176,11 @@ function SectionCard({ pageId, section, order }: { pageId: string; section: Admi
           />
           <ActionButton
             action={toggleSectionVisibilityAction}
-            hidden={{ pageId, sectionId: section.id, isEnabled: !section.isEnabled }}
+            hidden={{
+              pageId,
+              sectionId: section.id,
+              isEnabled: !section.isEnabled,
+            }}
             label={section.isEnabled ? "Hide" : "Show"}
           />
           <ActionButton
@@ -208,15 +228,20 @@ export default async function AdminPageEditorPage({
       />
 
       <p className="mb-6 text-xs text-ink-muted">
-        <Link href="/admin/pages" className="font-bold text-brand hover:underline">
+        <Link
+          href="/admin/pages"
+          className="font-bold text-brand hover:underline"
+        >
           Back to all pages
         </Link>
-          {" - "}Updated {formatDateTime(page.updatedAt)}
-        {page.publishedAt ? ` - Published ${formatDateTime(page.publishedAt)}` : ""}
+        {" - "}Updated {formatDateTime(page.updatedAt)}
+        {page.publishedAt
+          ? ` - Published ${formatDateTime(page.publishedAt)}`
+          : ""}
       </p>
 
       <div className="space-y-8">
-        <Card className="border-2 border-brand/30">
+        <Card className="border border-brand/30">
           <CardHeader>
             <CardTitle className="font-display text-base font-extrabold text-brand">
               Publication
@@ -247,14 +272,14 @@ export default async function AdminPageEditorPage({
               </div>
             ) : (
               <p className="text-xs text-ink-muted">
-                Editing is available with your permissions; publishing requires the
-                content.publish permission.
+                Editing is available with your permissions; publishing requires
+                the content.publish permission.
               </p>
             )}
           </CardContent>
         </Card>
 
-        <Card className="border-2 border-line">
+        <Card className="border border-line">
           <CardHeader>
             <CardTitle className="font-display text-base font-extrabold text-brand">
               Page details & translations
@@ -267,11 +292,21 @@ export default async function AdminPageEditorPage({
               <div className="grid gap-4 sm:grid-cols-3">
                 <label className={FIELD_LABELS}>
                   <span>Slug</span>
-                  <input type="text" name="slug" defaultValue={page.slug} required className={INPUT_CLASS} />
+                  <input
+                    type="text"
+                    name="slug"
+                    defaultValue={page.slug}
+                    required
+                    className={INPUT_CLASS}
+                  />
                 </label>
                 <label className={FIELD_LABELS}>
                   <span>Page type</span>
-                  <select name="pageType" defaultValue={page.pageType} className={INPUT_CLASS}>
+                  <select
+                    name="pageType"
+                    defaultValue={page.pageType}
+                    className={INPUT_CLASS}
+                  >
                     {PAGE_TYPES.map((type) => (
                       <option key={type} value={type}>
                         {type}
@@ -281,7 +316,12 @@ export default async function AdminPageEditorPage({
                 </label>
                 <label className={FIELD_LABELS}>
                   <span>Sort order</span>
-                  <input type="number" name="sortOrder" defaultValue={page.sortOrder} className={INPUT_CLASS} />
+                  <input
+                    type="number"
+                    name="sortOrder"
+                    defaultValue={page.sortOrder}
+                    className={INPUT_CLASS}
+                  />
                 </label>
               </div>
 
@@ -291,7 +331,7 @@ export default async function AdminPageEditorPage({
                   type="checkbox"
                   name="showInNavigation"
                   defaultChecked={page.showInNavigation}
-                  className="size-5 rounded border-2 border-line"
+                  className="size-5 rounded border border-line"
                 />
               </label>
 
@@ -299,17 +339,33 @@ export default async function AdminPageEditorPage({
                 <div className="grid gap-4 sm:grid-cols-2">
                   <label className={FIELD_LABELS}>
                     <span>Title</span>
-                    <input type="text" name="titleEn" defaultValue={page.title} required className={INPUT_CLASS} />
+                    <input
+                      type="text"
+                      name="titleEn"
+                      defaultValue={page.title}
+                      required
+                      className={INPUT_CLASS}
+                    />
                   </label>
                   <label className={FIELD_LABELS}>
                     <span>Excerpt</span>
-                    <input type="text" name="excerptEn" defaultValue={page.excerpt ?? ""} className={INPUT_CLASS} />
+                    <input
+                      type="text"
+                      name="excerptEn"
+                      defaultValue={page.excerpt ?? ""}
+                      className={INPUT_CLASS}
+                    />
                   </label>
                 </div>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                   <label className={FIELD_LABELS}>
                     <span>SEO title</span>
-                    <input type="text" name="seoTitleEn" defaultValue={page.seoTitle ?? ""} className={INPUT_CLASS} />
+                    <input
+                      type="text"
+                      name="seoTitleEn"
+                      defaultValue={page.seoTitle ?? ""}
+                      className={INPUT_CLASS}
+                    />
                   </label>
                   <label className={FIELD_LABELS}>
                     <span>SEO description</span>
@@ -340,7 +396,9 @@ export default async function AdminPageEditorPage({
 
         <div>
           <div className="mb-3 flex items-center gap-3">
-            <h2 className="font-display text-lg font-extrabold text-brand">Sections</h2>
+            <h2 className="font-display text-lg font-extrabold text-brand">
+              Sections
+            </h2>
             <Badge variant="neutral">{page.sections.length}</Badge>
           </div>
 
@@ -352,13 +410,18 @@ export default async function AdminPageEditorPage({
               />
             ) : (
               page.sections.map((section, index) => (
-                <SectionCard key={section.id} pageId={page.id} section={section} order={index} />
+                <SectionCard
+                  key={section.id}
+                  pageId={page.id}
+                  section={section}
+                  order={index}
+                />
               ))
             )}
           </div>
         </div>
 
-        <Card className="border-2 border-dashed border-line">
+        <Card className="border border-dashed border-line">
           <CardHeader>
             <CardTitle className="font-display text-base font-extrabold text-brand">
               Add a section
@@ -371,14 +434,24 @@ export default async function AdminPageEditorPage({
               <div className="grid gap-4 sm:grid-cols-3">
                 <label className={FIELD_LABELS}>
                   <span>Type</span>
-                  <select name="kind" defaultValue="text" className={INPUT_CLASS}>
+                  <select
+                    name="kind"
+                    defaultValue="text"
+                    className={INPUT_CLASS}
+                  >
                     <option value="text">text</option>
                     <option value="blocks">blocks</option>
                   </select>
                 </label>
                 <label className={FIELD_LABELS}>
                   <span>Section key</span>
-                  <input type="text" name="sectionKey" required placeholder="e.g. opening" className={INPUT_CLASS} />
+                  <input
+                    type="text"
+                    name="sectionKey"
+                    required
+                    placeholder="e.g. opening"
+                    className={INPUT_CLASS}
+                  />
                 </label>
                 <label className={FIELD_LABELS}>
                   <span>Sort order</span>
@@ -393,7 +466,12 @@ export default async function AdminPageEditorPage({
 
               <label className={`${FIELD_LABELS} mt-3 justify-start`}>
                 <span>Enabled</span>
-                <input type="checkbox" name="isEnabled" defaultChecked className="size-5 rounded border-2 border-line" />
+                <input
+                  type="checkbox"
+                  name="isEnabled"
+                  defaultChecked
+                  className="size-5 rounded border border-line"
+                />
               </label>
 
               <div className="mt-4 space-y-3">
@@ -403,11 +481,21 @@ export default async function AdminPageEditorPage({
                 </label>
                 <label className={FIELD_LABELS}>
                   <span>Text (text sections)</span>
-                  <textarea name="text" rows={4} className="rounded-xl border-2 border-line bg-white px-3 py-2 text-sm text-ink" />
+                  <textarea
+                    name="text"
+                    rows={4}
+                    className="rounded-xl border border-line bg-white px-3 py-2 text-sm text-ink"
+                  />
                 </label>
                 <label className={FIELD_LABELS}>
                   <span>Content blocks (JSON, blocks sections)</span>
-                  <textarea name="body" rows={6} defaultValue={JSON_PLACEHOLDER} spellCheck={false} className={TEXTAREA_CLASS} />
+                  <textarea
+                    name="body"
+                    rows={6}
+                    defaultValue={JSON_PLACEHOLDER}
+                    spellCheck={false}
+                    className={TEXTAREA_CLASS}
+                  />
                 </label>
               </div>
             </ActionForm>

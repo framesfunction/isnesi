@@ -22,7 +22,8 @@ export const dynamic = "force-dynamic";
 
 const FIELD_LABELS =
   "flex flex-col gap-1.5 text-xs font-black uppercase tracking-[0.12em] text-ink-muted";
-const INPUT_CLASS = "min-h-10 rounded-xl border-2 border-line bg-white px-3 text-sm text-ink";
+const INPUT_CLASS =
+  "min-h-10 rounded-xl border border-line bg-white px-3 text-sm text-ink";
 
 const STATUS_LABELS: Record<string, string> = {
   draft: "Draft",
@@ -57,7 +58,10 @@ export default async function AdminKidsResourceDetailPage({
 }: {
   params: Promise<PageParams>;
 }) {
-  const { allowed } = await requirePermission("kids.manage", "/admin/kids-corner");
+  const { allowed } = await requirePermission(
+    "kids.manage",
+    "/admin/kids-corner",
+  );
   if (!allowed) {
     return (
       <EmptyState
@@ -73,7 +77,7 @@ export default async function AdminKidsResourceDetailPage({
 
   if (resource === null) {
     return (
-      <Card className="border-2 border-coral/40">
+      <Card className="border border-coral/40">
         <CardContent className="p-6 text-sm text-ink-muted">
           The database is not connected, so this resource could not be loaded.
         </CardContent>
@@ -83,7 +87,10 @@ export default async function AdminKidsResourceDetailPage({
 
   if (!resource) {
     return (
-      <EmptyState title="Resource not found." description="This kids resource does not exist." />
+      <EmptyState
+        title="Resource not found."
+        description="This kids resource does not exist."
+      />
     );
   }
 
@@ -96,34 +103,45 @@ export default async function AdminKidsResourceDetailPage({
       />
 
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
-        <Card className="border-2 border-line rounded-xl p-4">
-          <p className="text-xs font-bold uppercase tracking-wider text-ink-muted">Status</p>
+        <Card className="border border-line rounded-xl p-4">
+          <p className="text-xs font-bold uppercase tracking-wider text-ink-muted">
+            Status
+          </p>
           <p className="mt-1 text-sm font-bold text-ink">
             <StatusBadge status={resource.status} labels={STATUS_LABELS} />
           </p>
         </Card>
-        <Card className="border-2 border-line rounded-xl p-4">
-          <p className="text-xs font-bold uppercase tracking-wider text-ink-muted">Safeguarding</p>
-          <p className={`mt-1 text-sm font-bold ${resource.safeguardingApproved ? "text-leaf" : "text-coral"}`}>
+        <Card className="border border-line rounded-xl p-4">
+          <p className="text-xs font-bold uppercase tracking-wider text-ink-muted">
+            Safeguarding
+          </p>
+          <p
+            className={`mt-1 text-sm font-bold ${resource.safeguardingApproved ? "text-leaf" : "text-coral"}`}
+          >
             {resource.safeguardingApproved ? "Cleared" : "Pending"}
           </p>
         </Card>
-        <Card className="border-2 border-line rounded-xl p-4">
-          <p className="text-xs font-bold uppercase tracking-wider text-ink-muted">Featured</p>
+        <Card className="border border-line rounded-xl p-4">
+          <p className="text-xs font-bold uppercase tracking-wider text-ink-muted">
+            Featured
+          </p>
           <p className="mt-1 text-sm font-bold text-ink">
             {resource.featured ? "Yes" : "No"}
           </p>
         </Card>
       </div>
 
-      <Card className="mb-8 border-2 border-line">
+      <Card className="mb-8 border border-line">
         <CardHeader>
           <CardTitle className="font-display text-base font-extrabold text-brand">
             Resource details
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <ActionForm action={saveKidsResourceAction} submitLabel="Save changes">
+          <ActionForm
+            action={saveKidsResourceAction}
+            submitLabel="Save changes"
+          >
             <input type="hidden" name="resourceId" value={resource.id} />
             <div className="grid gap-4 sm:grid-cols-2">
               <label className={FIELD_LABELS}>
@@ -138,7 +156,11 @@ export default async function AdminKidsResourceDetailPage({
               </label>
               <label className={FIELD_LABELS}>
                 <span>Type</span>
-                <select name="resourceType" defaultValue={resource.resourceType} className={INPUT_CLASS}>
+                <select
+                  name="resourceType"
+                  defaultValue={resource.resourceType}
+                  className={INPUT_CLASS}
+                >
                   {KIDS_RESOURCE_TYPES.map((value) => (
                     <option key={value} value={value}>
                       {TYPE_LABELS[value]}
@@ -174,7 +196,7 @@ export default async function AdminKidsResourceDetailPage({
                   name="description"
                   rows={4}
                   defaultValue={resource.description ?? ""}
-                  className="rounded-xl border-2 border-line bg-white px-3 py-2 text-sm text-ink"
+                  className="rounded-xl border border-line bg-white px-3 py-2 text-sm text-ink"
                 />
               </label>
             </div>
@@ -190,13 +212,14 @@ export default async function AdminKidsResourceDetailPage({
               </label>
             </div>
             <p className="mt-3 text-xs text-ink-muted">
-              Changes are saved as draft. Submit for safeguarding review before publishing.
+              Changes are saved as draft. Submit for safeguarding review before
+              publishing.
             </p>
           </ActionForm>
         </CardContent>
       </Card>
 
-      <Card className="border-2 border-line">
+      <Card className="border border-line">
         <CardHeader>
           <CardTitle className="font-display text-base font-extrabold text-brand">
             Safeguarding review
@@ -204,19 +227,27 @@ export default async function AdminKidsResourceDetailPage({
         </CardHeader>
         <CardContent className="pb-4">
           {resource.safeguardingApproved ? (
-            <div className="p-4 rounded-xl border-2 border-leaf/40 bg-leaf-soft/60">
+            <div className="p-4 rounded-xl border border-leaf/40 bg-leaf-soft/60">
               <p className="font-medium text-leaf">Safeguarding cleared.</p>
               <p className="text-sm text-leaf/80 mt-1">
-                This resource is safeguarding-approved and can be published or featured.
+                This resource is safeguarding-approved and can be published or
+                featured.
               </p>
             </div>
           ) : (
             <>
-              <form action={handleReviewKidsResource} className="grid gap-3 sm:grid-cols-3">
+              <form
+                action={handleReviewKidsResource}
+                className="grid gap-3 sm:grid-cols-3"
+              >
                 <input type="hidden" name="resourceId" value={resource.id} />
                 <div className="flex flex-col gap-1.5">
                   <Label>Decision</Label>
-                  <Select name="decision" defaultValue="approve" className="min-h-10">
+                  <Select
+                    name="decision"
+                    defaultValue="approve"
+                    className="min-h-10"
+                  >
                     <option value="approve">Approve</option>
                     <option value="reject">Reject</option>
                   </Select>
@@ -235,8 +266,8 @@ export default async function AdminKidsResourceDetailPage({
                 </Button>
               </form>
               <p className="text-xs text-ink-muted mt-4">
-                Only safeguarding-approved resources can be published on the public
-                Kids&apos; Corner. Rejected resources remain hidden.
+                Only safeguarding-approved resources can be published on the
+                public Kids&apos; Corner. Rejected resources remain hidden.
               </p>
             </>
           )}

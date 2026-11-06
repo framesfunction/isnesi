@@ -17,9 +17,17 @@ type AdminNavLinkProps = {
  * Keeping this client boundary small means the rest of the admin chrome can stay
  * on the server.
  */
-export function AdminNavLink({ href, label, description, icon, exact }: AdminNavLinkProps) {
+export function AdminNavLink({
+  href,
+  label,
+  description,
+  icon,
+  exact,
+}: AdminNavLinkProps) {
   const pathname = usePathname();
-  const active = exact ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
+  const active = exact
+    ? pathname === href
+    : pathname === href || pathname.startsWith(`${href}/`);
 
   return (
     <Link
@@ -29,7 +37,7 @@ export function AdminNavLink({ href, label, description, icon, exact }: AdminNav
         "group flex items-start gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors",
         "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sun",
         active
-          ? "bg-white/15 text-white shadow-[inset_3px_0_0_#ffc83d]"
+          ? "bg-white/15 text-white shadow-[inset_3px_0_0_var(--sun)]"
           : "text-white/80 hover:bg-white/10 hover:text-white",
       ].join(" ")}
       title={description}

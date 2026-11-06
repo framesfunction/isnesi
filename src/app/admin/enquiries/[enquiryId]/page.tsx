@@ -28,14 +28,18 @@ export const dynamic = "force-dynamic";
 
 const FIELD_LABELS =
   "flex flex-col gap-1.5 text-xs font-black uppercase tracking-[0.12em] text-ink-muted";
-const INPUT_CLASS = "min-h-10 rounded-xl border-2 border-line bg-white px-3 text-sm text-ink";
+const INPUT_CLASS =
+  "min-h-10 rounded-xl border border-line bg-white px-3 text-sm text-ink";
 
 export default async function AdminEnquiryDetailPage({
   params,
 }: {
   params: Promise<{ enquiryId: string }>;
 }) {
-  const { allowed } = await requirePermission("enquiries.manage", "/admin/enquiries");
+  const { allowed } = await requirePermission(
+    "enquiries.manage",
+    "/admin/enquiries",
+  );
   if (!allowed) {
     return (
       <EmptyState
@@ -61,17 +65,23 @@ export default async function AdminEnquiryDetailPage({
       />
 
       <p className="mb-6 text-xs text-ink-muted">
-        <Link href="/admin/enquiries" className="font-bold text-brand hover:underline">
+        <Link
+          href="/admin/enquiries"
+          className="font-bold text-brand hover:underline"
+        >
           Back to enquiries
         </Link>
         {" - "}Received {formatDateTime(enquiry.createdAt)} - Updated{" "}
         {formatDateTime(enquiry.updatedAt)}
-        {enquiry.closedAt ? ` - Closed ${formatDateTime(enquiry.closedAt)}` : ""}
-        {" - "}Consent to contact: {enquiry.consentToContact ? "given" : "not given"}
+        {enquiry.closedAt
+          ? ` - Closed ${formatDateTime(enquiry.closedAt)}`
+          : ""}
+        {" - "}Consent to contact:{" "}
+        {enquiry.consentToContact ? "given" : "not given"}
       </p>
 
       <div className="space-y-8">
-        <Card className="border-2 border-line">
+        <Card className="border border-line">
           <CardHeader>
             <CardTitle className="font-display text-base font-extrabold text-brand">
               Original message
@@ -91,12 +101,14 @@ export default async function AdminEnquiryDetailPage({
                 <span className="font-bold text-ink">Source:</span>{" "}
                 <span className="text-ink-muted">{enquiry.source}</span>
               </p>
-              <p className="whitespace-pre-wrap rounded-xl bg-cream p-4 text-ink">{enquiry.message}</p>
+              <p className="whitespace-pre-wrap rounded-xl bg-cream p-4 text-ink">
+                {enquiry.message}
+              </p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-2 border-brand/30">
+        <Card className="border border-brand/30">
           <CardHeader>
             <CardTitle className="font-display text-base font-extrabold text-brand">
               Workflow
@@ -108,7 +120,12 @@ export default async function AdminEnquiryDetailPage({
                 <input type="hidden" name="enquiryId" value={enquiry.id} />
                 <label className={FIELD_LABELS}>
                   <span>Assign to</span>
-                  <select name="assigneeId" required defaultValue="" className={INPUT_CLASS}>
+                  <select
+                    name="assigneeId"
+                    required
+                    defaultValue=""
+                    className={INPUT_CLASS}
+                  >
                     <option value="" disabled>
                       Choose a staff member
                     </option>
@@ -125,11 +142,18 @@ export default async function AdminEnquiryDetailPage({
                 </label>
               </ActionForm>
 
-              <ActionForm action={updateEnquiryStatusAction} submitLabel="Update status">
+              <ActionForm
+                action={updateEnquiryStatusAction}
+                submitLabel="Update status"
+              >
                 <input type="hidden" name="enquiryId" value={enquiry.id} />
                 <label className={FIELD_LABELS}>
                   <span>Status</span>
-                  <select name="status" defaultValue={enquiry.status} className={INPUT_CLASS}>
+                  <select
+                    name="status"
+                    defaultValue={enquiry.status}
+                    className={INPUT_CLASS}
+                  >
                     {ENQUIRY_STATUSES.map((value) => (
                       <option key={value} value={value}>
                         {value}
@@ -162,7 +186,8 @@ export default async function AdminEnquiryDetailPage({
                   {enquiry.assignments.map((assignment) => (
                     <li key={assignment.id}>
                       <span className="font-mono text-[10px]">
-                        {assignment.assignedFrom ?? "unassigned"} → {assignment.assignedTo}
+                        {assignment.assignedFrom ?? "unassigned"} →{" "}
+                        {assignment.assignedTo}
                       </span>{" "}
                       - {formatDateTime(assignment.assignedAt)}
                       {assignment.reason ? ` - ${assignment.reason}` : ""}
@@ -174,7 +199,7 @@ export default async function AdminEnquiryDetailPage({
           </CardContent>
         </Card>
 
-        <Card className="border-2 border-line">
+        <Card className="border border-line">
           <CardHeader>
             <CardTitle className="font-display text-base font-extrabold text-brand">
               Response history
@@ -189,17 +214,32 @@ export default async function AdminEnquiryDetailPage({
             ) : (
               <ul className="space-y-3">
                 {enquiry.messages.map((message) => (
-                  <li key={message.id} className="rounded-xl border-2 border-line bg-white p-4">
+                  <li
+                    key={message.id}
+                    className="rounded-xl border border-line bg-white p-4"
+                  >
                     <div className="flex flex-wrap items-center gap-2 text-xs">
-                      <Badge variant={message.direction === "outbound" ? "success" : "neutral"}>
+                      <Badge
+                        variant={
+                          message.direction === "outbound"
+                            ? "success"
+                            : "neutral"
+                        }
+                      >
                         {message.direction}
                       </Badge>
                       <span className="text-ink-muted">{message.channel}</span>
-                      <span className="text-ink-muted">{message.deliveryStatus}</span>
-                      <span className="text-ink-muted">{formatDateTime(message.sentAt)}</span>
+                      <span className="text-ink-muted">
+                        {message.deliveryStatus}
+                      </span>
+                      <span className="text-ink-muted">
+                        {formatDateTime(message.sentAt)}
+                      </span>
                     </div>
                     {message.body ? (
-                      <p className="mt-2 whitespace-pre-wrap text-sm text-ink">{message.body}</p>
+                      <p className="mt-2 whitespace-pre-wrap text-sm text-ink">
+                        {message.body}
+                      </p>
                     ) : null}
                   </li>
                 ))}
@@ -207,19 +247,30 @@ export default async function AdminEnquiryDetailPage({
             )}
 
             <div className="mt-6 border-t border-line pt-4">
-              <ActionForm action={recordEnquiryMessageAction} submitLabel="Record message">
+              <ActionForm
+                action={recordEnquiryMessageAction}
+                submitLabel="Record message"
+              >
                 <input type="hidden" name="enquiryId" value={enquiry.id} />
                 <div className="grid gap-4 sm:grid-cols-2">
                   <label className={FIELD_LABELS}>
                     <span>Direction</span>
-                    <select name="direction" defaultValue="outbound" className={INPUT_CLASS}>
+                    <select
+                      name="direction"
+                      defaultValue="outbound"
+                      className={INPUT_CLASS}
+                    >
                       <option value="outbound">outbound (from us)</option>
                       <option value="inbound">inbound (from them)</option>
                     </select>
                   </label>
                   <label className={FIELD_LABELS}>
                     <span>Channel</span>
-                    <select name="channel" defaultValue="email" className={INPUT_CLASS}>
+                    <select
+                      name="channel"
+                      defaultValue="email"
+                      className={INPUT_CLASS}
+                    >
                       <option value="email">email</option>
                       <option value="phone">phone</option>
                       <option value="post">post</option>
@@ -233,7 +284,7 @@ export default async function AdminEnquiryDetailPage({
                     name="body"
                     rows={4}
                     required
-                    className="rounded-xl border-2 border-line bg-white px-3 py-2 text-sm text-ink"
+                    className="rounded-xl border border-line bg-white px-3 py-2 text-sm text-ink"
                   />
                 </label>
               </ActionForm>
@@ -241,7 +292,7 @@ export default async function AdminEnquiryDetailPage({
           </CardContent>
         </Card>
 
-        <Card className="border-2 border-line">
+        <Card className="border border-line">
           <CardHeader>
             <CardTitle className="font-display text-base font-extrabold text-brand">
               Internal notes
@@ -253,10 +304,14 @@ export default async function AdminEnquiryDetailPage({
             ) : (
               <ul className="space-y-3">
                 {enquiry.notes.map((note) => (
-                  <li key={note.id} className="rounded-xl bg-cream p-3 text-sm text-ink">
+                  <li
+                    key={note.id}
+                    className="rounded-xl bg-cream p-3 text-sm text-ink"
+                  >
                     <p className="whitespace-pre-wrap">{note.note}</p>
                     <p className="mt-1 text-xs text-ink-muted">
-                      {formatDateTime(note.createdAt)} - {note.authorId ?? "unknown author"}
+                      {formatDateTime(note.createdAt)} -{" "}
+                      {note.authorId ?? "unknown author"}
                     </p>
                   </li>
                 ))}
@@ -272,7 +327,7 @@ export default async function AdminEnquiryDetailPage({
                     name="note"
                     rows={3}
                     required
-                    className="rounded-xl border-2 border-line bg-white px-3 py-2 text-sm text-ink"
+                    className="rounded-xl border border-line bg-white px-3 py-2 text-sm text-ink"
                   />
                 </label>
               </ActionForm>

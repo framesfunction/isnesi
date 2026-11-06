@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
-import { AdminShell, type AdminShellGroup } from "@/components/admin/admin-shell";
+import {
+  AdminShell,
+  type AdminShellGroup,
+} from "@/components/admin/admin-shell";
 import { requireAdmin } from "@/lib/auth/guards";
 import { groupedAdminNavigation } from "@/lib/permissions/admin-nav";
 import { roleLabel } from "@/lib/permissions/permissions";
@@ -21,20 +24,26 @@ export const metadata: Metadata = {
  * The navigation handed to the shell is already filtered by permission, but each
  * page re-checks its own permission before rendering data.
  */
-export default async function AdminLayout({ children }: { children: ReactNode }) {
+export default async function AdminLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const user = await requireAdmin();
 
-  const groups: AdminShellGroup[] = groupedAdminNavigation(user).map((group) => ({
-    key: group.group,
-    label: group.label,
-    modules: group.modules.map((module) => ({
-      key: module.key,
-      label: module.label,
-      href: module.href,
-      icon: module.icon,
-      description: module.description,
-    })),
-  }));
+  const groups: AdminShellGroup[] = groupedAdminNavigation(user).map(
+    (group) => ({
+      key: group.group,
+      label: group.label,
+      modules: group.modules.map((module) => ({
+        key: module.key,
+        label: module.label,
+        href: module.href,
+        icon: module.icon,
+        description: module.description,
+      })),
+    }),
+  );
 
   return (
     <AdminShell

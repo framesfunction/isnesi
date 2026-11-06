@@ -26,7 +26,10 @@ export default async function AdminProgrammeDetailPage({
 }: {
   params: Promise<{ programmeId: string }>;
 }) {
-  const { allowed } = await requirePermission("programmes.manage", "/admin/programmes");
+  const { allowed } = await requirePermission(
+    "programmes.manage",
+    "/admin/programmes",
+  );
   if (!allowed) {
     return (
       <EmptyState
@@ -43,7 +46,10 @@ export default async function AdminProgrammeDetailPage({
   return (
     <div className="mx-auto max-w-4xl">
       <div className="mb-4">
-        <Link href="/admin/programmes" className="text-sm font-bold text-brand hover:underline">
+        <Link
+          href="/admin/programmes"
+          className="text-sm font-bold text-brand hover:underline"
+        >
           ← Back to programmes
         </Link>
       </div>
@@ -82,7 +88,7 @@ export default async function AdminProgrammeDetailPage({
         />
       </div>
 
-      <Card className="border-2 border-line">
+      <Card className="border border-line">
         <CardHeader>
           <CardTitle className="font-display text-base font-extrabold text-brand">
             Edit programme
@@ -96,12 +102,15 @@ export default async function AdminProgrammeDetailPage({
       <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-ink-muted">
         <span>Sort order {programme.sortOrder}</span>
         <span>Last updated {formatDateTime(programme.updatedAt)}</span>
-        <Link href="/programmes" className="font-bold text-brand hover:underline">
+        <Link
+          href="/programmes"
+          className="font-bold text-brand hover:underline"
+        >
           View public page
         </Link>
       </div>
 
-      <Card className="mt-6 border-2 border-coral/40">
+      <Card className="mt-6 border border-coral/40">
         <CardHeader>
           <CardTitle className="font-display text-base font-extrabold text-brand">
             Delete programme
@@ -109,8 +118,9 @@ export default async function AdminProgrammeDetailPage({
         </CardHeader>
         <CardContent>
           <p className="text-sm text-ink-muted">
-            Deactivating hides a programme without losing its translations. Deleting is permanent and
-            is blocked while media still references it.
+            Deactivating hides a programme without losing its translations.
+            Deleting is permanent and is blocked while media still references
+            it.
           </p>
           <div className="mt-3">
             <ActionButton

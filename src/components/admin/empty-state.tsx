@@ -4,7 +4,9 @@ import type { ReactNode } from "react";
  * Honest empty state.
  *
  * Admin screens must never imply data exists when it does not, so an empty list
- * always says what is missing and what to do next.
+ * always says what is missing and what to do next. The frame matches the public
+ * EmptyNote treatment (dashed, cream), so the "nothing here" message feels the
+ * same in both applications.
  */
 export function EmptyState({
   title,
@@ -16,7 +18,7 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border-2 border-dashed border-line bg-cream p-8 text-center">
+    <div className="rounded-[1.75rem] border-2 border-dashed border-line bg-cream p-8 text-center">
       <p className="font-display text-base font-extrabold text-brand">{title}</p>
       {description ? (
         <p className="mx-auto mt-2 max-w-md text-sm text-ink-muted">{description}</p>

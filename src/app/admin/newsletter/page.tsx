@@ -55,7 +55,8 @@ export default async function AdminNewsletterPage() {
                   <li key={subscriber.id} className="py-3">
                     <p className="font-bold text-ink">{subscriber.email}</p>
                     <p className="text-xs text-ink-muted">
-                      {subscriber.status} - {formatDateTime(subscriber.createdAt)}
+                      {subscriber.status} -{" "}
+                      {formatDateTime(subscriber.createdAt)}
                     </p>
                   </li>
                 ))}

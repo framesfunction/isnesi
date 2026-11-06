@@ -12,7 +12,10 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requirePermission } from "@/lib/auth/guards";
 import { formatDateTime } from "@/lib/format";
-import { getAdminMediaAsset, MEDIA_RIGHTS_STATUSES } from "@/features/media/admin-queries";
+import {
+  getAdminMediaAsset,
+  MEDIA_RIGHTS_STATUSES,
+} from "@/features/media/admin-queries";
 import { deleteMediaAction, updateMediaAction } from "@/features/media/actions";
 import { formatBytes, isImageMime } from "@/features/media/helpers";
 
@@ -23,7 +26,8 @@ export const dynamic = "force-dynamic";
 const FIELD_LABELS =
   "flex flex-col gap-1.5 text-xs font-black uppercase tracking-[0.12em] text-ink-muted";
 
-const INPUT_CLASS = "min-h-10 rounded-xl border-2 border-line bg-white px-3 text-sm text-ink";
+const INPUT_CLASS =
+  "min-h-10 rounded-xl border border-line bg-white px-3 text-sm text-ink";
 
 const RIGHTS_OPTIONS = MEDIA_RIGHTS_STATUSES.map((status) => ({
   value: status,
@@ -54,7 +58,10 @@ export default async function AdminMediaDetailPage({
   return (
     <div className="mx-auto max-w-4xl">
       <div className="mb-4">
-        <Link href="/admin/media" className="text-sm font-bold text-brand hover:underline">
+        <Link
+          href="/admin/media"
+          className="text-sm font-bold text-brand hover:underline"
+        >
           ← Back to media library
         </Link>
       </div>
@@ -63,13 +70,17 @@ export default async function AdminMediaDetailPage({
         eyebrow="Media library"
         title={asset.fileName}
         description="Confirm rights and consent before this asset is used on the public website."
-        actions={<StatusBadge status={asset.rightsStatus} labels={RIGHTS_LABELS} />}
+        actions={
+          <StatusBadge status={asset.rightsStatus} labels={RIGHTS_LABELS} />
+        }
       />
 
       <div className="grid gap-5 lg:grid-cols-2">
-        <Card className="border-2 border-line">
+        <Card className="border border-line">
           <CardHeader>
-            <CardTitle className="font-display text-base font-extrabold text-brand">Preview</CardTitle>
+            <CardTitle className="font-display text-base font-extrabold text-brand">
+              Preview
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="relative flex h-56 w-full items-center justify-center overflow-hidden rounded-xl bg-muted">
@@ -100,7 +111,9 @@ export default async function AdminMediaDetailPage({
               <div className="flex justify-between gap-3">
                 <dt>Dimensions</dt>
                 <dd>
-                  {asset.width && asset.height ? `${asset.width}×${asset.height}` : "—"}
+                  {asset.width && asset.height
+                    ? `${asset.width}×${asset.height}`
+                    : "—"}
                 </dd>
               </div>
               <div className="flex justify-between gap-3">
@@ -128,7 +141,7 @@ export default async function AdminMediaDetailPage({
           </CardContent>
         </Card>
 
-        <Card className="border-2 border-line">
+        <Card className="border border-line">
           <CardHeader>
             <CardTitle className="font-display text-base font-extrabold text-brand">
               Rights and metadata
@@ -202,9 +215,11 @@ export default async function AdminMediaDetailPage({
           </CardContent>
         </Card>
 
-        <Card className="border-2 border-line lg:col-span-2">
+        <Card className="border border-line lg:col-span-2">
           <CardHeader>
-            <CardTitle className="font-display text-base font-extrabold text-brand">Usage</CardTitle>
+            <CardTitle className="font-display text-base font-extrabold text-brand">
+              Usage
+            </CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-ink-muted">
             {asset.usage.length === 0 ? (
@@ -226,7 +241,7 @@ export default async function AdminMediaDetailPage({
           </CardContent>
         </Card>
 
-        <Card className="border-2 border-coral/40 lg:col-span-2">
+        <Card className="border border-coral/40 lg:col-span-2">
           <CardHeader>
             <CardTitle className="font-display text-base font-extrabold text-brand">
               Delete asset
@@ -234,8 +249,8 @@ export default async function AdminMediaDetailPage({
           </CardHeader>
           <CardContent>
             <p className="text-sm text-ink-muted">
-              Deleting removes the file from storage and cannot be undone. Assets still referenced by
-              content are protected.
+              Deleting removes the file from storage and cannot be undone.
+              Assets still referenced by content are protected.
             </p>
             <div className="mt-3">
               <ActionButton

@@ -34,7 +34,9 @@ export default async function SafeguardingPage() {
     );
   }
 
-  const result = await callSafeguardingFunction<SafeguardingList>("safeguarding-list-cases");
+  const result = await callSafeguardingFunction<SafeguardingList>(
+    "safeguarding-list-cases",
+  );
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -46,7 +48,9 @@ export default async function SafeguardingPage() {
       <Card>
         <CardHeader>
           <CardTitle>
-            {result.ok ? `Cases (${result.data.cases.length})` : "Cases unavailable"}
+            {result.ok
+              ? `Cases (${result.data.cases.length})`
+              : "Cases unavailable"}
           </CardTitle>
         </CardHeader>
         <CardContent>

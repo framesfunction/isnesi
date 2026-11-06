@@ -24,14 +24,18 @@ export const dynamic = "force-dynamic";
 
 const FIELD_LABELS =
   "flex flex-col gap-1.5 text-xs font-black uppercase tracking-[0.12em] text-ink-muted";
-const INPUT_CLASS = "min-h-10 rounded-xl border-2 border-line bg-white px-3 text-sm text-ink";
+const INPUT_CLASS =
+  "min-h-10 rounded-xl border border-line bg-white px-3 text-sm text-ink";
 
 export default async function AdminPartnerEditorPage({
   params,
 }: {
   params: Promise<{ partnerId: string }>;
 }) {
-  const { allowed } = await requirePermission("partners.manage", "/admin/partners");
+  const { allowed } = await requirePermission(
+    "partners.manage",
+    "/admin/partners",
+  );
   if (!allowed) {
     return (
       <EmptyState
@@ -51,19 +55,29 @@ export default async function AdminPartnerEditorPage({
         eyebrow="Website / Partners"
         title={partner.name}
         description={partner.websiteUrl ?? undefined}
-        actions={<StatusBadge status={partner.approvalStatus} labels={APPROVAL_LABELS} />}
+        actions={
+          <StatusBadge
+            status={partner.approvalStatus}
+            labels={APPROVAL_LABELS}
+          />
+        }
       />
 
       <p className="mb-6 text-xs text-ink-muted">
-        <Link href="/admin/partners" className="font-bold text-brand hover:underline">
+        <Link
+          href="/admin/partners"
+          className="font-bold text-brand hover:underline"
+        >
           Back to partners
         </Link>
         {" - "}Updated {formatDate(partner.updatedAt)}
-        {partner.approvedAt ? ` - Approved ${formatDate(partner.approvedAt)}` : ""}
+        {partner.approvedAt
+          ? ` - Approved ${formatDate(partner.approvedAt)}`
+          : ""}
       </p>
 
       <div className="space-y-8">
-        <Card className="border-2 border-brand/30">
+        <Card className="border border-brand/30">
           <CardHeader>
             <CardTitle className="font-display text-base font-extrabold text-brand">
               Approval & visibility
@@ -73,13 +87,21 @@ export default async function AdminPartnerEditorPage({
             <div className="flex flex-wrap items-center gap-2">
               <ActionButton
                 action={partnerDecisionAction}
-                hidden={{ partnerId: partner.id, decision: "approve", publicVisible: true }}
+                hidden={{
+                  partnerId: partner.id,
+                  decision: "approve",
+                  publicVisible: true,
+                }}
                 label="Approve + show publicly"
                 variant="default"
               />
               <ActionButton
                 action={partnerDecisionAction}
-                hidden={{ partnerId: partner.id, decision: "approve", publicVisible: false }}
+                hidden={{
+                  partnerId: partner.id,
+                  decision: "approve",
+                  publicVisible: false,
+                }}
                 label="Approve (stay hidden)"
               />
               <ActionButton
@@ -95,18 +117,20 @@ export default async function AdminPartnerEditorPage({
                   partnerId: partner.id,
                   publicVisible: !partner.publicVisible,
                 }}
-                label={partner.publicVisible ? "Hide from public" : "Show publicly"}
+                label={
+                  partner.publicVisible ? "Hide from public" : "Show publicly"
+                }
                 disabled={partner.approvalStatus !== "approved"}
               />
             </div>
             <p className="mt-3 text-xs text-ink-muted">
-              Public visibility requires approval first; the public site only lists approved and
-              visible partners.
+              Public visibility requires approval first; the public site only
+              lists approved and visible partners.
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border-2 border-line">
+        <Card className="border border-line">
           <CardHeader>
             <CardTitle className="font-display text-base font-extrabold text-brand">
               Partner details
@@ -119,7 +143,13 @@ export default async function AdminPartnerEditorPage({
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className={FIELD_LABELS}>
                   <span>Name</span>
-                  <input type="text" name="name" defaultValue={partner.name} required className={INPUT_CLASS} />
+                  <input
+                    type="text"
+                    name="name"
+                    defaultValue={partner.name}
+                    required
+                    className={INPUT_CLASS}
+                  />
                 </label>
                 <label className={FIELD_LABELS}>
                   <span>Relationship type</span>
@@ -158,7 +188,7 @@ export default async function AdminPartnerEditorPage({
                     name="description"
                     rows={5}
                     defaultValue={partner.description ?? ""}
-                    className="rounded-xl border-2 border-line bg-white px-3 py-2 text-sm text-ink"
+                    className="rounded-xl border border-line bg-white px-3 py-2 text-sm text-ink"
                   />
                 </label>
               </div>
@@ -166,7 +196,7 @@ export default async function AdminPartnerEditorPage({
           </CardContent>
         </Card>
 
-        <Card className="border-2 border-coral/40">
+        <Card className="border border-coral/40">
           <CardHeader>
             <CardTitle className="font-display text-base font-extrabold text-coral">
               Danger zone

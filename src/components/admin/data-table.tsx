@@ -57,7 +57,11 @@ export function DataTable({
               scope="col"
               className={ALIGN[column.align ?? "left"]}
             >
-              {column.srOnly ? <span className="sr-only">{column.label}</span> : column.label}
+              {column.srOnly ? (
+                <span className="sr-only">{column.label}</span>
+              ) : (
+                column.label
+              )}
             </TableHead>
           ))}
         </TableRow>

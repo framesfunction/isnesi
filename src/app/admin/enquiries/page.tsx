@@ -6,7 +6,10 @@ import { ListToolbar } from "@/components/admin/list-toolbar";
 import { EmptyState } from "@/components/admin/empty-state";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requirePermission } from "@/lib/auth/guards";
-import { listAdminEnquiries, type AdminEnquiryListItem } from "@/features/enquiries/admin-queries";
+import {
+  listAdminEnquiries,
+  type AdminEnquiryListItem,
+} from "@/features/enquiries/admin-queries";
 import { ENQUIRY_STATUSES } from "@/lib/validation/engagement";
 import { ENQUIRY_TYPES } from "@/lib/validation/enquiry";
 import { formatDateTime } from "@/lib/format";
@@ -20,10 +23,16 @@ function Row({ enquiry }: { enquiry: AdminEnquiryListItem }) {
     <tr className="border-t border-line/70">
       <td className="px-3 py-3 align-top">
         <p className="font-bold text-ink">{enquiry.fullName}</p>
-        <p className="font-mono text-xs text-ink-muted">{enquiry.referenceCode}</p>
+        <p className="font-mono text-xs text-ink-muted">
+          {enquiry.referenceCode}
+        </p>
       </td>
-      <td className="px-3 py-3 align-top text-xs text-ink-muted">{enquiry.enquiryType}</td>
-      <td className="px-3 py-3 align-top text-xs text-ink-muted">{enquiry.status}</td>
+      <td className="px-3 py-3 align-top text-xs text-ink-muted">
+        {enquiry.enquiryType}
+      </td>
+      <td className="px-3 py-3 align-top text-xs text-ink-muted">
+        {enquiry.status}
+      </td>
       <td className="px-3 py-3 align-top text-xs text-ink-muted">
         {enquiry.assignedTo ? "Assigned" : "Unassigned"}
       </td>
@@ -31,7 +40,10 @@ function Row({ enquiry }: { enquiry: AdminEnquiryListItem }) {
         {formatDateTime(enquiry.createdAt)}
       </td>
       <td className="px-3 py-3 text-right align-top">
-        <Link href={`/admin/enquiries/${enquiry.id}`} className="font-bold text-brand hover:underline">
+        <Link
+          href={`/admin/enquiries/${enquiry.id}`}
+          className="font-bold text-brand hover:underline"
+        >
           Open
         </Link>
       </td>
@@ -44,7 +56,10 @@ export default async function AdminEnquiriesListPage({
 }: {
   searchParams: Promise<{ q?: string; status?: string; type?: string }>;
 }) {
-  const { allowed } = await requirePermission("enquiries.manage", "/admin/enquiries");
+  const { allowed } = await requirePermission(
+    "enquiries.manage",
+    "/admin/enquiries",
+  );
   if (!allowed) {
     return (
       <EmptyState
@@ -72,7 +87,12 @@ export default async function AdminEnquiriesListPage({
         <ListToolbar
           action="/admin/enquiries"
           filters={[
-            { type: "search", name: "q", label: "Search name or reference", value: search },
+            {
+              type: "search",
+              name: "q",
+              label: "Search name or reference",
+              value: search,
+            },
             {
               type: "select",
               name: "status",
@@ -107,7 +127,8 @@ export default async function AdminEnquiriesListPage({
         <CardContent>
           {enquiries === null ? (
             <p className="text-sm text-ink-muted">
-              The database is not connected, so the enquiry list could not be loaded.
+              The database is not connected, so the enquiry list could not be
+              loaded.
             </p>
           ) : enquiries.length === 0 ? (
             <EmptyState

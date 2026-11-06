@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-
 import { AdminPageHeader } from "@/components/admin/page-header";
 import { DataTable, type DataTableColumn } from "@/components/admin/data-table";
 import { EmptyState } from "@/components/admin/empty-state";
@@ -11,11 +10,8 @@ import { requirePermission } from "@/lib/auth/guards";
 import { formatDate } from "@/lib/format";
 import { listAdminProgrammes } from "@/features/programmes/admin-queries";
 import { ProgrammeForm } from "@/features/programmes/programme-form";
-
 export const metadata: Metadata = { title: "Programmes" };
-
 export const dynamic = "force-dynamic";
-
 const COLUMNS: DataTableColumn[] = [
   { key: "programme", label: "Programme" },
   { key: "translations", label: "Translations" },
@@ -24,13 +20,15 @@ const COLUMNS: DataTableColumn[] = [
   { key: "updated", label: "Updated" },
   { key: "actions", label: "Actions", align: "right", srOnly: true },
 ];
-
 export default async function AdminProgrammesPage({
   searchParams,
 }: {
   searchParams: Promise<{ q?: string }>;
 }) {
-  const { allowed } = await requirePermission("programmes.manage", "/admin/programmes");
+  const { allowed } = await requirePermission(
+    "programmes.manage",
+    "/admin/programmes",
+  );
   if (!allowed) {
     return (
       <EmptyState
@@ -39,20 +37,19 @@ export default async function AdminProgrammesPage({
       />
     );
   }
-
   const { q } = await searchParams;
   const search = (q ?? "").trim().slice(0, 120);
   const programmes = await listAdminProgrammes(search);
-
   return (
     <div className="mx-auto max-w-6xl">
+      {" "}
       <AdminPageHeader
         eyebrow="Website"
         title="Programmes"
         description="Maintain the programme areas shown on the public website, in English and French, and control their order and visibility."
-      />
-
+      />{" "}
       <div className="mb-6">
+        {" "}
         <ListToolbar
           action="/admin/programmes"
           filters={[
@@ -65,26 +62,30 @@ export default async function AdminProgrammesPage({
             },
           ]}
           submitLabel="Search"
-        />
-      </div>
-
-      <Card className="mb-6 border-2 border-line">
+        />{" "}
+      </div>{" "}
+      <Card className="mb-6 border border-line">
+        {" "}
         <CardHeader>
+          {" "}
           <CardTitle className="font-display text-base font-extrabold text-brand">
-            New programme
-          </CardTitle>
-        </CardHeader>
+            {" "}
+            New programme{" "}
+          </CardTitle>{" "}
+        </CardHeader>{" "}
         <CardContent>
-          <ProgrammeForm />
-        </CardContent>
-      </Card>
-
+          {" "}
+          <ProgrammeForm />{" "}
+        </CardContent>{" "}
+      </Card>{" "}
       {programmes === null ? (
-        <Card className="border-2 border-coral/40">
+        <Card className="border border-coral/40">
+          {" "}
           <CardContent className="p-6 text-sm text-ink-muted">
-            The database is not connected, so programmes cannot be loaded. Configure Supabase and
-            reload.
-          </CardContent>
+            {" "}
+            The database is not connected, so programmes cannot be loaded.
+            Configure Supabase and reload.{" "}
+          </CardContent>{" "}
         </Card>
       ) : programmes.length === 0 ? (
         <EmptyState
@@ -92,50 +93,65 @@ export default async function AdminProgrammesPage({
           description="Create the first programme above; active programmes appear on the public site."
         />
       ) : (
-        <Card className="border-2 border-line">
+        <Card className="border border-line">
+          {" "}
           <CardContent>
+            {" "}
             <DataTable columns={COLUMNS} caption="Programmes" isEmpty={false}>
+              {" "}
               {programmes.map((programme) => (
                 <tr key={programme.id} className="border-t border-line/70">
+                  {" "}
                   <td className="px-3 py-3 align-top">
+                    {" "}
                     <p className="font-bold text-ink">
-                      {programme.icon ? `${programme.icon} ` : ""}
-                      {programme.title ?? "(untitled)"}
-                    </p>
-                    <p className="font-mono text-xs text-ink-muted">{programme.key}</p>
-                  </td>
+                      {" "}
+                      {programme.icon ? `${programme.icon} ` : ""}{" "}
+                      {programme.title ?? "(untitled)"}{" "}
+                    </p>{" "}
+                    <p className="font-mono text-xs text-ink-muted">
+                      {programme.key}
+                    </p>{" "}
+                  </td>{" "}
                   <td className="px-3 py-3 align-top">
+                    {" "}
                     <div className="flex flex-wrap gap-1.5">
-                      <Badge variant="neutral">EN</Badge>
-                    </div>
-                  </td>
+                      {" "}
+                      <Badge variant="neutral">EN</Badge>{" "}
+                    </div>{" "}
+                  </td>{" "}
                   <td className="px-3 py-3 text-center align-top text-xs text-ink-muted">
-                    {programme.sortOrder}
-                  </td>
+                    {" "}
+                    {programme.sortOrder}{" "}
+                  </td>{" "}
                   <td className="px-3 py-3 align-top">
+                    {" "}
                     {programme.isActive ? (
                       <Badge variant="success">Active</Badge>
                     ) : (
                       <Badge variant="outline">Inactive</Badge>
-                    )}
-                  </td>
+                    )}{" "}
+                  </td>{" "}
                   <td className="px-3 py-3 align-top text-xs text-ink-muted">
-                    {formatDate(programme.updatedAt)}
-                  </td>
+                    {" "}
+                    {formatDate(programme.updatedAt)}{" "}
+                  </td>{" "}
                   <td className="px-3 py-3 text-right align-top">
+                    {" "}
                     <Link
                       href={`/admin/programmes/${programme.id}`}
                       className="font-bold text-brand hover:underline"
                     >
-                      Edit
-                    </Link>
-                  </td>
+                      {" "}
+                      Edit{" "}
+                    </Link>{" "}
+                  </td>{" "}
                 </tr>
-              ))}
-            </DataTable>
-          </CardContent>
+              ))}{" "}
+            </DataTable>{" "}
+          </CardContent>{" "}
         </Card>
-      )}
+      )}{" "}
     </div>
   );
 }

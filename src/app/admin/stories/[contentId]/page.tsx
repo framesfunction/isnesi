@@ -5,7 +5,10 @@ import { notFound } from "next/navigation";
 import { ActionButton } from "@/components/admin/action-button";
 import { ActionForm } from "@/components/admin/action-form";
 import { AdminPageHeader } from "@/components/admin/page-header";
-import { StatusBadge, CONTENT_STATUS_LABELS } from "@/components/admin/status-badge";
+import {
+  StatusBadge,
+  CONTENT_STATUS_LABELS,
+} from "@/components/admin/status-badge";
 import { EmptyState } from "@/components/admin/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +17,7 @@ import { requirePermission } from "@/lib/auth/guards";
 import { getCurrentUser } from "@/lib/auth/session";
 import { can } from "@/lib/permissions/can";
 import { getAdminContent } from "@/features/editorial/admin-queries";
+import { listTaxonomyOptions } from "@/features/taxonomy/admin-queries";
 import {
   archiveContentAction,
   publishContentAction,
@@ -31,9 +35,10 @@ export const dynamic = "force-dynamic";
 
 const FIELD_LABELS =
   "flex flex-col gap-1.5 text-xs font-black uppercase tracking-[0.12em] text-ink-muted";
-const INPUT_CLASS = "min-h-10 rounded-xl border-2 border-line bg-white px-3 text-sm text-ink";
+const INPUT_CLASS =
+  "min-h-10 rounded-xl border border-line bg-white px-3 text-sm text-ink";
 const TEXTAREA_CLASS =
-  "rounded-xl border-2 border-line bg-white px-3 py-2 font-mono text-xs text-ink";
+  "rounded-xl border border-line bg-white px-3 py-2 font-mono text-xs text-ink";
 
 function blocksJson(body: unknown): string {
   const blocks = extractBlocks(body);
@@ -51,7 +56,10 @@ export default async function AdminContentEditorPage({
 }: {
   params: Promise<{ contentId: string }>;
 }) {
-  const { allowed } = await requirePermission("content.create", "/admin/stories");
+  const { allowed } = await requirePermission(
+    "content.create",
+    "/admin/stories",
+  );
   if (!allowed) {
     return (
       <EmptyState
@@ -65,9 +73,12 @@ export default async function AdminContentEditorPage({
   const item = await getAdminContent(contentId);
   if (!item) notFound();
 
+  const taxonomyOptions = await listTaxonomyOptions();
+
   const user = await getCurrentUser();
   const isAuthor = item.authorId === user?.id;
   const mayEdit = isAuthor || can(user, "content.edit_any");
+  const canEditTaxonomy = can(user, "content.edit_any");
   const canReview = can(user, "content.review");
   const canPublish = can(user, "content.publish");
   const isSelfReview = item.authorId === user?.id;
@@ -82,16 +93,23 @@ export default async function AdminContentEditorPage({
       />
 
       <p className="mb-6 text-xs text-ink-muted">
-        <Link href="/admin/stories" className="font-bold text-brand hover:underline">
+        <Link
+          href="/admin/stories"
+          className="font-bold text-brand hover:underline"
+        >
           Back to stories & news
         </Link>
         {" - "}Updated {formatDateTime(item.updatedAt)}
-        {item.publishedAt ? ` - Published ${formatDateTime(item.publishedAt)}` : ""}
-        {item.scheduledAt ? ` - Scheduled for ${formatDateTime(item.scheduledAt)}` : ""}
+        {item.publishedAt
+          ? ` - Published ${formatDateTime(item.publishedAt)}`
+          : ""}
+        {item.scheduledAt
+          ? ` - Scheduled for ${formatDateTime(item.scheduledAt)}`
+          : ""}
       </p>
 
       <div className="space-y-8">
-        <Card className="border-2 border-brand/30">
+        <Card className="border border-brand/30">
           <CardHeader>
             <CardTitle className="font-display text-base font-extrabold text-brand">
               Editorial workflow
@@ -99,7 +117,8 @@ export default async function AdminContentEditorPage({
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap items-center gap-2">
-              {(item.status === "draft" || item.status === "rejected") && mayEdit ? (
+              {(item.status === "draft" || item.status === "rejected") &&
+              mayEdit ? (
                 <ActionButton
                   action={submitForReviewAction}
                   hidden={{ contentId: item.id }}
@@ -111,7 +130,8 @@ export default async function AdminContentEditorPage({
               {item.status === "in_review" && canReview ? (
                 isSelfReview ? (
                   <p className="text-xs text-ink-muted">
-                    You submitted this item, so another reviewer must decide on it.
+                    You submitted this item, so another reviewer must decide on
+                    it.
                   </p>
                 ) : null
               ) : null}
@@ -120,7 +140,9 @@ export default async function AdminContentEditorPage({
                 <ActionButton
                   action={publishContentAction}
                   hidden={{ contentId: item.id, mode: "schedule" }}
-                  label={scheduledInFuture(item.scheduledAt) ? "Schedule" : "Publish"}
+                  label={
+                    scheduledInFuture(item.scheduledAt) ? "Schedule" : "Publish"
+                  }
                   variant="default"
                 />
               ) : null}
@@ -149,25 +171,33 @@ export default async function AdminContentEditorPage({
             ) : null}
             {item.status === "published" ? (
               <p className="mt-2 text-xs text-ink-muted">
-                Live on the public site. Editing returns the item to draft for re-approval.
+                Live on the public site. Editing returns the item to draft for
+                re-approval.
               </p>
             ) : null}
           </CardContent>
         </Card>
 
         {item.status === "in_review" && canReview && !isSelfReview ? (
-          <Card className="border-2 border-coral/40">
+          <Card className="border border-coral/40">
             <CardHeader>
               <CardTitle className="font-display text-base font-extrabold text-brand">
                 Review decision
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <ActionForm action={reviewContentAction} submitLabel="Record decision">
+              <ActionForm
+                action={reviewContentAction}
+                submitLabel="Record decision"
+              >
                 <input type="hidden" name="contentId" value={item.id} />
                 <label className={FIELD_LABELS}>
                   <span>Decision</span>
-                  <select name="decision" defaultValue="approve" className={INPUT_CLASS}>
+                  <select
+                    name="decision"
+                    defaultValue="approve"
+                    className={INPUT_CLASS}
+                  >
                     <option value="approve">Approve</option>
                     <option value="reject">Request changes</option>
                   </select>
@@ -177,7 +207,7 @@ export default async function AdminContentEditorPage({
                   <textarea
                     name="note"
                     rows={3}
-                    className="rounded-xl border-2 border-line bg-white px-3 py-2 text-sm text-ink"
+                    className="rounded-xl border border-line bg-white px-3 py-2 text-sm text-ink"
                   />
                   <span className="font-normal text-ink-muted">
                     A request for changes needs a note explaining what to fix.
@@ -188,7 +218,7 @@ export default async function AdminContentEditorPage({
           </Card>
         ) : null}
 
-        <Card className="border-2 border-line">
+        <Card className="border border-line">
           <CardHeader>
             <CardTitle className="font-display text-base font-extrabold text-brand">
               Content details
@@ -202,11 +232,21 @@ export default async function AdminContentEditorPage({
                 <div className="grid gap-4 sm:grid-cols-3">
                   <label className={FIELD_LABELS}>
                     <span>Slug</span>
-                    <input type="text" name="slug" defaultValue={item.slug} required className={INPUT_CLASS} />
+                    <input
+                      type="text"
+                      name="slug"
+                      defaultValue={item.slug}
+                      required
+                      className={INPUT_CLASS}
+                    />
                   </label>
                   <label className={FIELD_LABELS}>
                     <span>Type</span>
-                    <select name="contentType" defaultValue={item.contentType} className={INPUT_CLASS}>
+                    <select
+                      name="contentType"
+                      defaultValue={item.contentType}
+                      className={INPUT_CLASS}
+                    >
                       {CONTENT_TYPES.map((value) => (
                         <option key={value} value={value}>
                           {value}
@@ -220,7 +260,7 @@ export default async function AdminContentEditorPage({
                       type="checkbox"
                       name="featured"
                       defaultChecked={item.featured}
-                      className="size-5 rounded border-2 border-line"
+                      className="size-5 rounded border border-line"
                     />
                   </label>
                 </div>
@@ -240,21 +280,39 @@ export default async function AdminContentEditorPage({
                 </div>
 
                 <div className="mt-6 border-t border-line pt-4">
-                  <p className="mb-3 font-black uppercase tracking-[0.14em] text-leaf">English</p>
+                  <p className="mb-3 font-black uppercase tracking-[0.14em] text-leaf">
+                    English
+                  </p>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <label className={FIELD_LABELS}>
                       <span>Title</span>
-                      <input type="text" name="titleEn" defaultValue={item.en.title} required className={INPUT_CLASS} />
+                      <input
+                        type="text"
+                        name="titleEn"
+                        defaultValue={item.en.title}
+                        required
+                        className={INPUT_CLASS}
+                      />
                     </label>
                     <label className={FIELD_LABELS}>
                       <span>Excerpt</span>
-                      <input type="text" name="excerptEn" defaultValue={item.en.excerpt ?? ""} className={INPUT_CLASS} />
+                      <input
+                        type="text"
+                        name="excerptEn"
+                        defaultValue={item.en.excerpt ?? ""}
+                        className={INPUT_CLASS}
+                      />
                     </label>
                   </div>
                   <div className="mt-4 grid gap-4 sm:grid-cols-2">
                     <label className={FIELD_LABELS}>
                       <span>SEO title</span>
-                      <input type="text" name="seoTitleEn" defaultValue={item.en.seoTitle ?? ""} className={INPUT_CLASS} />
+                      <input
+                        type="text"
+                        name="seoTitleEn"
+                        defaultValue={item.en.seoTitle ?? ""}
+                        className={INPUT_CLASS}
+                      />
                     </label>
                     <label className={FIELD_LABELS}>
                       <span>SEO description</span>
@@ -266,36 +324,109 @@ export default async function AdminContentEditorPage({
                       />
                     </label>
                   </div>
-                <div className="mt-4">
-                  <label className={FIELD_LABELS}>
-                    <span>Body (JSON blocks)</span>
-                    <textarea
-                      name="bodyEnBlocks"
-                      rows={12}
-                      defaultValue={blocksJson(item.en.body)}
-                      spellCheck={false}
-                      className={TEXTAREA_CLASS}
-                    />
-                  </label>
+                  <div className="mt-4">
+                    <label className={FIELD_LABELS}>
+                      <span>Body (JSON blocks)</span>
+                      <textarea
+                        name="bodyEnBlocks"
+                        rows={12}
+                        defaultValue={blocksJson(item.en.body)}
+                        spellCheck={false}
+                        className={TEXTAREA_CLASS}
+                      />
+                    </label>
+                  </div>
                 </div>
-              </div>
 
-              {item.status !== "draft" ? (
-                <p className="mt-4 text-xs font-bold text-coral">
-                  Saving a material change returns this item to draft for re-approval.
-                </p>
-              ) : null}
+                {canEditTaxonomy ? (
+                  <fieldset className="mt-6 border-t border-line pt-4">
+                    <legend className="mb-3 font-black uppercase tracking-[0.14em] text-leaf">
+                      Categories &amp; tags
+                    </legend>
+                    <input type="hidden" name="taxonomyPresent" value="1" />
+                    {taxonomyOptions.categories.length === 0 &&
+                    taxonomyOptions.tags.length === 0 ? (
+                      <p className="text-xs text-ink-muted">
+                        No categories or tags exist yet. Create them in{" "}
+                        <Link
+                          href="/admin/taxonomies"
+                          className="font-bold text-brand hover:underline"
+                        >
+                          Categories &amp; tags
+                        </Link>
+                        .
+                      </p>
+                    ) : (
+                      <div className="grid gap-5 sm:grid-cols-2">
+                        <div>
+                          <p className="text-xs font-black uppercase tracking-[0.12em] text-ink-muted">
+                            Categories
+                          </p>
+                          <ul className="mt-2 grid gap-2">
+                            {taxonomyOptions.categories.map((category) => (
+                              <li key={category.id}>
+                                <label className="flex items-center gap-2 text-sm text-ink">
+                                  <input
+                                    type="checkbox"
+                                    name="categoryIds"
+                                    value={category.id}
+                                    defaultChecked={item.categoryIds.includes(
+                                      category.id,
+                                    )}
+                                    className="size-4 rounded border border-line"
+                                  />
+                                  {category.label}
+                                </label>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div>
+                          <p className="text-xs font-black uppercase tracking-[0.12em] text-ink-muted">
+                            Tags
+                          </p>
+                          <ul className="mt-2 grid gap-2">
+                            {taxonomyOptions.tags.map((tag) => (
+                              <li key={tag.id}>
+                                <label className="flex items-center gap-2 text-sm text-ink">
+                                  <input
+                                    type="checkbox"
+                                    name="tagIds"
+                                    value={tag.id}
+                                    defaultChecked={item.tagIds.includes(
+                                      tag.id,
+                                    )}
+                                    className="size-4 rounded border border-line"
+                                  />
+                                  {tag.label}
+                                </label>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    )}
+                  </fieldset>
+                ) : null}
+
+                {item.status !== "draft" ? (
+                  <p className="mt-4 text-xs font-bold text-coral">
+                    Saving a material change returns this item to draft for
+                    re-approval.
+                  </p>
+                ) : null}
               </ActionForm>
             ) : (
               <p className="text-sm text-ink-muted">
-                You can read this work, but only its author or a content editor may change it.
+                You can read this work, but only its author or a content editor
+                may change it.
               </p>
             )}
           </CardContent>
         </Card>
 
         <div className="grid gap-5 lg:grid-cols-2">
-          <Card className="border-2 border-line">
+          <Card className="border border-line">
             <CardHeader>
               <CardTitle className="font-display text-base font-extrabold text-brand">
                 Revision history
@@ -307,12 +438,19 @@ export default async function AdminContentEditorPage({
               ) : (
                 <ul className="space-y-2 text-xs text-ink-muted">
                   {item.revisions.map((revision) => (
-                    <li key={revision.id} className="flex items-center justify-between gap-3">
+                    <li
+                      key={revision.id}
+                      className="flex items-center justify-between gap-3"
+                    >
                       <span>
-                        <strong className="text-ink">#{revision.revisionNo}</strong> -{" "}
-                        {formatDateTime(revision.createdAt)}
+                        <strong className="text-ink">
+                          #{revision.revisionNo}
+                        </strong>{" "}
+                        - {formatDateTime(revision.createdAt)}
                       </span>
-                      <span className="font-mono text-[10px]">{revision.changedBy}</span>
+                      <span className="font-mono text-[10px]">
+                        {revision.changedBy}
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -320,7 +458,7 @@ export default async function AdminContentEditorPage({
             </CardContent>
           </Card>
 
-          <Card className="border-2 border-line">
+          <Card className="border border-line">
             <CardHeader>
               <CardTitle className="font-display text-base font-extrabold text-brand">
                 Approval trail
@@ -335,10 +473,20 @@ export default async function AdminContentEditorPage({
                     <li key={approval.id} className="rounded-xl bg-cream p-3">
                       <div className="flex items-center justify-between gap-3">
                         <StatusBadge
-                          status={approval.decision === "approved" ? "approved" : "rejected"}
-                          labels={approval.decision === "approved" ? { approved: "Approved" } : { rejected: "Changes requested" }}
+                          status={
+                            approval.decision === "approved"
+                              ? "approved"
+                              : "rejected"
+                          }
+                          labels={
+                            approval.decision === "approved"
+                              ? { approved: "Approved" }
+                              : { rejected: "Changes requested" }
+                          }
                         />
-                        <span className="text-ink-muted">{formatDateTime(approval.decidedAt)}</span>
+                        <span className="text-ink-muted">
+                          {formatDateTime(approval.decidedAt)}
+                        </span>
                       </div>
                       {approval.note ? (
                         <p className="mt-2 text-ink-muted">“{approval.note}”</p>
@@ -352,9 +500,12 @@ export default async function AdminContentEditorPage({
         </div>
 
         <p className="text-xs text-ink-muted">
-          Every save creates an immutable snapshot (see revision history), recorded automatically —
-          content history is never rewritten. Workflow state:{" "}
-          <Badge variant="neutral">{CONTENT_STATUS_LABELS[item.status] ?? item.status}</Badge>
+          Every save creates an immutable snapshot (see revision history),
+          recorded automatically — content history is never rewritten. Workflow
+          state:{" "}
+          <Badge variant="neutral">
+            {CONTENT_STATUS_LABELS[item.status] ?? item.status}
+          </Badge>
         </p>
       </div>
     </div>
