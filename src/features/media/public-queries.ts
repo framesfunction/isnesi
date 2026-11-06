@@ -1,6 +1,6 @@
 import { createPublicClient } from "@/lib/supabase/public";
 import { getPublicEnv } from "@/lib/env";
-import { publicObjectUrl } from "@/features/media/helpers";
+import { MEDIA_PUBLIC_BUCKET, publicObjectUrl } from "@/features/media/helpers";
 
 type PublicMedia = {
   /** Public storage URL, or null when the asset is not publicly readable. */
@@ -37,13 +37,24 @@ export async function getMediaPublicUrls(
 type MediaAssetSelect = {
   select: (
     columns: string,
-  ) => { in: (column: string, values: string[]) => PromiseLike<{ data: MediaAssetRow[] | null; error: { code?: string } | null }> };
+  ) => {
+    in: (
+      column: string,
+      values: string[],
+    ) => {
+      eq: (
+        column: string,
+        value: string,
+      ) => PromiseLike<{ data: MediaAssetRow[] | null; error: { code?: string } | null }>;
+    };
+  };
 };
 
 const { data, error } = await (supabase
   .from("media_assets") as unknown as MediaAssetSelect)
   .select("id, bucket_id, object_path, width, height, crop")
-  .in("id", mediaIds);
+  .in("id", mediaIds)
+  .eq("bucket_id", MEDIA_PUBLIC_BUCKET);
 
   if (error) {
     console.warn("[isnesi] media public urls unavailable", { code: error.code });

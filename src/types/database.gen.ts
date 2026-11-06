@@ -423,14 +423,14 @@ isOneToOne: false
                   ]
                 },"media_assets": {
                   Row: {
-                    "alt_text": string | null,"bucket_id": string,"byte_size": number | null,"caption": string | null,"consent_reference": string | null,"created_at": string,"credit": string | null,"file_name": string,"height": number | null,"id": string,"mime_type": string | null,"object_path": string,"rights_reference": string | null,"rights_status": string,"safeguarding_reviewed": boolean,"uploaded_by": string | null,"width": number | null
+                    "alt_text": string | null,"bucket_id": string,"byte_size": number | null,"caption": string | null,"consent_reference": string | null,"created_at": string,"credit": string | null,"crop": Json | null,"file_name": string,"height": number | null,"id": string,"mime_type": string | null,"object_path": string,"rights_reference": string | null,"rights_status": string,"safeguarding_reviewed": boolean,"uploaded_by": string | null,"width": number | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "alt_text"?: string | null,"bucket_id"?: string,"byte_size"?: number | null,"caption"?: string | null,"consent_reference"?: string | null,"created_at"?: string,"credit"?: string | null,"file_name": string,"height"?: number | null,"id"?: string,"mime_type"?: string | null,"object_path": string,"rights_reference"?: string | null,"rights_status"?: string,"safeguarding_reviewed"?: boolean,"uploaded_by"?: string | null,"width"?: number | null
+                    "alt_text"?: string | null,"bucket_id"?: string,"byte_size"?: number | null,"caption"?: string | null,"consent_reference"?: string | null,"created_at"?: string,"credit"?: string | null,"crop"?: Json | null,"file_name": string,"height"?: number | null,"id"?: string,"mime_type"?: string | null,"object_path": string,"rights_reference"?: string | null,"rights_status"?: string,"safeguarding_reviewed"?: boolean,"uploaded_by"?: string | null,"width"?: number | null
                   }
                   Update: {
-                    "alt_text"?: string | null,"bucket_id"?: string,"byte_size"?: number | null,"caption"?: string | null,"consent_reference"?: string | null,"created_at"?: string,"credit"?: string | null,"file_name"?: string,"height"?: number | null,"id"?: string,"mime_type"?: string | null,"object_path"?: string,"rights_reference"?: string | null,"rights_status"?: string,"safeguarding_reviewed"?: boolean,"uploaded_by"?: string | null,"width"?: number | null
+                    "alt_text"?: string | null,"bucket_id"?: string,"byte_size"?: number | null,"caption"?: string | null,"consent_reference"?: string | null,"created_at"?: string,"credit"?: string | null,"crop"?: Json | null,"file_name"?: string,"height"?: number | null,"id"?: string,"mime_type"?: string | null,"object_path"?: string,"rights_reference"?: string | null,"rights_status"?: string,"safeguarding_reviewed"?: boolean,"uploaded_by"?: string | null,"width"?: number | null
                   }
                   Relationships: [
                     

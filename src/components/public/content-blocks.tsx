@@ -76,8 +76,8 @@ function parseBlocks(body: Json): Block[] {
       case "image": {
         const mediaId = asString(candidate.mediaId);
         const altText = asString(candidate.altText);
-        if (mediaId && altText) {
-          blocks.push({ type: "image", mediaId, altText, caption: asString(candidate.caption) ?? null });
+        if (mediaId) {
+          blocks.push({ type: "image", mediaId, altText: altText ?? "", caption: asString(candidate.caption) ?? null });
         }
         break;
       }
@@ -150,7 +150,7 @@ export async function ContentBlocks({
             return (
               <figure
                 key={key}
-                className="my-6 rounded-xl border border-line overflow-hidden bg-white"
+                className="relative my-6 rounded-xl border border-line overflow-hidden bg-white"
                 style={{ aspectRatio }}
               >
                 <NextImage
@@ -158,6 +158,7 @@ export async function ContentBlocks({
                   alt={block.altText}
                   fill
                   sizes="(max-width: 768px) 100vw, 640px"
+                  unoptimized
                   className="object-cover"
                   style={{ objectPosition }}
                 />
