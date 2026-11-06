@@ -30,7 +30,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         <BrandMark variant="header" />
       </div>
 
-      <p className="mt-8 text-xs font-black uppercase tracking-[0.16em] text-leaf lg:mt-0">
+      <p className="mt-8 text-xs font-black uppercase tracking-[0.16em] text-leaf-strong lg:mt-0">
         Staff access
       </p>
       <h1 className="mt-3 text-3xl font-black tracking-tight text-brand">Sign in to ISNESI</h1>

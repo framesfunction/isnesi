@@ -16,7 +16,7 @@ type ContentPlaceholderProps = {
 export function ContentPlaceholder({ cmsSlug, summary, steps }: ContentPlaceholderProps) {
   return (
     <div className="rounded-3xl border-2 border-dashed border-brand/30 bg-white p-8">
-      <p className="text-xs font-black uppercase tracking-[0.16em] text-accent">Awaiting published content</p>
+      <p className="text-xs font-black uppercase tracking-[0.16em] text-leaf-strong">Awaiting published content</p>
       <h2 className="mt-3 text-2xl font-black tracking-tight text-brand">
         This page is connected to the CMS
       </h2>

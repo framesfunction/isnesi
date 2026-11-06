@@ -29,7 +29,7 @@ export default async function NoAccessPage() {
   return (
     <main id="main-content" className="mx-auto w-full max-w-xl px-5 py-24">
       <div className="rounded-3xl border-2 border-line bg-white p-8">
-        <p className="text-xs font-black uppercase tracking-[0.16em] text-coral">Access restricted</p>
+        <p className="text-xs font-black uppercase tracking-[0.16em] text-coral-strong">Access restricted</p>
         <h1 className="mt-3 text-3xl font-black tracking-tight text-brand">
           Your account cannot open the admin panel
         </h1>

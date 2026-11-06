@@ -11,6 +11,8 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 
+import { CtaBand } from "@/components/public/cta-band";
+import { EmptyNote } from "@/components/public/empty-note";
 import { NewsletterForm } from "@/components/public/newsletter-form";
 import { GrowingBookIllustration, KidsPlayingIllustration } from "@/components/public/home-art";
 import { Section } from "@/components/public/page-hero";
@@ -50,7 +52,7 @@ const waysToHelp = [
     href: "/get-involved",
     title: "Partner with us",
     body: "Schools, NGOs, OPDs and businesses co-deliver inclusion that lasts.",
-    tone: "bg-leaf text-white",
+    tone: "bg-leaf-strong text-white",
     chip: "bg-white/15 text-white",
     icon: HeartHandshake,
   },
@@ -83,7 +85,7 @@ export default async function HomePage() {
         <div aria-hidden="true" className="absolute -left-36 top-16 size-80 rounded-full bg-brand-soft" />
         <div aria-hidden="true" className="absolute -right-32 -top-24 size-96 rounded-full bg-brand-soft/80" />
         <div aria-hidden="true" className="absolute -right-16 top-24 size-72 rounded-full bg-sun-soft" />
-        <div aria-hidden="true" className="absolute bottom-[-4rem] left-1/3 size-64 rounded-full bg-leaf-soft" />
+        <div aria-hidden="true" className="absolute -bottom-16 left-1/3 size-64 rounded-full bg-leaf-soft" />
         <p aria-hidden="true" className="absolute left-6 top-2 select-none text-6xl font-black text-sun/60">
           ✳
         </p>
@@ -148,7 +150,7 @@ export default async function HomePage() {
               <br />
               belong here!
             </p>
-            <p className="absolute -bottom-5 right-4 rotate-2 rounded-2xl bg-leaf px-4 py-2.5 text-center text-sm font-black text-white shadow-md">
+            <p className="absolute -bottom-5 right-4 rotate-2 rounded-2xl bg-leaf-strong px-4 py-2.5 text-center text-sm font-black text-white shadow-md">
               Everyone is welcome 🌍
             </p>
             <p
@@ -181,7 +183,7 @@ export default async function HomePage() {
 
       <section className="mx-auto w-full max-w-6xl px-5 py-16 lg:py-20">
         <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
-          <div className="relative overflow-hidden rounded-[2rem] bg-leaf-soft p-8">
+          <div className="relative overflow-hidden rounded-4xl bg-leaf-soft p-8">
             <div aria-hidden="true" className="absolute -bottom-8 -right-8 size-40 rounded-full bg-sun/60" />
             <div aria-hidden="true" className="absolute -left-6 top-10 size-16 rounded-full bg-white" />
             <HeartHandshake aria-hidden="true" className="relative size-14 text-leaf" />
@@ -190,7 +192,7 @@ export default async function HomePage() {
             </p>
           </div>
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.16em] text-leaf">Who we are</p>
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-leaf-strong">Who we are</p>
             <h2 className="mt-3 text-balance text-3xl font-black tracking-tight text-brand sm:text-4xl">
               Inclusion is built with communities, not delivered to them.
             </h2>
@@ -201,7 +203,7 @@ export default async function HomePage() {
             </p>
             <ul className="mt-7 grid gap-4 sm:grid-cols-2">
               <li className="rounded-3xl border border-line bg-white p-6 shadow-sm">
-                <h3 className="text-sm font-black uppercase tracking-[0.14em] text-leaf">
+                <h3 className="text-sm font-black uppercase tracking-[0.14em] text-leaf-strong">
                   Our vision
                 </h3>
                 <p className="mt-3 text-sm leading-6 text-ink-muted">
@@ -211,7 +213,7 @@ export default async function HomePage() {
                 </p>
               </li>
               <li className="rounded-3xl border border-line bg-white p-6 shadow-sm">
-                <h3 className="text-sm font-black uppercase tracking-[0.14em] text-coral">
+                <h3 className="text-sm font-black uppercase tracking-[0.14em] text-coral-strong">
                   Our mission
                 </h3>
                 <p className="mt-3 text-sm leading-6 text-ink-muted">
@@ -241,9 +243,9 @@ export default async function HomePage() {
         }
       >
         {programmes.length === 0 ? (
-          <p className="rounded-2xl border-2 border-dashed border-line bg-white p-6 text-sm text-ink-muted">
+          <EmptyNote title="No programmes yet">
             Programme information will appear here as soon as published programmes are available.
-          </p>
+          </EmptyNote>
         ) : (
           <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {programmes.map((programme, index) => (
@@ -328,7 +330,7 @@ export default async function HomePage() {
       <section className="bg-sun-soft">
         <div className="mx-auto grid w-full max-w-6xl gap-10 px-5 py-16 md:grid-cols-[1fr_0.85fr] md:items-center">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.16em] text-coral">
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-coral-strong">
               A little space for big imaginations
             </p>
             <h2 className="mt-3 text-balance text-3xl font-black tracking-tight text-brand sm:text-4xl">
@@ -340,7 +342,7 @@ export default async function HomePage() {
             </p>
             <Link
               href="/kids-corner"
-              className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-full bg-coral px-7 text-sm font-black text-white shadow-[0_5px_0_rgb(196_62_70/0.7)] transition-transform hover:-translate-y-0.5"
+              className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-full bg-coral px-7 text-sm font-black text-ink shadow-[0_5px_0_rgb(196_62_70/0.7)] transition-transform hover:-translate-y-0.5"
             >
               Learn · Play · Belong <ArrowRight aria-hidden="true" className="size-4" />
             </Link>
@@ -366,9 +368,9 @@ export default async function HomePage() {
         }
       >
         {stories.length === 0 ? (
-          <p className="rounded-2xl border-2 border-dashed border-line bg-cream p-6 text-sm text-ink-muted">
-            Safeguarding-cleared stories and news will appear here once an editor publishes them.
-          </p>
+          <EmptyNote title="No stories yet">
+            Safeguarding-cleared stories and news will appear here as soon as they are published.
+          </EmptyNote>
         ) : (
           <ul className="grid gap-5 md:grid-cols-3">
             {stories.map((story) => <StoryCard key={story.id} story={story} />)}
@@ -427,32 +429,25 @@ export default async function HomePage() {
         </Section>
       ) : null}
 
-      <section className="mx-auto w-full max-w-6xl px-5 py-14">
-        <div className="relative isolate overflow-hidden rounded-[2rem] bg-brand p-8 text-white sm:p-12">
-          <div aria-hidden="true" className="absolute -left-16 -top-16 size-56 rounded-full border-[24px] border-white/10" />
-          <div aria-hidden="true" className="absolute -bottom-20 right-10 size-44 rounded-full bg-sun/20 blur-2xl" />
-          <h2 className="relative max-w-2xl text-balance text-3xl font-black tracking-tight sm:text-4xl">
-            Every child deserves a place to learn, belong and thrive.
-          </h2>
-          <p className="relative mt-4 max-w-2xl text-white/80">
+      <CtaBand
+        eyebrow="Join in"
+        title="Every child deserves a place to learn, belong and thrive."
+        description={
+          <>
             Give your time, expertise or support to stand with ISNESI.{" "}
             <span className="font-display font-black text-sun">{siteConfig.tagline}</span>
-          </p>
-          <div className="relative mt-8 flex flex-wrap gap-3">
-            <Link href="/get-involved" className="inline-flex min-h-12 items-center rounded-full bg-sun px-7 text-sm font-black text-ink">
-              Volunteer or partner
-            </Link>
-            <Link href="/donate" className="inline-flex min-h-12 items-center rounded-full border-2 border-white px-7 text-sm font-black text-white">
-              Donate
-            </Link>
-          </div>
-        </div>
-      </section>
+          </>
+        }
+        actions={[
+          { label: "Volunteer or partner", href: "/get-involved", emphasis: "primary" },
+          { label: "Donate", href: "/donate", emphasis: "secondary" },
+        ]}
+      />
 
       <section className="border-y border-line bg-leaf-soft">
         <div className="mx-auto grid w-full max-w-6xl gap-8 px-5 py-14 md:grid-cols-[1fr_0.8fr] md:items-center">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.16em] text-leaf">Stay connected</p>
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-leaf-strong">Stay connected</p>
             <h2 className="mt-3 text-3xl font-black tracking-tight text-brand">Good news in your inbox</h2>
             <p className="mt-3 max-w-xl text-ink-muted">
               Occasional ISNESI updates, stories and opportunities to support inclusive education.

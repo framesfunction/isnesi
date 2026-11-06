@@ -22,9 +22,15 @@
   --line: #e6e8ef;
   --leaf: #2e9e4f;
   --leaf-soft: #eaf7ef;
+  /* Darker steps that pass 4.5:1 against cream and white when used as text,
+     and against white when used as a fill. Derived from the accent pair. */
+  --leaf-strong: #1d6b35;
   --sun: #ffc83d;
   --sun-soft: #fff6de;
   --coral: #f47768;
+  --coral-strong: #c43e46;
+  /* Darkest coral step for small text on tinted coral fills (4.5:1). */
+  --coral-strongest: #8f2119;
 
   /* shadcn/ui semantic tokens, aligned with the brand */
   --background: #fffdf5;
@@ -79,9 +85,12 @@
   --color-line: var(--line);
   --color-leaf: var(--leaf);
   --color-leaf-soft: var(--leaf-soft);
+  --color-leaf-strong: var(--leaf-strong);
   --color-sun: var(--sun);
   --color-sun-soft: var(--sun-soft);
   --color-coral: var(--coral);
+  --color-coral-strong: var(--coral-strong);
+  --color-coral-strongest: var(--coral-strongest);
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-display: var(--font-nunito), ui-rounded, "Trebuchet MS", system-ui, sans-serif;
