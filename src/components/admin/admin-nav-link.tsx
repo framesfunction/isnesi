@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -14,8 +15,11 @@ type AdminNavLinkProps = {
 
 /**
  * Sidebar link with an `aria-current` state derived from the current path.
- * Keeping this client boundary small means the rest of the admin chrome can stay
- * on the server.
+ *
+ * The active state is deferred until after hydration: `usePathname()` returns
+ * `/` during SSR but the real route on the client, so computing it synchronously
+ * would produce a className / aria-current mismatch between the server HTML and
+ * the hydrated client.
  */
 export function AdminNavLink({
   href,
@@ -25,9 +29,17 @@ export function AdminNavLink({
   exact,
 }: AdminNavLinkProps) {
   const pathname = usePathname();
-  const active = exact
-    ? pathname === href
-    : pathname === href || pathname.startsWith(`${href}/`);
+  const [mounted, setMounted] = useState(false);
+  const active =
+    mounted &&
+    (exact
+      ? pathname === href
+      : pathname === href || pathname.startsWith(`${href}/`));
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+  }, []);
 
   return (
     <Link
