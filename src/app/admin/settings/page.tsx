@@ -122,70 +122,58 @@ export default async function AdminSettingsPage() {
         <CardContent>
           {" "}
           <div className="overflow-x-auto">
-            {" "}
             <table className="w-full text-sm">
-              {" "}
               <thead>
-                {" "}
                 <tr className="text-left text-xs text-ink-muted">
-                  {" "}
-                  <th className="p-3 font-bold">Key</th>{" "}
-                  <th className="p-3 font-bold">Value</th>{" "}
-                  <th className="p-3 font-bold">Public</th>{" "}
-                  <th className="p-3 font-bold">Updated</th>{" "}
-                  <th className="p-3 font-bold">Updated by</th>{" "}
-                </tr>{" "}
-              </thead>{" "}
+                  <th className="p-3 font-bold">Key</th>
+                  <th className="p-3 font-bold">Value</th>
+                  <th className="p-3 font-bold">Public</th>
+                  <th className="p-3 font-bold">Updated</th>
+                  <th className="p-3 font-bold">Updated by</th>
+                </tr>
+              </thead>
               <tbody>
-                {" "}
                 {settings.length === 0 ? (
                   <tr>
-                    {" "}
                     <td colSpan={5} className="p-6 text-center text-ink-muted">
-                      {" "}
-                      No settings configured yet.{" "}
-                    </td>{" "}
+                      No settings configured yet.
+                    </td>
                   </tr>
                 ) : (
                   settings.map((setting) => (
                     <tr key={setting.key} className="border-t border-line">
-                      {" "}
                       <td className="p-3 font-mono text-sm">
                         {setting.key}
-                      </td>{" "}
+                      </td>
                       <td className="p-3 text-sm">
-                        {" "}
                         {typeof setting.value === "string" ? (
                           <span className="font-mono">{setting.value}</span>
                         ) : (
                           <code className="text-xs text-ink-muted">
                             {JSON.stringify(setting.value)}
                           </code>
-                        )}{" "}
-                      </td>{" "}
+                        )}
+                      </td>
                       <td className="p-3 text-sm">
-                        {" "}
                         {setting.isPublic ? (
                           <span className="text-xs font-bold text-leaf-strong">
                             Yes
                           </span>
                         ) : (
                           <span className="text-xs text-ink-muted">No</span>
-                        )}{" "}
-                      </td>{" "}
+                        )}
+                      </td>
                       <td className="p-3 text-sm text-ink-muted">
-                        {" "}
-                        {new Date(setting.updatedAt).toLocaleDateString()}{" "}
-                      </td>{" "}
+                        {new Date(setting.updatedAt).toLocaleDateString()}
+                      </td>
                       <td className="p-3 text-sm text-ink-muted">
-                        {" "}
-                        {setting.updatedBy ?? "—"}{" "}
-                      </td>{" "}
+                        {setting.updatedBy ?? "—"}
+                      </td>
                     </tr>
                   ))
-                )}{" "}
-              </tbody>{" "}
-            </table>{" "}
+                )}
+              </tbody>
+            </table>
           </div>{" "}
         </CardContent>{" "}
       </Card>{" "}

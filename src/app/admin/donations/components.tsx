@@ -433,41 +433,34 @@ function CampaignManager({ campaigns }: { campaigns: Campaign[] }) {
         </p>{" "}
       </div>{" "}
       <div className="overflow-x-auto p-4 border-t border-line">
-        {" "}
         <table className="w-full text-sm">
-          {" "}
           <thead>
-            {" "}
             <tr className="text-left text-xs text-ink-muted">
-              {" "}
-              <th className="p-3 font-bold">Key</th>{" "}
-              <th className="p-3 font-bold">Title</th>{" "}
-              <th className="p-3 font-bold">Starts</th>{" "}
-              <th className="p-3 font-bold">Ends</th>{" "}
-              <th className="p-3 font-bold">Status</th>{" "}
-              <th className="p-3 font-bold text-right">Actions</th>{" "}
-            </tr>{" "}
-          </thead>{" "}
+              <th className="p-3 font-bold">Key</th>
+              <th className="p-3 font-bold">Title</th>
+              <th className="p-3 font-bold">Starts</th>
+              <th className="p-3 font-bold">Ends</th>
+              <th className="p-3 font-bold">Status</th>
+              <th className="p-3 font-bold text-right">Actions</th>
+            </tr>
+          </thead>
           <tbody>
-            {" "}
             {campaigns.length === 0 ? (
               <tr>
-                {" "}
                 <td colSpan={6} className="p-6 text-center text-ink-muted">
-                  {" "}
                   <EmptyState
                     title="No campaigns yet."
                     description="Create your first campaign above."
-                  />{" "}
-                </td>{" "}
+                  />
+                </td>
               </tr>
             ) : (
               campaigns.map((campaign) => (
                 <CampaignRow key={campaign.id} campaign={campaign} />
               ))
-            )}{" "}
-          </tbody>{" "}
-        </table>{" "}
+            )}
+          </tbody>
+        </table>
       </div>{" "}
     </div>
   );

@@ -239,29 +239,22 @@ export default async function AdminDonationsPage({
           </form>{" "}
         </div>{" "}
         <div className="overflow-x-auto p-4">
-          {" "}
           <table className="w-full text-sm">
-            {" "}
             <thead>
-              {" "}
               <tr className="text-left text-xs text-ink-muted">
-                {" "}
-                <th className="p-3 font-bold">Reference</th>{" "}
-                <th className="p-3 font-bold">Donor</th>{" "}
-                <th className="p-3 font-bold text-right">Amount</th>{" "}
-                <th className="p-3 font-bold">Status</th>{" "}
-                <th className="p-3 font-bold">Receipt</th>{" "}
-                <th className="p-3 font-bold">Paid</th>{" "}
-                <th className="p-3 font-bold text-right">Actions</th>{" "}
-              </tr>{" "}
-            </thead>{" "}
+                <th className="p-3 font-bold">Reference</th>
+                <th className="p-3 font-bold">Donor</th>
+                <th className="p-3 font-bold text-right">Amount</th>
+                <th className="p-3 font-bold">Status</th>
+                <th className="p-3 font-bold">Receipt</th>
+                <th className="p-3 font-bold">Paid</th>
+                <th className="p-3 font-bold text-right">Actions</th>
+              </tr>
+            </thead>
             <tbody>
-              {" "}
               {filteredDonations.length === 0 ? (
                 <tr>
-                  {" "}
                   <td colSpan={7} className="p-6 text-center text-ink-muted">
-                    {" "}
                     <EmptyState
                       title="No donations found."
                       description={
@@ -269,8 +262,8 @@ export default async function AdminDonationsPage({
                           ? "Try a different status filter."
                           : "No donation records yet."
                       }
-                    />{" "}
-                  </td>{" "}
+                    />
+                  </td>
                 </tr>
               ) : (
                 filteredDonations.map((donation) => (
@@ -280,9 +273,9 @@ export default async function AdminDonationsPage({
                     onCreateIntent={handleCreateDonationIntent}
                   />
                 ))
-              )}{" "}
-            </tbody>{" "}
-          </table>{" "}
+              )}
+            </tbody>
+          </table>
         </div>{" "}
         <div className="mt-4 px-4 pb-4 flex justify-end">
           {" "}
@@ -361,30 +354,23 @@ export default async function AdminDonationsPage({
           the donation total.{" "}
         </p>{" "}
         <div className="overflow-x-auto p-4">
-          {" "}
           <table className="w-full text-sm">
-            {" "}
             <thead>
-              {" "}
               <tr className="text-left text-xs text-ink-muted">
-                {" "}
-                <th className="p-3 font-bold">Reference</th>{" "}
-                <th className="p-3 font-bold text-right">Amount</th>{" "}
-                <th className="p-3 font-bold">Reason</th>{" "}
-                <th className="p-3 font-bold">Status</th>{" "}
-                <th className="p-3 font-bold">Requested</th>{" "}
-                <th className="p-3 font-bold text-right">Actions</th>{" "}
-              </tr>{" "}
-            </thead>{" "}
+                <th className="p-3 font-bold">Reference</th>
+                <th className="p-3 font-bold text-right">Amount</th>
+                <th className="p-3 font-bold">Reason</th>
+                <th className="p-3 font-bold">Status</th>
+                <th className="p-3 font-bold">Requested</th>
+                <th className="p-3 font-bold text-right">Actions</th>
+              </tr>
+            </thead>
             <tbody>
-              {" "}
               {refunds.length === 0 ? (
                 <tr>
-                  {" "}
                   <td colSpan={6} className="p-6 text-center text-ink-muted">
-                    {" "}
-                    <EmptyState title="No refunds yet." />{" "}
-                  </td>{" "}
+                    <EmptyState title="No refunds yet." />
+                  </td>
                 </tr>
               ) : (
                 refunds.map((refund) => (
@@ -394,9 +380,9 @@ export default async function AdminDonationsPage({
                     onApprove={handleApproveRefund}
                   />
                 ))
-              )}{" "}
-            </tbody>{" "}
-          </table>{" "}
+              )}
+            </tbody>
+          </table>
         </div>{" "}
       </div>{" "}
       {/* Reconciliation manager */}{" "}
@@ -484,40 +470,30 @@ export default async function AdminDonationsPage({
           </div>{" "}
         </form>{" "}
         <div className="overflow-x-auto p-4">
-          {" "}
           <table className="w-full text-sm">
-            {" "}
             <thead>
-              {" "}
               <tr className="text-left text-xs text-ink-muted">
-                {" "}
-                <th className="p-3 font-bold">Period</th>{" "}
-                <th className="p-3 font-bold text-right">Total</th>{" "}
-                <th className="p-3 font-bold">Provider</th>{" "}
-                <th className="p-3 font-bold">Status</th>{" "}
-                <th className="p-3 font-bold">Created</th>{" "}
-              </tr>{" "}
-            </thead>{" "}
+                <th className="p-3 font-bold">Period</th>
+                <th className="p-3 font-bold text-right">Total</th>
+                <th className="p-3 font-bold">Provider</th>
+                <th className="p-3 font-bold">Status</th>
+                <th className="p-3 font-bold">Created</th>
+              </tr>
+            </thead>
             <tbody>
-              {" "}
               {reconciliations.length === 0 ? (
                 <tr>
-                  {" "}
                   <td colSpan={5} className="p-6 text-center text-ink-muted">
-                    {" "}
-                    <EmptyState title="No reconciliation records yet." />{" "}
-                  </td>{" "}
+                    <EmptyState title="No reconciliation records yet." />
+                  </td>
                 </tr>
               ) : (
                 reconciliations.map((rec) => (
-                  <ReconciliationRow
-                    key={rec.id}
-                    rec={rec as unknown as Reconciliation}
-                  />
+                  <ReconciliationRow key={rec.id} rec={rec as unknown as Reconciliation} />
                 ))
-              )}{" "}
-            </tbody>{" "}
-          </table>{" "}
+              )}
+            </tbody>
+          </table>
         </div>{" "}
       </div>{" "}
     </div>
