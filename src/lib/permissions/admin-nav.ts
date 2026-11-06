@@ -14,6 +14,8 @@ export type AdminNavGroupKey = "overview" | "website" | "engagement" | "administ
 
 export type AdminModuleKey =
   | "dashboard"
+  | "intelligence"
+  | "help"
   | "pages"
   | "programmes"
   | "stories"
@@ -85,6 +87,52 @@ export const ADMIN_MODULES: AdminModule[] = [
       "No child names, referral narratives or medical detail on the dashboard",
       "Safeguarding workload is aggregated and further restricted by role",
       "Exports are permission-checked, audited and never include restricted data",
+    ],
+  },
+  {
+    key: "intelligence",
+    label: "Business intelligence",
+    href: "/admin/intelligence",
+    icon: "trending-up",
+    group: "overview",
+    description: "Performance, trends and organisation-wide indicators",
+    permission: "admin.access",
+    purpose:
+      "Turn website operations, communications, public engagement, programme activity and financial performance into decisions administrators can understand and act on.",
+    tables: ["pages", "content_items", "general_enquiries", "donations", "newsletter_subscribers", "impact_metrics", "programmes", "partners"],
+    capabilities: [
+      "Current performance snapshot across programmes, website, engagement and finance",
+      "Permission-aware business indicators and attention points",
+      "Fundraising success, volume and reconciliation indicators",
+      "Content, enquiry and newsletter health trends",
+      "Decision prompts linking insights to the relevant admin module",
+    ],
+    security: [
+      "Financial indicators require donations.read or donations.manage",
+      "Restricted metrics are never shown to staff without the required permission",
+      "The page is read-only and access is audited as other sensitive admin views",
+    ],
+  },
+  {
+    key: "help",
+    label: "Help & guide",
+    href: "/admin/help",
+    icon: "book-open",
+    group: "overview",
+    description: "Plain-language guide to using the admin panel",
+    permission: "admin.access",
+    purpose:
+      "Explain, in plain language, what each part of the admin panel does, when to use it, and what happens when you save, publish or delete something.",
+    tables: [],
+    capabilities: [
+      "What each module is for and when you would use it",
+      "What happens when you create, save, publish or delete",
+      "A plain-language glossary of CMS terms",
+      "Who to ask for access or help",
+    ],
+    security: [
+      "Read-only: this screen never writes data",
+      "Shows nothing the signed-in role may not already see",
     ],
   },
   {

@@ -20,7 +20,7 @@ export default async function AdminDashboardPage() {
       <AdminPageHeader
         eyebrow="Overview"
         title={`Welcome, ${user.displayName ?? "colleague"}`}
-        description="Operational indicators for the public website. Every figure is a count read through Row Level Security for your role."
+        description="Your operational workboard for website and enquiry workload. Use Business intelligence for management performance and financial indicators."
         actions={
           <Badge variant={snapshot.unavailable ? "warning" : "success"}>
             {" "}
