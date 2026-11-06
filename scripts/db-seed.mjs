@@ -1,0 +1,92 @@
+#!/usr/bin/env node
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+import { spawn } from "node:child_process";
+import { fileURLToPath } from "node:url";
+import { createClient } from "@supabase/supabase-js";
+
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+
+function parseEnvFile(content) {
+  const env = {};
+  for (const rawLine of content.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith("#")) continue;
+    const separator = line.indexOf("=");
+    if (separator === -1) continue;
+    const key = line.slice(0, separator).trim();
+    let value = line.slice(separator + 1).trim();
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1);
+    }
+    env[key] = value;
+  }
+  return env;
+}
+
+const localEnv = parseEnvFile(await readFile(path.join(repoRoot, ".env.local"), "utf8"));
+const url = process.env.NEXT_PUBLIC_SUPABASE_URL || localEnv.NEXT_PUBLIC_SUPABASE_URL;
+const serviceRoleKey =
+  process.env.SUPABASE_SERVICE_ROLE_KEY || localEnv.SUPABASE_SERVICE_ROLE_KEY;
+
+function run(command, args) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, { stdio: "inherit", env: process.env });
+    child.on("error", reject);
+    child.on("exit", (code, signal) => {
+      if (signal) reject(new Error(`Process terminated by signal ${signal}`));
+      else resolve(code ?? 0);
+    });
+  });
+}
+
+const dbPushCode = await run(process.execPath, [
+  path.join(repoRoot, "scripts", "db-push.mjs"),
+  "--include-seed",
+]);
+if (dbPushCode !== 0) process.exit(dbPushCode);
+
+if (!url || !serviceRoleKey) {
+  console.error(
+    "Seeded database rows were applied, but media files could not be uploaded because NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are missing.",
+  );
+  process.exit(1);
+}
+
+const supabase = createClient(url, serviceRoleKey, {
+  auth: { persistSession: false, autoRefreshToken: false },
+});
+
+const logo = await readFile(path.join(repoRoot, "public", "brand", "logo.png"));
+const favicon = await readFile(
+  path.join(repoRoot, "public", "icons", "favicon-48.png"),
+);
+
+const minimalPdf = Buffer.from(
+  "%PDF-1.4\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R >>\nendobj\n4 0 obj\n<< /Length 44 >>\nstream\nBT /Helvetica 24 Tf 72 720 Td (ISNESI Kids Storybook) Tj ET\nendstream\nendobj\nxref\n0 5\n0000000000 65535 f \ntrailer\n<< /Root 1 0 R /Size 5 >>\n%%EOF\n",
+);
+
+const uploads = [
+  ["uploads/2026/hero-classroom.jpg", logo, "image/png"],
+  ["uploads/2026/teacher-workshop.jpg", logo, "image/png"],
+  ["uploads/2026/assistive-device.jpg", logo, "image/png"],
+  ["uploads/2026/partner-logo-unicef.png", favicon, "image/png"],
+  ["uploads/2026/pending-asset.jpg", logo, "image/png"],
+  ["uploads/2026/expired-asset.jpg", logo, "image/png"],
+  ["uploads/2026/kids-storybook.pdf", minimalPdf, "application/pdf"],
+];
+
+for (const [objectPath, body, contentType] of uploads) {
+  const { error } = await supabase.storage
+    .from("public-media")
+    .upload(objectPath, body, { contentType, upsert: true });
+  if (error) {
+    console.error(`Could not upload ${objectPath}: ${error.message}`);
+    process.exit(1);
+  }
+}
+
+console.log(`Seed applied and ${uploads.length} sample media files uploaded.`);

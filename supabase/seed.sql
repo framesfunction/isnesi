@@ -340,11 +340,12 @@ from ci;
 
 -- Content approvals for published/story items
 insert into public.content_approvals(content_id,revision_id,reviewer_id,decision,note,decided_at)
-select ci.id, cr.id, '00000000-0000-0000-0000-000000000001'::uuid,'approved','Approved for publication.',cr.created_at
+select ci.id, cr.id, (select id from auth.users order by created_at limit 1),'approved','Approved for publication.',cr.created_at
 from public.content_items ci
 join public.content_revisions cr on cr.content_id = ci.id
 where ci.status in ('published','approved')
 and cr.revision_no = 1
+and exists (select 1 from auth.users)
 on conflict do nothing;
 
 -- Content categories and tags
@@ -388,12 +389,12 @@ on conflict do nothing;
 with pr as (
   insert into public.partners(name,relationship_type,website_url,logo_media_id,approval_status,public_visible,approved_by,approved_at)
   values
-   ('Ministry of Social Affairs','government','https://minsocial.cm',null,'approved',true,'00000000-0000-0000-0000-000000000001'::uuid,now() - interval '60 days'),
-   ('Cameroon Baptist Convention','ngo','https://cbchealthservices.org',null,'approved',true,'00000000-0000-0000-0000-000000000001'::uuid,now() - interval '45 days'),
-   ('UNICEF Cameroon','un_agency','https://unicef.org/cameroon',null,'approved',true,'00000000-0000-0000-0000-000000000001'::uuid,now() - interval '30 days'),
+   ('Ministry of Social Affairs','government','https://minsocial.cm',null,'approved',true,(select id from auth.users order by created_at limit 1),now() - interval '60 days'),
+   ('Cameroon Baptist Convention','ngo','https://cbchealthservices.org',null,'approved',true,(select id from auth.users order by created_at limit 1),now() - interval '45 days'),
+   ('UNICEF Cameroon','un_agency','https://unicef.org/cameroon',null,'approved',true,(select id from auth.users order by created_at limit 1),now() - interval '30 days'),
    ('Local Innovators Network','community','https://localinnovators.cm',null,'pending',false,null,null),
    ('Tech for All Foundation','foundation','https://techforall.cm',null,'rejected',false,null,null)
-  returning id
+  returning id, name
 )
 insert into public.partner_translations(partner_id,locale,description)
 select pr.id,'en',
@@ -409,13 +410,13 @@ from pr;
 with ma as (
   insert into public.media_assets(bucket_id,object_path,file_name,mime_type,byte_size,width,height,alt_text,caption,credit,rights_status,rights_reference,consent_reference,safeguarding_reviewed,uploaded_by)
   values
-   ('public-media','uploads/2026/hero-classroom.jpg','hero-classroom.jpg','image/jpeg',245760,1200,800,'Children in an inclusive classroom','Inclusive classroom in Yaounde','ISNESI','owned','ISNESI-2026-001',null,true,'00000000-0000-0000-0000-000000000001'::uuid),
-   ('public-media','uploads/2026/teacher-workshop.jpg','teacher-workshop.jpg','image/png',512000,1600,1200,'Teachers in a training workshop','Teacher training workshop, March 2026','ISNESI','owned','ISNESI-2026-002',null,true,'00000000-0000-0000-0000-000000000001'::uuid),
-   ('public-media','uploads/2026/assistive-device.jpg','assistive-device.jpg','image/webp',184320,1000,750,'Low-cost assistive device prototype','Assistive device pilot prototype','ISNESI','licensed','CC-BY-4.0',null,true,'00000000-0000-0000-0000-000000000001'::uuid),
-   ('public-media','uploads/2026/partner-logo-unicef.png','partner-logo-unicef.png','image/png',98304,500,500,'UNICEF Cameroon logo','UNICEF partner logo','UNICEF','owned','UNICEF-brand-2026',null,true,'00000000-0000-0000-0000-000000000001'::uuid),
-   ('public-media','uploads/2026/kids-storybook.pdf','kids-storybook.pdf','application/pdf',1048576,null,null,'Kids storybook cover','Downloadable storybook for children','ISNESI','owned','ISNESI-2026-003',null,true,'00000000-0000-0000-0000-000000000001'::uuid),
-   ('public-media','uploads/2026/pending-asset.jpg','pending-asset.jpg','image/jpeg',51200,800,600,'Pending rights review','Asset awaiting rights clearance','Photographer Name','pending',null,null,false,'00000000-0000-0000-0000-000000000001'::uuid),
-   ('public-media','uploads/2026/expired-asset.jpg','expired-asset.jpg','image/jpeg',51200,800,600,'Expired rights asset','Asset with expired usage rights','Stock Provider','expired','license-2025-expired',null,false,'00000000-0000-0000-0000-000000000001'::uuid)
+   ('public-media','uploads/2026/hero-classroom.jpg','hero-classroom.jpg','image/jpeg',245760,1200,800,'Children in an inclusive classroom','Inclusive classroom in Yaounde','ISNESI','owned','ISNESI-2026-001',null,true,(select id from auth.users order by created_at limit 1)),
+   ('public-media','uploads/2026/teacher-workshop.jpg','teacher-workshop.jpg','image/png',512000,1600,1200,'Teachers in a training workshop','Teacher training workshop, March 2026','ISNESI','owned','ISNESI-2026-002',null,true,(select id from auth.users order by created_at limit 1)),
+   ('public-media','uploads/2026/assistive-device.jpg','assistive-device.jpg','image/webp',184320,1000,750,'Low-cost assistive device prototype','Assistive device pilot prototype','ISNESI','licensed','CC-BY-4.0',null,true,(select id from auth.users order by created_at limit 1)),
+   ('public-media','uploads/2026/partner-logo-unicef.png','partner-logo-unicef.png','image/png',98304,500,500,'UNICEF Cameroon logo','UNICEF partner logo','UNICEF','owned','UNICEF-brand-2026',null,true,(select id from auth.users order by created_at limit 1)),
+   ('public-media','uploads/2026/kids-storybook.pdf','kids-storybook.pdf','application/pdf',1048576,null,null,'Kids storybook cover','Downloadable storybook for children','ISNESI','owned','ISNESI-2026-003',null,true,(select id from auth.users order by created_at limit 1)),
+   ('public-media','uploads/2026/pending-asset.jpg','pending-asset.jpg','image/jpeg',51200,800,600,'Pending rights review','Asset awaiting rights clearance','Photographer Name','pending',null,null,false,(select id from auth.users order by created_at limit 1)),
+   ('public-media','uploads/2026/expired-asset.jpg','expired-asset.jpg','image/jpeg',51200,800,600,'Expired rights asset','Asset with expired usage rights','Stock Provider','expired','license-2025-expired',null,false,(select id from auth.users order by created_at limit 1))
   returning id, object_path
 )
 insert into public.media_usage(media_id,entity_type,entity_id,usage_role)
@@ -434,15 +435,15 @@ on conflict do nothing;
 with ge as (
   insert into public.general_enquiries(enquiry_type,full_name,email,phone,message,status,assigned_to,source,consent_to_contact,created_at,updated_at,closed_at)
   values
-   ('volunteer','Amina Doumbia','amina@example.cm','+237 6 77 77 77 77','I would like to volunteer with ISNESI. I am a teacher with experience in inclusive education.','triaged','00000000-0000-0000-0000-000000000001'::uuid,'website',true,now() - interval '5 days',now() - interval '2 days',null),
-   ('partnership','Jean-Pierre Nkoudou','jp@ngo-partner.cm','+237 6 88 88 88 88','Our organisation would like to explore a partnership with ISNESI on community outreach.','assigned','00000000-0000-0000-0000-000000000001'::uuid,'website',true,now() - interval '3 days',now() - interval '1 day',null),
+   ('volunteer','Amina Doumbia','amina@example.cm','+237 6 77 77 77 77','I would like to volunteer with ISNESI. I am a teacher with experience in inclusive education.','triaged',(select id from auth.users order by created_at limit 1),'website',true,now() - interval '5 days',now() - interval '2 days',null),
+   ('partnership','Jean-Pierre Nkoudou','jp@ngo-partner.cm','+237 6 88 88 88 88','Our organisation would like to explore a partnership with ISNESI on community outreach.','assigned',(select id from auth.users order by created_at limit 1),'website',true,now() - interval '3 days',now() - interval '1 day',null),
    ('contact','Grace Mbala','grace@example.cm','+237 6 99 99 99 99','Please send me more information about your programmes for children with disabilities.','new',null,'website',true,now() - interval '1 day',now() - interval '1 day',null),
    ('media','Samuel Essola','s.essola@news.cm','+237 6 11 11 11 11','I am a journalist seeking an interview about ISNESI impact figures.','in_progress',null,'website',true,now() - interval '12 hours',now() - interval '12 hours',null),
    ('other','Anonymous','','','General enquiry about services.','spam',null,'website',false,now() - interval '2 days',now() - interval '2 days',now() - interval '1 day')
   returning id
 )
 insert into public.enquiry_notes(enquiry_id,author_id,note,created_at)
-select ge.id,'00000000-0000-0000-0000-000000000001'::uuid,
+select ge.id,(select id from auth.users order by created_at limit 1),
  case ge.enquiry_type
   when 'volunteer' then 'Volunteer enquiry received. Teacher with inclusive education experience. Follow up with volunteer coordinator.'
   when 'partnership' then 'Partnership enquiry from local NGO. Assigned to partnerships lead.'
@@ -514,18 +515,18 @@ from ns;
 -- Newsletter campaigns
 insert into public.newsletter_campaigns(name,subject,body,status,scheduled_at,sent_at,created_by,created_at)
 values
- ('Welcome Series','Welcome to ISNESI','{"blocks":[{"type":"paragraph","text":"Welcome to the ISNESI community."}]}','sent',now() - interval '50 days',now() - interval '50 days','00000000-0000-0000-0000-000000000001'::uuid,now() - interval '50 days'),
- ('Impact Update Q2','Your Impact This Quarter','{"blocks":[{"type":"paragraph","text":"See the impact figures from Q2."}]}','draft',null,null,'00000000-0000-0000-0000-000000000001'::uuid,now() - interval '10 days');
+ ('Welcome Series','Welcome to ISNESI','{"blocks":[{"type":"paragraph","text":"Welcome to the ISNESI community."}]}','sent',now() - interval '50 days',now() - interval '50 days',(select id from auth.users order by created_at limit 1),now() - interval '50 days'),
+ ('Impact Update Q2','Your Impact This Quarter','{"blocks":[{"type":"paragraph","text":"See the impact figures from Q2."}]}','draft',null,null,(select id from auth.users order by created_at limit 1),now() - interval '10 days');
 
 -- Kids resources
 with kr as (
   insert into public.kids_resources(resource_type,status,min_age,max_age,is_featured,safeguarding_approved,created_by,created_at,updated_at)
   values
-   ('story','published',6,10,true,true,'00000000-0000-0000-0000-000000000001'::uuid,now() - interval '40 days',now() - interval '40 days'),
-   ('activity','published',8,12,false,true,'00000000-0000-0000-0000-000000000001'::uuid,now() - interval '30 days',now() - interval '30 days'),
-   ('game','draft',5,9,false,false,'00000000-0000-0000-0000-000000000001'::uuid,now() - interval '5 days',now() - interval '5 days'),
-   ('video','published',10,14,false,true,'00000000-0000-0000-0000-000000000001'::uuid,now() - interval '20 days',now() - interval '20 days'),
-   ('download','in_review',6,11,false,false,'00000000-0000-0000-0000-000000000001'::uuid,now() - interval '3 days',now() - interval '3 days')
+   ('story','published',6,10,true,true,(select id from auth.users order by created_at limit 1),now() - interval '40 days',now() - interval '40 days'),
+   ('activity','published',8,12,false,true,(select id from auth.users order by created_at limit 1),now() - interval '30 days',now() - interval '30 days'),
+   ('game','draft',5,9,false,false,(select id from auth.users order by created_at limit 1),now() - interval '5 days',now() - interval '5 days'),
+   ('video','published',10,14,false,true,(select id from auth.users order by created_at limit 1),now() - interval '20 days',now() - interval '20 days'),
+   ('download','in_review',6,11,false,false,(select id from auth.users order by created_at limit 1),now() - interval '3 days',now() - interval '3 days')
   returning id
 )
 insert into public.kids_resource_translations(resource_id,locale,title,description,content)
@@ -555,9 +556,9 @@ from kr;
 -- Impact metrics
 insert into public.impact_metrics(key,label,value,unit,currency,description,source_note,evidence_url,reporting_period,sort_order,is_published,approved_at,created_by,updated_by)
 values
- ('children-reached','Children reached',1250,'count',null,'Children with disabilities and families reached through ISNESI programmes in 2026.','Programme monitoring and attendance records','https://isnesi.cm/reports/2026','2026',1,true,now() - interval '30 days','00000000-0000-0000-0000-000000000001'::uuid,'00000000-0000-0000-0000-000000000001'::uuid),
- ('teachers-trained','Teachers trained',84,'count',null,'Teachers trained in inclusive classroom practice during 2026.','Training attendance registers','https://isnesi.cm/reports/2026-training','2026',2,true,now() - interval '25 days','00000000-0000-0000-0000-000000000001'::uuid,'00000000-0000-0000-0000-000000000001'::uuid),
- ('classrooms-adapted','Classrooms adapted',12,'count',null,'Mainstream classrooms adapted for inclusive education in partner schools.','School infrastructure audit','https://isnesi.cm/reports/2026-infrastructure','2026',3,true,now() - interval '20 days','00000000-0000-0000-0000-000000000001'::uuid,'00000000-0000-0000-0000-000000000001'::uuid),
- ('funds-raised','Funds raised',15000000,'currency','XAF','Funds raised through donations and grants in 2026.','Finance reconciliation records','https://isnesi.cm/reports/2026-finance','2026',4,true,now() - interval '15 days','00000000-0000-0000-0000-000000000001'::uuid,'00000000-0000-0000-0000-000000000001'::uuid),
- ('illustrative-figure','Illustrative figure (not public)',42,'count',null,'This figure is drafted but not yet approved for publication.','Internal working draft','https://isnesi.cm/internal/draft','2026',5,false,null,'00000000-0000-0000-0000-000000000001'::uuid,'00000000-0000-0000-0000-000000000001'::uuid)
+ ('children-reached','Children reached',1250,'count',null,'Children with disabilities and families reached through ISNESI programmes in 2026.','Programme monitoring and attendance records','https://isnesi.cm/reports/2026','2026',1,true,now() - interval '30 days',(select id from auth.users order by created_at limit 1),(select id from auth.users order by created_at limit 1)),
+ ('teachers-trained','Teachers trained',84,'count',null,'Teachers trained in inclusive classroom practice during 2026.','Training attendance registers','https://isnesi.cm/reports/2026-training','2026',2,true,now() - interval '25 days',(select id from auth.users order by created_at limit 1),(select id from auth.users order by created_at limit 1)),
+ ('classrooms-adapted','Classrooms adapted',12,'count',null,'Mainstream classrooms adapted for inclusive education in partner schools.','School infrastructure audit','https://isnesi.cm/reports/2026-infrastructure','2026',3,true,now() - interval '20 days',(select id from auth.users order by created_at limit 1),(select id from auth.users order by created_at limit 1)),
+ ('funds-raised','Funds raised',15000000,'currency','XAF','Funds raised through donations and grants in 2026.','Finance reconciliation records','https://isnesi.cm/reports/2026-finance','2026',4,true,now() - interval '15 days',(select id from auth.users order by created_at limit 1),(select id from auth.users order by created_at limit 1)),
+ ('illustrative-figure','Illustrative figure (not public)',42,'count',null,'This figure is drafted but not yet approved for publication.','Internal working draft','https://isnesi.cm/internal/draft','2026',5,false,null,(select id from auth.users order by created_at limit 1),(select id from auth.users order by created_at limit 1))
 on conflict (key) do nothing;

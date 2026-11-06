@@ -23,7 +23,18 @@ input; the application below is the rebuild.
 
 ## Quick start
 
+```
+
+To seed a hosted project with reference rows and the bundled sample media:
+
 ```bash
+npm run db:seed
+```
+
+This applies migrations and `supabase/seed.sql`, then uploads the sample files in
+`public/brand/` and `public/icons/` to the `public-media` Storage bucket. It
+requires the server-only `SUPABASE_SERVICE_ROLE_KEY` in `.env.local`. Seeded
+records are dummy data and can be edited or deleted from the admin panel.bash
 npm install
 cp .env.example .env.local     # then fill in the Supabase values
 npm run dev                    # http://localhost:3000

@@ -15,6 +15,7 @@
     "db:start": "node scripts/supabase.mjs start",
     "db:reset": "node scripts/supabase.mjs db reset",
     "db:push": "node scripts/db-push.mjs",
+    "db:seed": "node scripts/db-seed.mjs",
     "db:types": "node scripts/db-types.mjs"
   },
   "dependencies": {
