@@ -4,6 +4,7 @@ import path from "node:path";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { createClient } from "@supabase/supabase-js";
+import pg from "pg";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -31,6 +32,22 @@ const localEnv = parseEnvFile(await readFile(path.join(repoRoot, ".env.local"), 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL || localEnv.NEXT_PUBLIC_SUPABASE_URL;
 const serviceRoleKey =
   process.env.SUPABASE_SERVICE_ROLE_KEY || localEnv.SUPABASE_SERVICE_ROLE_KEY;
+const databaseUrl =
+  process.env.SUPABASE_DB_URL || localEnv.SUPABASE_DB_URL;
+
+let connectionString = databaseUrl;
+if (!connectionString && url) {
+  const password =
+    process.env.SUPABASE_DB_PASSWORD || localEnv.SUPABASE_DB_PASSWORD;
+  if (password) {
+    const projectRef = new URL(url).hostname.split(".")[0];
+    const region =
+      process.env.SUPABASE_POOLER_REGION ||
+      localEnv.SUPABASE_POOLER_REGION ||
+      "aws-0-eu-west-1";
+    connectionString = `postgresql://postgres.${projectRef}:${encodeURIComponent(password)}@${region}.pooler.supabase.com:5432/postgres`;
+  }
+}
 
 function run(command, args) {
   return new Promise((resolve, reject) => {
@@ -45,9 +62,30 @@ function run(command, args) {
 
 const dbPushCode = await run(process.execPath, [
   path.join(repoRoot, "scripts", "db-push.mjs"),
-  "--include-seed",
 ]);
 if (dbPushCode !== 0) process.exit(dbPushCode);
+
+if (!connectionString) {
+  console.error(
+    "Seeded media could not be deployed because SUPABASE_DB_PASSWORD (or SUPABASE_DB_URL) is missing.",
+  );
+  process.exit(1);
+}
+
+const seedSql = await readFile(path.join(repoRoot, "supabase", "seed.sql"), "utf8");
+const database = new pg.Client({
+  connectionString,
+  ssl: { rejectUnauthorized: false },
+});
+await database.connect();
+try {
+  await database.query(seedSql);
+} catch (error) {
+  console.error(`Could not apply supabase/seed.sql: ${error.message}`);
+  await database.end();
+  process.exit(1);
+}
+await database.end();
 
 if (!url || !serviceRoleKey) {
   console.error(

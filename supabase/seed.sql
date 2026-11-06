@@ -162,7 +162,7 @@ select p.id,'en',
   when 'contact' then 'Contact Us'
   when 'programmes' then 'Our Programmes'
   when 'stories' then 'Stories & News'
-  when 'kids-corner' then "Kids' Corner"
+  when 'kids-corner' then 'Kids'' Corner'
   when 'donate' then 'Donate'
   when 'get-involved' then 'Get Involved'
   when 'privacy' then 'Privacy Notice'
@@ -190,7 +190,7 @@ select p.id,'en',
   when 'contact' then 'Contact Us | ISNESI'
   when 'programmes' then 'Our Programmes | ISNESI'
   when 'stories' then 'Stories & News | ISNESI'
-  when 'kids-corner' then "Kids' Corner | ISNESI"
+  when 'kids-corner' then 'Kids'' Corner | ISNESI'
   when 'donate' then 'Donate | ISNESI'
   when 'get-involved' then 'Get Involved | ISNESI'
   when 'privacy' then 'Privacy Notice | ISNESI'
@@ -427,7 +427,8 @@ on conflict do nothing;
 
 insert into public.media_usage(media_id,entity_type,entity_id,usage_role)
 select ma.id,'content_item',ci.id,'inline_image'
-from ma join public.content_items ci on ci.slug = 'new-inclusive-classrooms-opens-in-yaounde'
+from public.media_assets ma
+join public.content_items ci on ci.slug = 'new-inclusive-classrooms-opens-in-yaounde'
 where ma.object_path = 'uploads/2026/teacher-workshop.jpg'
 on conflict do nothing;
 
@@ -440,7 +441,7 @@ with ge as (
    ('contact','Grace Mbala','grace@example.cm','+237 6 99 99 99 99','Please send me more information about your programmes for children with disabilities.','new',null,'website',true,now() - interval '1 day',now() - interval '1 day',null),
    ('media','Samuel Essola','s.essola@news.cm','+237 6 11 11 11 11','I am a journalist seeking an interview about ISNESI impact figures.','in_progress',null,'website',true,now() - interval '12 hours',now() - interval '12 hours',null),
    ('other','Anonymous','','','General enquiry about services.','spam',null,'website',false,now() - interval '2 days',now() - interval '2 days',now() - interval '1 day')
-  returning id
+  returning id, enquiry_type, created_at
 )
 insert into public.enquiry_notes(enquiry_id,author_id,note,created_at)
 select ge.id,(select id from auth.users order by created_at limit 1),
@@ -460,7 +461,7 @@ with dc as (
    ('annual-appeal-2026',true,now() - interval '90 days',now() + interval '90 days'),
    ('emergency-response-2026',true,now() - interval '30 days',now() + interval '60 days'),
    ('year-end-giving',false,now() - interval '120 days',now() - interval '30 days')
-  returning id
+  returning id, key
 )
 insert into public.donation_campaign_translations(campaign_id,locale,title,description)
 select dc.id,'en',
@@ -495,15 +496,15 @@ with ns as (
    ('carol@example.cm','Carol Essola','pending','en',null,null,now() - interval '7 days'),
    ('david@example.cm','David Tchia','unsubscribed','en',now() - interval '90 days',now() - interval '5 days',now() - interval '90 days'),
    ('eve@example.cm','Eve Fouda','suppressed','fr',null,null,now() - interval '120 days')
-  returning id
+  returning id, status
 )
 insert into public.newsletter_consents(subscriber_id,status,source,policy_version,recorded_at)
 select ns.id,
  case ns.status
-  when 'subscribed' then 'granted'
-  when 'pending' then 'granted'
-  when 'unsubscribed' then 'withdrawn'
-  else 'withdrawn' end,
+  when 'subscribed' then 'granted'::public.consent_status
+  when 'pending' then 'granted'::public.consent_status
+  when 'unsubscribed' then 'withdrawn'::public.consent_status
+  else 'withdrawn'::public.consent_status end,
  'website','1.0',
  case ns.status
   when 'subscribed' then now() - interval '60 days'
@@ -527,7 +528,7 @@ with kr as (
    ('game','draft',5,9,false,false,(select id from auth.users order by created_at limit 1),now() - interval '5 days',now() - interval '5 days'),
    ('video','published',10,14,false,true,(select id from auth.users order by created_at limit 1),now() - interval '20 days',now() - interval '20 days'),
    ('download','in_review',6,11,false,false,(select id from auth.users order by created_at limit 1),now() - interval '3 days',now() - interval '3 days')
-  returning id
+  returning id, resource_type
 )
 insert into public.kids_resource_translations(resource_id,locale,title,description,content)
 select kr.id,'en',
