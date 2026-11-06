@@ -79,7 +79,28 @@ const database = new pg.Client({
 });
 await database.connect();
 try {
-  await database.query(seedSql);
+  const { rows } = await database.query(
+    "select (select count(*)::int from public.pages) as page_count",
+  );
+  if ((rows[0]?.page_count ?? 0) === 0) {
+    await database.query(seedSql);
+    console.log("Hosted seed data applied.");
+  } else {
+    console.log("Hosted seed data already present; skipped seed SQL.");
+  }
+  await database.query(`
+    update public.media_assets
+    set credit = 'Unsplash',
+        rights_status = 'licensed',
+        rights_reference = 'Unsplash License - https://unsplash.com/license',
+        mime_type = 'image/jpeg',
+        width = 1600
+    where object_path in (
+      'uploads/2026/hero-classroom.jpg',
+      'uploads/2026/teacher-workshop.jpg',
+      'uploads/2026/assistive-device.jpg'
+    );
+  `);
 } catch (error) {
   console.error(`Could not apply supabase/seed.sql: ${error.message}`);
   await database.end();
@@ -98,9 +119,20 @@ const supabase = createClient(url, serviceRoleKey, {
   auth: { persistSession: false, autoRefreshToken: false },
 });
 
-const logo = await readFile(path.join(repoRoot, "public", "brand", "logo.png"));
 const favicon = await readFile(
   path.join(repoRoot, "public", "icons", "favicon-48.png"),
+);
+const classroomPhoto = await readFile(
+  path.join(repoRoot, "public", "seed-media", "classroom.jpg"),
+);
+const workshopPhoto = await readFile(
+  path.join(repoRoot, "public", "seed-media", "teacher-workshop.jpg"),
+);
+const learningPhoto = await readFile(
+  path.join(repoRoot, "public", "seed-media", "assistive-learning.jpg"),
+);
+const communityPhoto = await readFile(
+  path.join(repoRoot, "public", "seed-media", "community-learning.jpg"),
 );
 
 const minimalPdf = Buffer.from(
@@ -108,12 +140,12 @@ const minimalPdf = Buffer.from(
 );
 
 const uploads = [
-  ["uploads/2026/hero-classroom.jpg", logo, "image/png"],
-  ["uploads/2026/teacher-workshop.jpg", logo, "image/png"],
-  ["uploads/2026/assistive-device.jpg", logo, "image/png"],
+  ["uploads/2026/hero-classroom.jpg", classroomPhoto, "image/jpeg"],
+  ["uploads/2026/teacher-workshop.jpg", workshopPhoto, "image/jpeg"],
+  ["uploads/2026/assistive-device.jpg", learningPhoto, "image/jpeg"],
   ["uploads/2026/partner-logo-unicef.png", favicon, "image/png"],
-  ["uploads/2026/pending-asset.jpg", logo, "image/png"],
-  ["uploads/2026/expired-asset.jpg", logo, "image/png"],
+  ["uploads/2026/pending-asset.jpg", communityPhoto, "image/jpeg"],
+  ["uploads/2026/expired-asset.jpg", communityPhoto, "image/jpeg"],
   ["uploads/2026/kids-storybook.pdf", minimalPdf, "application/pdf"],
 ];
 
