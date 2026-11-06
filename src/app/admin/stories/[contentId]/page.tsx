@@ -27,7 +27,7 @@ import {
   submitForReviewAction,
   unpublishContentAction,
 } from "@/features/editorial/actions";
-import { extractBlocks } from "@/lib/validation/blocks";
+import { BlockEditor, parseEditorBlocks } from "@/components/admin/block-editor";
 import { formatDateTime } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Edit content" };
@@ -38,13 +38,6 @@ const FIELD_LABELS =
   "flex flex-col gap-1.5 text-xs font-black uppercase tracking-[0.12em] text-ink-muted";
 const INPUT_CLASS =
   "min-h-10 rounded-xl border border-line bg-white px-3 text-sm text-ink";
-const TEXTAREA_CLASS =
-  "rounded-xl border border-line bg-white px-3 py-2 font-mono text-xs text-ink";
-
-function blocksJson(body: unknown): string {
-  const blocks = extractBlocks(body);
-  return JSON.stringify(blocks ?? [], null, 2);
-}
 
 /** True when the item carries a schedule date that is still ahead of us. */
 function scheduledInFuture(iso: string | null): boolean {
@@ -350,14 +343,15 @@ export default async function AdminContentEditorPage({
                   </div>
                   <div className="mt-4">
                     <label className={FIELD_LABELS}>
-                      <span>Body (JSON blocks)</span>
-                      <textarea
+                      <span>Body (content blocks)</span>
+                      <BlockEditor
                         name="bodyEnBlocks"
-                        rows={12}
-                        defaultValue={blocksJson(item.en.body)}
-                        spellCheck={false}
-                        className={TEXTAREA_CLASS}
+                        value={parseEditorBlocks(item.en.body)}
                       />
+                      <p className="text-xs text-ink-muted">
+                        Blocks are heading, paragraph, list, quote, callout and
+                        image. Images are picked from the media library.
+                      </p>
                     </label>
                   </div>
                 </div>

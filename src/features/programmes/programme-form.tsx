@@ -1,5 +1,5 @@
 import { ActionForm } from "@/components/admin/action-form";
-import { extractBlocks } from "@/lib/validation/blocks";
+import { BlockEditor, parseEditorBlocks } from "@/components/admin/block-editor";
 import { linesToText } from "@/features/programmes/helpers";
 import { saveProgrammeAction } from "@/features/programmes/actions";
 import type { AdminProgrammeDetail } from "@/features/programmes/admin-queries";
@@ -16,17 +16,7 @@ const FIELD_LABELS =
 
 const INPUT_CLASS = "min-h-10 rounded-xl border-2 border-line bg-white px-3 text-sm text-ink";
 
-const TEXTAREA_CLASS =
-  "rounded-xl border-2 border-line bg-white px-3 py-2 font-mono text-xs text-ink";
-
 const PLAIN_TEXTAREA_CLASS = "rounded-xl border-2 border-line bg-white px-3 py-2 text-sm text-ink";
-
-const BLOCKS_PLACEHOLDER = '[{ "type": "paragraph", "text": "Programme description" }]';
-
-function blocksJson(body: unknown): string {
-  const blocks = extractBlocks(body);
-  return JSON.stringify(blocks ?? [], null, 2);
-}
 
 export function ProgrammeForm({ programme }: { programme?: AdminProgrammeDetail }) {
   return (
@@ -183,14 +173,15 @@ export function ProgrammeForm({ programme }: { programme?: AdminProgrammeDetail 
             </label>
           </div>
           <label className={FIELD_LABELS}>
-            <span>Body (JSON blocks)</span>
-            <textarea
+            <span>Body (content blocks)</span>
+            <BlockEditor
               name="bodyEnBlocks"
-              rows={6}
-              spellCheck={false}
-              defaultValue={programme ? blocksJson(programme.body) : BLOCKS_PLACEHOLDER}
-              className={TEXTAREA_CLASS}
+              value={programme ? parseEditorBlocks(programme.body) : []}
             />
+            <p className="text-xs text-ink-muted">
+              Blocks are heading, paragraph, list, quote, callout and image.
+              Images are picked from the media library.
+            </p>
           </label>
         </div>
       </fieldset>

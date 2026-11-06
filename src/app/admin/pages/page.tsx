@@ -7,6 +7,7 @@ import { ListToolbar } from "@/components/admin/list-toolbar";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { EmptyState } from "@/components/admin/empty-state";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { BlockEditor } from "@/components/admin/block-editor";
 import { PAGE_TYPES } from "@/lib/validation/cms";
 import { requirePermission } from "@/lib/auth/guards";
 import {
@@ -17,8 +18,6 @@ import { createPageAction } from "@/features/pages/actions";
 import { formatDate } from "@/lib/format";
 export const metadata: Metadata = { title: "Pages & sections" };
 export const dynamic = "force-dynamic";
-const JSON_PLACEHOLDER =
-  '[{ "type": "paragraph", "text": "Opening paragraph" }]';
 const FIELD_LABELS =
   "flex flex-col gap-1.5 text-xs font-black uppercase tracking-[0.12em] text-ink-muted";
 function PageRow({
@@ -225,21 +224,15 @@ export default async function AdminPagesListPage({
               {" "}
               <label className={FIELD_LABELS}>
                 {" "}
-                <span>Body (JSON blocks)</span>{" "}
-                <textarea
-                  name="bodyEnBlocks"
-                  rows={8}
-                  defaultValue={JSON_PLACEHOLDER}
-                  spellCheck={false}
-                  className="rounded-xl border border-line bg-white px-3 py-2 font-mono text-xs text-ink"
-                />{" "}
+                <span>Body (content blocks)</span>{" "}
+                <BlockEditor name="bodyEnBlocks" value={[]} />
+                <p className="text-xs text-ink-muted">
+                  {" "}
+                  Blocks are heading, paragraph, list, quote, callout and
+                  image. Images are picked from the media library — no code
+                  required.{" "}
+                </p>
               </label>{" "}
-              <p className="text-xs text-ink-muted">
-                {" "}
-                Block types: heading (level 2 or 3), paragraph, list, quote,
-                callout. Example:{" "}
-                <code className="ml-1 font-mono">{JSON_PLACEHOLDER}</code>{" "}
-              </p>{" "}
               <details className="text-xs text-ink-muted">
                 {" "}
                 <summary className="font-bold uppercase tracking-[0.1em]">

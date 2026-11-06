@@ -1,4 +1,7 @@
+import NextImage from "next/image";
 import type { Json } from "@/types/database";
+
+import { getMediaPublicUrls } from "@/features/media/public-queries";
 
 /**
  * Safe renderer for structured CMS body content.
@@ -14,6 +17,7 @@ import type { Json } from "@/types/database";
  *   { "type": "list",      "items": ["..."], "ordered": false }
  *   { "type": "quote",     "text": "..." }
  *   { "type": "callout",   "text": "..." }
+ *   { "type": "image",     "mediaId": "...", "altText": "...", "caption": "..." }
  */
 
 type Block =
@@ -21,7 +25,8 @@ type Block =
   | { type: "paragraph"; text: string }
   | { type: "list"; items: string[]; ordered: boolean }
   | { type: "quote"; text: string }
-  | { type: "callout"; text: string };
+  | { type: "callout"; text: string }
+  | { type: "image"; mediaId: string; altText: string; caption: string | null };
 
 function asObject(value: unknown): Record<string, unknown> | null {
   return value && typeof value === "object" && !Array.isArray(value)
@@ -68,6 +73,14 @@ function parseBlocks(body: Json): Block[] {
         }
         break;
       }
+      case "image": {
+        const mediaId = asString(candidate.mediaId);
+        const altText = asString(candidate.altText);
+        if (mediaId && altText) {
+          blocks.push({ type: "image", mediaId, altText, caption: asString(candidate.caption) ?? null });
+        }
+        break;
+      }
       default:
         // Unknown block types are intentionally ignored.
         break;
@@ -77,10 +90,18 @@ function parseBlocks(body: Json): Block[] {
   return blocks;
 }
 
-export function ContentBlocks({ body }: { body: Json }) {
+export async function ContentBlocks({
+  body,
+}: {
+  body: Json;
+}) {
   const blocks = parseBlocks(body);
 
   if (blocks.length === 0) return null;
+
+  const imageBlocks = blocks.filter((block) => block.type === "image");
+  const mediaIds = imageBlocks.map((block) => block.mediaId);
+  const mediaUrls = await getMediaPublicUrls(mediaIds);
 
   return (
     <div className="rich-text">
@@ -118,6 +139,34 @@ export function ContentBlocks({ body }: { body: Json }) {
                 ))}
               </ul>
             );
+          case "image": {
+            const media = mediaUrls[block.mediaId];
+            if (!media?.url) return null;
+            const aspectRatio =
+              media.width && media.height ? media.width / media.height : 3 / 2;
+            const objectPosition = media.crop
+              ? `${Math.round(media.crop.x * 100)}% ${Math.round(media.crop.y * 100)}%`
+              : "50% 50%";
+            return (
+              <figure
+                key={key}
+                className="my-6 rounded-xl border border-line overflow-hidden bg-white"
+                style={{ aspectRatio }}
+              >
+                <NextImage
+                  src={media.url}
+                  alt={block.altText}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 640px"
+                  className="object-cover"
+                  style={{ objectPosition }}
+                />
+                {block.caption ? (
+                  <figcaption className="mt-2 px-3 text-xs text-ink-muted">{block.caption}</figcaption>
+                ) : null}
+              </figure>
+            );
+          }
           default:
             return null;
         }

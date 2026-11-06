@@ -55,6 +55,8 @@ export type AdminMediaAsset = {
   safeguardingReviewed: boolean;
   createdAt: string;
   uploadedBy: string | null;
+  /** Focal point for responsive cropping: { x, y } in [0, 1]. */
+  crop: { x: number; y: number } | null;
   /** Public URL for objects in the public bucket; null for private objects. */
   publicUrl: string | null;
   usageCount: number;
@@ -82,6 +84,7 @@ type MediaRow = {
   safeguarding_reviewed: boolean;
   created_at: string;
   uploaded_by: string | null;
+  crop: unknown;
 };
 
 const MEDIA_COLUMNS =
@@ -106,6 +109,12 @@ function toAsset(row: MediaRow, usageCount: number): AdminMediaAsset {
     safeguardingReviewed: row.safeguarding_reviewed,
     createdAt: row.created_at,
     uploadedBy: row.uploaded_by,
+    crop:
+      row.crop && typeof row.crop === "object" && !Array.isArray(row.crop) &&
+      typeof (row.crop as { x?: unknown }).x === "number" &&
+      typeof (row.crop as { y?: unknown }).y === "number"
+        ? { x: (row.crop as { x: number; y: number }).x, y: (row.crop as { x: number; y: number }).y }
+        : null,
     publicUrl:
       row.bucket_id === MEDIA_PUBLIC_BUCKET
         ? publicObjectUrl(getPublicEnv().supabaseUrl, row.bucket_id, row.object_path)

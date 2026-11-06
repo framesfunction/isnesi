@@ -210,6 +210,44 @@ export default async function AdminMediaDetailPage({
                     className={INPUT_CLASS}
                   />
                 </label>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <label className={FIELD_LABELS}>
+                    <span>Focal point X (%)</span>
+                    <input
+                      type="number"
+                      name="cropX"
+                      min="0"
+                      max="100"
+                      step="1"
+                      defaultValue={
+                        asset.crop && typeof asset.crop.x === "number"
+                          ? (asset.crop.x * 100).toFixed(0)
+                          : ""
+                      }
+                      placeholder="0"
+                      className={INPUT_CLASS}
+                    />
+                    <p className="text-[10px] text-ink-muted">Horizontal focus of the image.</p>
+                  </label>
+                  <label className={FIELD_LABELS}>
+                    <span>Focal point Y (%)</span>
+                    <input
+                      type="number"
+                      name="cropY"
+                      min="0"
+                      max="100"
+                      step="1"
+                      defaultValue={
+                        asset.crop && typeof asset.crop.y === "number"
+                          ? (asset.crop.y * 100).toFixed(0)
+                          : ""
+                      }
+                      placeholder="0"
+                      className={INPUT_CLASS}
+                    />
+                    <p className="text-[10px] text-ink-muted">Vertical focus of the image.</p>
+                  </label>
+                </div>
               </div>
             </ActionForm>
           </CardContent>

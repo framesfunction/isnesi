@@ -153,7 +153,7 @@ export default async function AdminMediaPage({
                   type="file"
                   name="file"
                   required
-                  accept="image/jpeg,image/png,image/webp,image/avif,application/pdf"
+                  accept="image/jpeg,image/png,image/webp,image/avif,application/pdf,video/mp4,video/webm"
                   className={INPUT_CLASS}
                 />{" "}
               </label>{" "}
@@ -220,9 +220,9 @@ export default async function AdminMediaPage({
             </div>{" "}
             <p className="mt-3 text-xs text-ink-muted">
               {" "}
-              JPEG, PNG, WebP, AVIF or PDF up to 10 MB. Files land in the public
-              bucket, so only upload material whose rights and consent are
-              cleared.{" "}
+              JPEG, PNG, WebP, AVIF or PDF, and MP4/WebM video up to 50 MB. Files
+              land in the public bucket, so only upload material whose rights and
+              consent are cleared.{" "}
             </p>{" "}
           </ActionForm>{" "}
         </CardContent>{" "}

@@ -3,16 +3,48 @@
 import { randomUUID } from "node:crypto";
 
 import { revalidatePath } from "next/cache";
+import sharp from "sharp";
 
 import { actionError, actionForbidden, actionNotConfigured, actionOk } from "@/lib/admin/action-result";
 import type { ActionResult } from "@/lib/admin/action-result";
 import { dbErrorMessage } from "@/lib/admin/db-error";
 import { assertPermission } from "@/lib/auth/guards";
-import { isSupabaseConfigured } from "@/lib/env";
+import { getPublicEnv, isSupabaseConfigured } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 import { deleteMediaSchema, updateMediaSchema, uploadMediaSchema } from "@/lib/validation/cms";
 import { fieldErrors } from "@/lib/validation/form";
-import { buildObjectPath, MEDIA_PUBLIC_BUCKET } from "@/features/media/helpers";
+import { buildObjectPath, MEDIA_PUBLIC_BUCKET, publicObjectUrl } from "@/features/media/helpers";
+
+export type PickerMediaAsset = {
+  id: string;
+  fileName: string;
+  mimeType: string | null;
+  byteSize: number | null;
+  width: number | null;
+  height: number | null;
+  altText: string | null;
+  publicUrl: string | null;
+};
+
+function parseCropPair(x: FormDataEntryValue | null, y: FormDataEntryValue | null): { x: number; y: number } | null {
+  if (typeof x !== "string" || typeof y !== "string") return null;
+  const xTrimmed = x.trim();
+  const yTrimmed = y.trim();
+  if (xTrimmed.length === 0 || yTrimmed.length === 0) return null;
+  const xValue = Number(xTrimmed) / 100;
+  const yValue = Number(yTrimmed) / 100;
+  if (
+    Number.isFinite(xValue) &&
+    Number.isFinite(yValue) &&
+    xValue >= 0 &&
+    xValue <= 1 &&
+    yValue >= 0 &&
+    yValue <= 1
+  ) {
+    return { x: xValue, y: yValue };
+  }
+  return null;
+}
 
 /**
  * Media library Server Actions.
@@ -53,6 +85,22 @@ export async function uploadMediaAction(
   const supabase = await createClient();
   const objectPath = buildObjectPath(file.name, file.type, randomUUID());
 
+  // Extract image dimensions so the library always knows the asset's size and
+  // editors can crop or place it responsively. Non-images and unreadable files
+  // simply store null dimensions.
+  let width: number | null = null;
+  let height: number | null = null;
+  if (typeof file.type === "string" && file.type.startsWith("image/")) {
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const metadata = await sharp(Buffer.from(arrayBuffer)).metadata();
+      width = metadata.width ?? null;
+      height = metadata.height ?? null;
+    } catch {
+      // Dimensions unavailable; continue without them.
+    }
+  }
+
   const { error: uploadError } = await supabase.storage
     .from(MEDIA_PUBLIC_BUCKET)
     .upload(objectPath, file, { contentType: file.type, upsert: false });
@@ -70,6 +118,8 @@ export async function uploadMediaAction(
       file_name: file.name,
       mime_type: file.type,
       byte_size: file.size,
+      width,
+      height,
       alt_text: input.altText,
       caption: input.caption,
       credit: input.credit,
@@ -109,6 +159,10 @@ export async function updateMediaAction(_state: unknown, formData: FormData): Pr
     rightsStatus: formData.get("rightsStatus") ?? "pending",
     rightsReference: formData.get("rightsReference") ?? "",
     consentReference: formData.get("consentReference") ?? "",
+    crop: parseCropPair(
+      formData.get("cropX"),
+      formData.get("cropY"),
+    ),
   });
   if (!parsed.success) {
     return actionError("Please correct the highlighted fields.", fieldErrors(parsed.error));
@@ -116,16 +170,18 @@ export async function updateMediaAction(_state: unknown, formData: FormData): Pr
   const input = parsed.data;
 
   const supabase = await createClient();
+  const updateValues = {
+    alt_text: input.altText,
+    caption: input.caption,
+    credit: input.credit,
+    rights_status: input.rightsStatus,
+    rights_reference: input.rightsReference,
+    consent_reference: input.consentReference,
+    crop: input.crop,
+  };
   const { error } = await supabase
     .from("media_assets")
-    .update({
-      alt_text: input.altText,
-      caption: input.caption,
-      credit: input.credit,
-      rights_status: input.rightsStatus,
-      rights_reference: input.rightsReference,
-      consent_reference: input.consentReference,
-    })
+    .update(updateValues as object)
     .eq("id", input.mediaId);
 
   if (error) return dbErrorMessage(error, "media update");
@@ -185,4 +241,51 @@ export async function deleteMediaAction(_state: unknown, formData: FormData): Pr
 
   revalidatePath("/admin/media");
   return actionOk("Media deleted.");
+}
+
+/* -------------------------- Media picker for editors ------------------------- */
+
+/**
+ * List assets safe to insert into editorial content.
+ *
+ * Returns public-bucket images whose rights have been cleared, so an editor
+ * picking an image for a page, programme or story never drops a
+ * rights-pending or restricted asset onto the public site.
+ */
+export async function listMediaForPickerAction(): Promise<
+  ActionResult<{ assets: PickerMediaAsset[] }>
+> {
+  const user = await assertPermission("media.manage");
+  if (!user) return actionForbidden();
+
+  if (!isSupabaseConfigured()) return actionNotConfigured();
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("media_assets")
+    .select("id, file_name, mime_type, byte_size, width, height, alt_text, object_path, bucket_id")
+    .eq("bucket_id", MEDIA_PUBLIC_BUCKET)
+    .like("mime_type", "image/%")
+    .in("rights_status", ["owned", "licensed", "permission_recorded"])
+    .order("created_at", { ascending: false })
+    .limit(100);
+
+  if (error) return dbErrorMessage(error, "media picker list");
+
+  const supabaseUrl = getPublicEnv().supabaseUrl;
+  const assets: PickerMediaAsset[] = (data ?? []).map((row) => ({
+    id: row.id,
+    fileName: row.file_name,
+    mimeType: row.mime_type ?? null,
+    byteSize: row.byte_size ?? null,
+    width: row.width ?? null,
+    height: row.height ?? null,
+    altText: row.alt_text ?? null,
+    publicUrl:
+      row.bucket_id === MEDIA_PUBLIC_BUCKET
+        ? publicObjectUrl(supabaseUrl, row.bucket_id, row.object_path)
+        : null,
+  }));
+
+  return actionOk("Media ready to insert.", { assets });
 }

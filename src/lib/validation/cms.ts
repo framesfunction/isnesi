@@ -38,12 +38,27 @@ const optionalUrl = z
     "Use a full http(s) URL.",
   );
 
+/** Normalized focal point for responsive cropping, each axis in [0, 1]. */
+const cropSchema = z
+  .object({
+    x: z.coerce.number().min(0, "Use a value between 0 and 100.").max(1, "Use a value between 0 and 100."),
+    y: z.coerce.number().min(0, "Use a value between 0 and 100.").max(1, "Use a value between 0 and 100."),
+  })
+  .optional()
+  .transform((value) => value ?? null);
+
 const blockSchema = z.union([
   z.object({ type: z.literal("heading"), text: z.string().min(1), level: z.union([z.literal(2), z.literal(3)]) }),
   z.object({ type: z.literal("paragraph"), text: z.string().min(1) }),
   z.object({ type: z.literal("list"), items: z.array(z.string().min(1)).min(1), ordered: z.boolean().default(false) }),
   z.object({ type: z.literal("quote"), text: z.string().min(1) }),
   z.object({ type: z.literal("callout"), text: z.string().min(1) }),
+  z.object({
+    type: z.literal("image"),
+    mediaId: z.string().uuid("Choose an asset from the media library."),
+    altText: z.string().min(1, "Alt text describes the image for visitors who cannot see it."),
+    caption: optionalText,
+  }),
 ]);
 
 const blocksBody = z
@@ -223,9 +238,11 @@ export const MEDIA_ALLOWED_MIME = [
   "image/webp",
   "image/avif",
   "application/pdf",
+  "video/mp4",
+  "video/webm",
 ] as const;
 
-export const MAX_MEDIA_BYTES = 10 * 1024 * 1024;
+export const MAX_MEDIA_BYTES = 50 * 1024 * 1024;
 
 const RIGHTS_STATUSES = [
   "pending",
@@ -264,6 +281,7 @@ export const updateMediaSchema = z.object({
   rightsStatus: z.enum(RIGHTS_STATUSES),
   rightsReference: optionalText,
   consentReference: optionalText,
+  crop: cropSchema,
 });
 
 export const deleteMediaSchema = z.object({ mediaId: z.string().uuid() });
