@@ -6,8 +6,9 @@ import { publicNavigation, siteConfig } from "@/lib/site";
 /**
  * Public site footer.
  *
- * The contact block is intentionally static for now; it will read the public
- * `organisation` site setting once the settings module is implemented.
+ * Every navigation entry has a real destination on this site. Where the
+ * organisation has not yet published a document (privacy, registration
+ * numbers), the copy says so plainly instead of linking to nothing.
  */
 export function SiteFooter() {
   const year = new Date().getFullYear();
@@ -38,55 +39,80 @@ export function SiteFooter() {
                 </Link>
               </li>
             ))}
-          </ul>
-        </nav>
-
-        <div className="text-sm">
-          <h2 className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-muted">Get in touch</h2>
-          <ul className="grid gap-2 text-ink">
             <li>
               <Link
-                href="/contact"
-                className="rounded transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                href="/donate"
+                className="rounded text-ink transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
               >
-                Contact the team
+                Donate
               </Link>
             </li>
             <li>
               <Link
+                href="/kids-corner"
+                className="rounded text-ink transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+              >
+                Kids&apos; Corner
+              </Link>
+            </li>
+          </ul>
+        </nav>
+
+        <nav aria-labelledby="footer-involved" className="text-sm">
+          <h2 id="footer-involved" className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-muted">
+            Get involved
+          </h2>
+          <ul className="grid gap-2">
+            <li>
+              <Link
                 href="/get-involved"
-                className="rounded transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                className="rounded text-ink transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
               >
                 Volunteer or partner
               </Link>
             </li>
             <li>
               <Link
-                href="/kids-corner"
-                className="rounded transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                href="/donate"
+                className="rounded text-ink transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
               >
-                Kids&apos; Corner
+                Donate
               </Link>
             </li>
-          </ul>
-        </div>
-
-        <nav aria-labelledby="footer-involved" className="text-sm">
-          <h2 id="footer-involved" className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-muted">
-            Get involved
-          </h2>
-          <ul className="grid gap-2 text-ink">
-            <li><Link href="/get-involved" className="hover:text-brand">Volunteer</Link></li>
-            <li><Link href="/partners" className="hover:text-brand">Partner with us</Link></li>
-            <li><Link href="/donate" className="hover:text-brand">Donate</Link></li>
-            <li><Link href="/login" className="text-muted hover:text-brand">Staff access</Link></li>
+            <li>
+              <Link
+                href="/contact"
+                className="rounded text-ink transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+              >
+                Contact the team
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/login"
+                className="rounded text-muted transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+              >
+                Staff access
+              </Link>
+            </li>
           </ul>
         </nav>
 
         <div className="text-sm">
-          <h2 className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-muted">Policies</h2>
-          <p className="text-muted">
-            Contact routes, privacy and safeguarding policies apply across the ISNESI website.
+          <h2 className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-muted">
+            Safeguarding
+          </h2>
+          <p className="text-ink">
+            If a child is at immediate risk, contact your local emergency or child-protection
+            services <strong>first</strong>.
+          </p>
+          <p className="mt-3 text-muted">
+            Do not use website forms to report a child at risk. Our referral route goes through
+            designated safeguarding officers —{" "}
+            <Link href="/contact" className="rounded text-brand hover:underline">
+              contact the team
+            </Link>{" "}
+            and a staff member will point you to the right channel.
           </p>
         </div>
       </div>

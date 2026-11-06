@@ -12,18 +12,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { submitEnquiryAction } from "@/features/enquiries/actions";
+import { enquiryTypeLabel } from "@/features/enquiries/helpers";
 import { initialEnquiryState, type EnquiryFormState } from "@/features/enquiries/state";
 import { ENQUIRY_TYPES, enquirySchema, type EnquiryTypeInput } from "@/lib/validation/enquiry";
 
 type FormValues = z.input<typeof enquirySchema>;
-
-const KIND_LABELS: Record<EnquiryTypeInput, string> = {
-  volunteer: "I would like to volunteer",
-  partnership: "Partnership enquiry",
-  contact: "General question",
-  media: "Media or press enquiry",
-  other: "Something else",
-};
 
 type EnquiryFormProps = {
   /** Restrict the enquiry types offered on this page. */
@@ -123,7 +116,7 @@ export function EnquiryForm({
           >
             {kinds.map((kind) => (
               <option key={kind} value={kind}>
-                {KIND_LABELS[kind]}
+                {enquiryTypeLabel(kind)}
               </option>
             ))}
           </select>

@@ -6,7 +6,7 @@ import { publicNavigation, siteConfig } from "@/lib/site";
 export default function NotFound() {
   return (
     <main id="main-content" className="mx-auto flex w-full max-w-2xl flex-col px-5 py-24">
-      <p className="text-xs font-black uppercase tracking-[0.16em] text-leaf">Page not found</p>
+      <p className="text-xs font-black uppercase tracking-[0.16em] text-leaf-strong">Page not found</p>
       <h1 className="mt-3 text-4xl font-black tracking-tight text-brand sm:text-5xl">
         We could not find that page
       </h1>
