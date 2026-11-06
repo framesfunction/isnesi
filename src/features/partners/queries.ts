@@ -1,6 +1,7 @@
 import { getPublicEnv } from "@/lib/env";
 import { siteConfig } from "@/lib/site";
 import { createPublicClient, hasPublicContentAccess } from "@/lib/supabase/public";
+import { publicObjectUrl } from "@/features/media/helpers";
 
 export type PublicPartner = {
   id: string;
@@ -58,7 +59,7 @@ export async function listPublicPartners(): Promise<PublicPartner[]> {
       logos = new Map(
         (media ?? []).map((asset) => [
           asset.id,
-          `${supabaseUrl}/storage/v1/object/public/${asset.bucket_id}/${asset.object_path}`,
+          publicObjectUrl(supabaseUrl, asset.bucket_id, asset.object_path),
         ]),
       );
     }

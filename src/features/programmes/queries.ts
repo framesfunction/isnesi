@@ -2,6 +2,7 @@ import { getPublicEnv } from "@/lib/env";
 import { siteConfig } from "@/lib/site";
 import { createPublicClient, hasPublicContentAccess } from "@/lib/supabase/public";
 import type { Json } from "@/types/database";
+import { publicObjectUrl } from "@/features/media/helpers";
 
 export type ProgrammeSummary = {
   id: string;
@@ -158,7 +159,7 @@ export async function getProgrammeByKey(key: string): Promise<ProgrammeDetail | 
         .maybeSingle();
       if (media) {
         const { supabaseUrl } = getPublicEnv();
-        featuredImageUrl = `${supabaseUrl}/storage/v1/object/public/${media.bucket_id}/${media.object_path}`;
+        featuredImageUrl = publicObjectUrl(supabaseUrl, media.bucket_id, media.object_path);
       }
     }
 

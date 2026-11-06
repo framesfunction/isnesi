@@ -80,6 +80,7 @@ export default async function ProgrammeDetailPage({
             alt=""
             width={1200}
             height={640}
+            unoptimized
             className="mt-6 h-auto w-full rounded-3xl border border-line object-cover"
           />
         ) : null}
