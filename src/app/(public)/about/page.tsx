@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 
 import {
   AboutCta,
-  AboutNewsletter,
   AboutPartners,
   AboutStats,
   AboutStory,
@@ -71,7 +70,6 @@ export default async function AboutPage() {
       <AboutValues />
       {partners.length > 0 ? <AboutPartners partners={partners} /> : null}
       <AboutCta />
-      <AboutNewsletter />
     </>
   );
 }

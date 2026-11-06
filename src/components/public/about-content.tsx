@@ -1,6 +1,5 @@
 // components/public/about-content.tsx
 import {
-  ArrowRight,
   BookOpen,
   HandHeart,
   Heart,
@@ -8,10 +7,9 @@ import {
   ShieldCheck,
   Users,
 } from "lucide-react";
-import Link from "next/link";
 
+import { CtaBand } from "@/components/public/cta-band";
 import { GrowingBookIllustration } from "@/components/public/home-art";
-import { NewsletterForm } from "@/components/public/newsletter-form";
 import { Section } from "@/components/public/page-hero";
 import type { PublicPartner } from "@/features/partners/queries";
 import { siteConfig } from "@/lib/site";
@@ -29,7 +27,7 @@ export function AboutStory() {
   return (
     <section className="mx-auto w-full max-w-6xl px-5 py-14 lg:py-20">
       <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
-        <div className="relative overflow-hidden rounded-[2rem] border border-line bg-white p-8 shadow-[0_24px_70px_rgba(27,63,160,0.10)]">
+        <div className="relative overflow-hidden rounded-4xl border border-line bg-white p-8 shadow-[0_24px_70px_rgba(27,63,160,0.10)]">
           <GrowingBookIllustration className="w-full" />
           <p className="mt-4 font-display text-2xl font-black leading-snug text-brand">
             Every barrier removed is a child moving forward.
@@ -39,7 +37,7 @@ export function AboutStory() {
           </p>
         </div>
         <div>
-          <p className="text-xs font-black uppercase tracking-[0.16em] text-leaf">
+          <p className="text-xs font-black uppercase tracking-[0.16em] text-leaf-strong">
             Hello, we&apos;re ISNESI
           </p>
           <h2 className="mt-3 text-balance text-3xl font-black tracking-tight text-brand sm:text-4xl">
@@ -53,7 +51,7 @@ export function AboutStory() {
           </p>
           <div className="mt-7 grid gap-4 sm:grid-cols-2">
             <div className="rounded-3xl border border-line bg-white p-6 shadow-sm">
-              <h3 className="text-sm font-black uppercase tracking-[0.14em] text-leaf">
+              <h3 className="text-sm font-black uppercase tracking-[0.14em] text-leaf-strong">
                 Our vision
               </h3>
               <p className="mt-3 text-sm leading-6 text-ink-muted">
@@ -63,7 +61,7 @@ export function AboutStory() {
               </p>
             </div>
             <div className="rounded-3xl border border-line bg-white p-6 shadow-sm">
-              <h3 className="text-sm font-black uppercase tracking-[0.14em] text-coral">
+              <h3 className="text-sm font-black uppercase tracking-[0.14em] text-coral-strong">
                 Our mission
               </h3>
               <p className="mt-3 text-sm leading-6 text-ink-muted">
@@ -189,7 +187,7 @@ export function AboutPartners({ partners }: { partners: PublicPartner[] }) {
           <li key={partner.id} className="rounded-3xl border border-line bg-white p-6">
             <h3 className="font-display text-lg font-extrabold text-brand">{partner.name}</h3>
             {partner.relationshipType ? (
-              <p className="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-leaf">
+              <p className="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-leaf-strong">
                 {partner.relationshipType}
               </p>
             ) : null}
@@ -216,61 +214,20 @@ export function AboutPartners({ partners }: { partners: PublicPartner[] }) {
 /** Call to action. */
 export function AboutCta() {
   return (
-    <section className="mx-auto w-full max-w-6xl px-5 py-14">
-      <div className="relative isolate overflow-hidden rounded-[2rem] bg-brand p-8 text-white sm:p-12">
-        <div
-          aria-hidden="true"
-          className="absolute -left-16 -top-16 size-56 rounded-full border-[24px] border-white/10"
-        />
-        <div
-          aria-hidden="true"
-          className="absolute -bottom-20 right-10 size-44 rounded-full bg-sun/20 blur-2xl"
-        />
-        <h2 className="relative max-w-2xl text-balance text-3xl font-black tracking-tight sm:text-4xl">
-          Stand with children who deserve every chance to shine.
-        </h2>
-        <p className="relative mt-4 max-w-2xl text-white/80">
+    <CtaBand
+      eyebrow="Stand with us"
+      title="Stand with children who deserve every chance to shine."
+      description={
+        <>
           Volunteer, partner or give what you can to support inclusive education.{" "}
           <span className="font-display font-black text-sun">{siteConfig.tagline}</span>
-        </p>
-        <div className="relative mt-8 flex flex-wrap gap-3">
-          <Link
-            href="/get-involved"
-            className="inline-flex min-h-12 items-center gap-2 rounded-full bg-sun px-7 text-sm font-black text-ink"
-          >
-            Get involved
-            <ArrowRight aria-hidden="true" className="size-4" />
-          </Link>
-          <Link
-            href="/donate"
-            className="inline-flex min-h-12 items-center rounded-full border-2 border-white px-7 text-sm font-black text-white"
-          >
-            Donate
-          </Link>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/** Newsletter sign-up band. */
-export function AboutNewsletter() {
-  return (
-    <section className="border-y border-line bg-leaf-soft">
-      <div className="mx-auto grid w-full max-w-6xl gap-8 px-5 py-14 md:grid-cols-[1fr_0.8fr] md:items-center">
-        <div>
-          <p className="text-xs font-black uppercase tracking-[0.16em] text-leaf">Stay connected</p>
-          <h2 className="mt-3 text-3xl font-black tracking-tight text-brand">
-            Good news in your inbox
-          </h2>
-          <p className="mt-3 max-w-xl text-ink-muted">
-            Occasional ISNESI updates, stories and opportunities to support inclusive education. No
-            noise, unsubscribe anytime.
-          </p>
-        </div>
-        <NewsletterForm />
-      </div>
-    </section>
+        </>
+      }
+      actions={[
+        { label: "Get involved", href: "/get-involved", emphasis: "primary" },
+        { label: "Donate", href: "/donate", emphasis: "secondary" },
+      ]}
+    />
   );
 }
 
