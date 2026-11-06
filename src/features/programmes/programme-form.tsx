@@ -1,5 +1,6 @@
 import { ActionForm } from "@/components/admin/action-form";
-import { BlockEditor, parseEditorBlocks } from "@/components/admin/block-editor";
+import { BlockEditor } from "@/components/admin/block-editor";
+import { parseEditorBlocks } from "@/lib/validation/blocks";
 import { linesToText } from "@/features/programmes/helpers";
 import { saveProgrammeAction } from "@/features/programmes/actions";
 import type { AdminProgrammeDetail } from "@/features/programmes/admin-queries";

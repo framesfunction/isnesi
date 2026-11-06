@@ -9,17 +9,11 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { MediaPicker } from "@/components/admin/media-picker";
-import { extractBlocks } from "@/lib/validation/blocks";
+import type { EditorBlock as StoredEditorBlock } from "@/lib/validation/blocks";
 import type { PickerMediaAsset } from "@/features/media/actions";
 
-/** Client-side mirror of the CMS block vocabulary. */
-export type EditorBlock =
-  | { type: "heading"; level: 2 | 3; text: string }
-  | { type: "paragraph"; text: string }
-  | { type: "list"; items: string[]; ordered: boolean }
-  | { type: "quote"; text: string }
-  | { type: "callout"; text: string }
-  | { type: "image"; mediaId: string; altText: string; caption: string; previewUrl?: string };
+/** Client-side block vocabulary, extended with a client-only preview URL. */
+export type EditorBlock = StoredEditorBlock & { previewUrl?: string };
 
 export type BlockType = EditorBlock["type"];
 
@@ -52,44 +46,6 @@ function emptyBlock(type: BlockType): EditorBlock {
     case "image":
       return { type: "image", mediaId: "", altText: "", caption: "" };
   }
-}
-
-/** Convert a stored body (`{ blocks: [...] }` or a bare array) into editor blocks. */
-export function parseEditorBlocks(body: unknown): EditorBlock[] {
-  const blocks = extractBlocks(body);
-  if (!Array.isArray(blocks)) return [];
-  return blocks.map((raw) => {
-    if (typeof raw !== "object" || raw === null) return emptyBlock("paragraph");
-    const b = raw as Record<string, unknown>;
-    const type = String(b.type ?? "paragraph");
-    switch (type) {
-      case "heading":
-        return { type: "heading", level: b.level === 3 ? 3 : 2, text: String(b.text ?? "") };
-      case "paragraph":
-        return { type: "paragraph", text: String(b.text ?? "") };
-      case "list":
-        return {
-          type: "list",
-          items: Array.isArray(b.items)
-            ? b.items.map((item) => String(item ?? "")).filter((text) => text.length > 0)
-            : [""],
-          ordered: b.ordered === true,
-        };
-      case "quote":
-        return { type: "quote", text: String(b.text ?? "") };
-      case "callout":
-        return { type: "callout", text: String(b.text ?? "") };
-      case "image":
-        return {
-          type: "image",
-          mediaId: String(b.mediaId ?? ""),
-          altText: String(b.altText ?? ""),
-          caption: String(b.caption ?? ""),
-        };
-      default:
-        return emptyBlock("paragraph");
-    }
-  });
 }
 
 /** Drop client-only fields before sending blocks to the server action. */

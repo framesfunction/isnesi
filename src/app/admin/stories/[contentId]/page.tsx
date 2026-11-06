@@ -27,7 +27,8 @@ import {
   submitForReviewAction,
   unpublishContentAction,
 } from "@/features/editorial/actions";
-import { BlockEditor, parseEditorBlocks } from "@/components/admin/block-editor";
+import { BlockEditor } from "@/components/admin/block-editor";
+import { parseEditorBlocks } from "@/lib/validation/blocks";
 import { formatDateTime } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Edit content" };
