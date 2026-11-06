@@ -46,7 +46,7 @@ export default async function AdminProgrammesPage({
       <AdminPageHeader
         eyebrow="Website"
         title="Programmes"
-        description="Maintain the programme areas shown on the public website, in English and French, and control their order and visibility."
+        description="Maintain the programme areas shown on the public website in English, and control their order and visibility."
       />{" "}
       <div className="mb-6">
         {" "}

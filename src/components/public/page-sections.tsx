@@ -19,7 +19,7 @@ export function PageSections({ sections }: { sections: PublicPageSection[] }) {
   if (renderable.length === 0) return null;
 
   return (
-    <div className="grid gap-10">
+    <div className="grid gap-8">
       {renderable.map((section) => {
         const config =
           section.config && typeof section.config === "object" && !Array.isArray(section.config)
@@ -33,7 +33,11 @@ export function PageSections({ sections }: { sections: PublicPageSection[] }) {
         if (!hasBlocks && !heading && !text) return null;
 
         return (
-          <section key={section.id} aria-label={heading ?? section.key} className="grid gap-4">
+          <section
+            key={section.id}
+            aria-label={heading ?? section.key}
+            className="rounded-[1.75rem] border border-line bg-white p-6 shadow-[0_12px_40px_rgba(24,36,67,0.06)] sm:p-8"
+          >
             {heading ? (
               <h2 className="font-display text-2xl font-black tracking-tight text-brand">
                 {heading}

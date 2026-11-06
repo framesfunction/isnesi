@@ -90,7 +90,6 @@ export default async function GetInvolvedPage() {
         eyebrow="Get involved"
         title={title}
         description={description}
-        breadcrumb={[{ label: "Home", href: "/" }, { label: "Get involved" }]}
       >
         <a
           href="#enquiry"

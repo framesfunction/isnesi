@@ -23,7 +23,7 @@ export default async function ProgrammesPage() {
       <PageHero
         eyebrow="Our work"
         title="Programmes that make participation possible"
-        description="Each programme is managed in the admin panel, with English and French translations supported by the database."
+        description="Explore the programme areas ISNESI delivers, each designed around inclusion, participation and community-led support."
       />
 
       <Section>

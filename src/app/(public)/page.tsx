@@ -76,7 +76,6 @@ export default async function HomePage() {
   const stats = [
     { value: `${programmes.length}`, label: "Active programmes" },
     { value: `${partners.length}`, label: "Approved partners" },
-    { value: "0", label: "Children left behind" },
   ];
 
   return (
@@ -163,7 +162,7 @@ export default async function HomePage() {
         </div>
 
         <div className="relative border-t border-line bg-white/70 backdrop-blur">
-          <dl className="mx-auto grid w-full max-w-6xl gap-px overflow-hidden px-5 py-8 sm:grid-cols-3">
+          <dl className="mx-auto grid w-full max-w-6xl gap-px overflow-hidden px-5 py-8 sm:grid-cols-2">
             {stats.map(({ value, label }) => (
               <div key={label} className="flex flex-col items-center gap-1 px-4 text-center">
                 <dt className="order-2 text-xs font-black uppercase tracking-[0.14em] text-ink-muted">
@@ -408,6 +407,7 @@ export default async function HomePage() {
                         alt=""
                         width={200}
                         height={64}
+                        unoptimized
                         className="mx-auto max-h-16 w-auto max-w-full object-contain"
                       />
                     ) : (
@@ -420,6 +420,7 @@ export default async function HomePage() {
                     alt={`${partner.name} logo`}
                     width={200}
                     height={64}
+                    unoptimized
                     className="max-h-16 w-auto max-w-full object-contain"
                   />
                 ) : partner.name}

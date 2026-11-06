@@ -75,19 +75,12 @@ export async function StoriesIndex({
   const range = perTypeTotal > 0 ? `${rangeStart}–${rangeEnd}` : "0";
   const countLabel = `Showing ${range} of ${perTypeTotal} published item${perTypeTotal === 1 ? "" : "s"}.`;
 
-  const breadcrumb = [
-    { label: "Home", href: "/" },
-    { label: "Stories & News", href: "/stories" },
-    ...(active ? [{ label: storyTypePlural(active) }] : []),
-  ];
-
   return (
     <>
       <PageHero
         eyebrow="Stories & news"
         title={active ? storyTypePlural(active) : "Real change, told by the people behind it"}
         description="Every story and update is reviewed by an editor before publication. Stories involving children also require recorded safeguarding clearance."
-        breadcrumb={breadcrumb}
       />
 
       {cmsPage && cmsPage.sections.length > 0 ? (

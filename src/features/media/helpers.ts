@@ -58,6 +58,18 @@ export function buildObjectPath(fileName: string, mimeType: string, uniqueId: st
 
 /** Public CDN-style URL for an object in a public bucket. */
 export function publicObjectUrl(supabaseUrl: string, bucketId: string, objectPath: string): string {
+  const localSeedAssets: Record<string, string> = {
+    "uploads/2026/hero-classroom.jpg": "/seed-media/classroom.jpg",
+    "uploads/2026/teacher-workshop.jpg": "/seed-media/teacher-workshop.jpg",
+    "uploads/2026/assistive-device.jpg": "/seed-media/assistive-learning.jpg",
+    "uploads/2026/pending-asset.jpg": "/seed-media/community-learning.jpg",
+    "uploads/2026/expired-asset.jpg": "/seed-media/community-learning.jpg",
+    "uploads/2026/partner-logo-unicef.png": "/icons/favicon-48.png",
+  };
+  if (bucketId === MEDIA_PUBLIC_BUCKET && localSeedAssets[objectPath]) {
+    return localSeedAssets[objectPath];
+  }
+
   const base = supabaseUrl.replace(/\/+$/, "");
   const path = objectPath
     .split("/")

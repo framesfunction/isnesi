@@ -33,21 +33,6 @@ export const metadata: Metadata = {
 export default async function AboutPage() {
   const cmsPage = await getPublicPage("about");
 
-  if (cmsPage && cmsPage.sections.length > 0) {
-    return (
-      <>
-        <PageHero
-          eyebrow="About ISNESI"
-          title={cmsPage.title}
-          description={cmsPage.excerpt ?? undefined}
-        />
-        <Section>
-          <PageSections sections={cmsPage.sections} />
-        </Section>
-      </>
-    );
-  }
-
   const [programmes, partners, storyCount] = await Promise.all([
     listProgrammes(),
     listPublicPartners(),
@@ -58,9 +43,17 @@ export default async function AboutPage() {
     <>
       <PageHero
         eyebrow="About ISNESI"
-        title="Who we are"
-        description="ISNESI exists so that children with disabilities can learn, belong and thrive in their own communities."
+        title={cmsPage?.title ?? "Who we are"}
+        description={
+          cmsPage?.excerpt ??
+          "ISNESI exists so that children with disabilities can learn, belong and thrive in their own communities."
+        }
       />
+      {cmsPage && cmsPage.sections.length > 0 ? (
+        <Section>
+          <PageSections sections={cmsPage.sections} />
+        </Section>
+      ) : null}
       <AboutStory />
       <AboutStats
         programmesCount={programmes.length}

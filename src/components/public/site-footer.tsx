@@ -114,10 +114,20 @@ export function SiteFooter() {
           <p>
             © {year} {siteConfig.legalName}. All rights reserved.
           </p>
-          <p>
-            Registered non-profit organisation. Safeguarding policy applies to all our work with
-            children.
-          </p>
+          <nav aria-label="Legal" className="flex flex-wrap gap-x-4 gap-y-2">
+            <Link href="/privacy" className="hover:text-brand hover:underline">
+              Privacy
+            </Link>
+            <Link href="/terms" className="hover:text-brand hover:underline">
+              Terms
+            </Link>
+            <Link href="/accessibility" className="hover:text-brand hover:underline">
+              Accessibility
+            </Link>
+            <Link href="/safeguarding" className="hover:text-brand hover:underline">
+              Safeguarding
+            </Link>
+          </nav>
         </div>
       </div>
     </footer>

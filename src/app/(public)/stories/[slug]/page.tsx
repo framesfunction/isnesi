@@ -94,30 +94,6 @@ export default async function StoryPage({ params }: StoryPageProps) {
       />
 
       <article className="mx-auto w-full max-w-3xl px-5 py-12">
-        <nav aria-label="Breadcrumb" className="mb-6">
-          <ol className="flex flex-wrap items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-ink-muted">
-            <li>
-              <Link href="/" className="rounded hover:text-brand">
-                Home
-              </Link>
-            </li>
-            <li aria-hidden="true" className="text-ink-muted/50">
-              /
-            </li>
-            <li>
-              <Link href="/stories" className="rounded hover:text-brand">
-                Stories &amp; News
-              </Link>
-            </li>
-            <li aria-hidden="true" className="text-ink-muted/50">
-              /
-            </li>
-            <li aria-current="page" className="text-brand">
-              {storyTypeLabel(story.contentType)}
-            </li>
-          </ol>
-        </nav>
-
         <span
           className={`inline-block rounded-full px-3 py-1 text-xs font-black uppercase tracking-[0.12em] ${storyTypeChip(story.contentType)}`}
         >

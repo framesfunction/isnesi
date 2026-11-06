@@ -43,6 +43,7 @@ function PartnerLogoSlot({ partner }: { partner: PublicPartner }) {
           alt=""
           width={200}
           height={64}
+          unoptimized
           className="max-h-14 w-auto max-w-[80%] object-contain"
         />
       ) : (

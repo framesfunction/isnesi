@@ -1,7 +1,7 @@
 -- Safe reference data only. No real users, children, donors or contact records.
 insert into public.site_settings(key,value,is_public) values
  ('organisation', '{"name":"ISNESI","tagline":"We Leave No Child Behind.","address":"P.O. Box 1234, Yaounde, Cameroon","phone":"+237 22 22 22 22","email":"info@isnesi.cm","opening_hours":"Mon-Fri 8:00-17:00"}', true),
- ('locales', '{"default":"en","enabled":["en","fr"]}', true),
+ ('locales', '{"default":"en","enabled":["en"]}', true),
  ('donation', '{"currency":"XAF","enabled":false}', true),
  ('seo', '{"defaultTitle":"ISNESI — Inclusive Support for Needs and Education","defaultDescription":"Promoting inclusion, education and opportunity for children with disabilities across Cameroon.","defaultImage":"/icons/og-default.png"}', true),
  ('maintenance', '{"enabled":false,"message":"The site is temporarily offline for maintenance. Please check back soon."}', false),

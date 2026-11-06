@@ -77,36 +77,10 @@ function ImpactJsonLd({ data }: { data: Record<string, unknown>[] }) {
  */
 export default async function ImpactPage() {
   const baseUrl = siteUrl();
-  const breadcrumb = [{ label: "Home", href: "/" }, { label: "Impact" }];
   const cmsPage = await getPublicPage("impact");
-
-  if (cmsPage && cmsPage.sections.length > 0) {
-    const description = cmsPage.excerpt ?? IMPACT_DESCRIPTION;
-    return (
-      <>
-        <ImpactJsonLd
-          data={buildImpactJsonLd({
-            baseUrl,
-            path: IMPACT_PATH,
-            name: cmsPage.title,
-            description,
-            siteName: siteConfig.name,
-          })}
-        />
-        <PageHero
-          eyebrow="Our impact"
-          title={cmsPage.title}
-          description={description}
-          breadcrumb={breadcrumb}
-        />
-        <Section>
-          <PageSections sections={cmsPage.sections} />
-        </Section>
-      </>
-    );
-  }
-
   const snapshot = await getImpactSnapshot({ storyLimit: 3 });
+  const description = cmsPage?.excerpt ?? IMPACT_DESCRIPTION;
+  const title = cmsPage?.title ?? "What our work changes";
 
   return (
     <>
@@ -114,17 +88,16 @@ export default async function ImpactPage() {
         data={buildImpactJsonLd({
           baseUrl,
           path: IMPACT_PATH,
-          name: "Our impact",
-          description: IMPACT_DESCRIPTION,
+          name: title,
+          description,
           siteName: siteConfig.name,
         })}
       />
 
       <PageHero
         eyebrow="Our impact"
-        title="What our work changes"
-        description="We report what changed for children, families and schools — not only what we delivered."
-        breadcrumb={breadcrumb}
+        title={title}
+        description={description}
       >
         <Link
           href="/donate"
@@ -142,6 +115,11 @@ export default async function ImpactPage() {
         </Link>
       </PageHero>
 
+      {cmsPage && cmsPage.sections.length > 0 ? (
+        <Section>
+          <PageSections sections={cmsPage.sections} />
+        </Section>
+      ) : null}
       <ImpactFigures figures={snapshot.figures} source={snapshot.figuresSource} />
       <ImpactApproach />
       <ImpactByProgramme programmes={snapshot.programmeAreas} />
