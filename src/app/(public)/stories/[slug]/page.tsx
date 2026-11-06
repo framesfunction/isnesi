@@ -2,16 +2,28 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { CtaBand } from "@/components/public/cta-band";
 import { ContentBlocks } from "@/components/public/content-blocks";
-import { storyTypeLabel } from "@/components/public/story-card";
-import { getPublishedStoryBySlug } from "@/features/editorial/queries";
-import { formatDate } from "@/lib/format";
+import { RelatedStories, StoryByline, StoryChips } from "@/components/public/stories-content";
+import {
+  buildStoryJsonLd,
+  estimateReadingMinutes,
+  storyTypeChip,
+  storyTypeLabel,
+} from "@/features/editorial/helpers";
+import { getPublishedStoryBySlug, listRelatedStories } from "@/features/editorial/queries";
+import { siteConfig } from "@/lib/site";
 
 export const revalidate = 300;
 
 type StoryPageProps = {
   params: Promise<{ slug: string }>;
 };
+
+/** Absolute site origin for structured data; mirrors the root layout helper. */
+function siteUrl(): string {
+  return (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(/\/+$/, "");
+}
 
 export async function generateMetadata({ params }: StoryPageProps): Promise<Metadata> {
   const { slug } = await params;
@@ -21,16 +33,32 @@ export async function generateMetadata({ params }: StoryPageProps): Promise<Meta
     return { title: "Story not found" };
   }
 
+  const description = story.seoDescription ?? story.excerpt ?? undefined;
+
   return {
     title: story.title,
-    description: story.seoDescription ?? story.excerpt ?? undefined,
+    description,
+    alternates: { canonical: `/stories/${story.slug}` },
     openGraph: {
       type: "article",
       title: story.title,
-      description: story.seoDescription ?? story.excerpt ?? undefined,
+      description,
       publishedTime: story.publishedAt ?? undefined,
+      modifiedTime: story.updatedAt,
+      url: `/stories/${story.slug}`,
     },
+    twitter: { card: "summary", title: story.title, description },
   };
+}
+
+/** Structured data for the article; values are plain strings, never markup. */
+function StoryJsonLd({ data }: { data: Record<string, unknown>[] }) {
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+    />
+  );
 }
 
 export default async function StoryPage({ params }: StoryPageProps) {
@@ -39,40 +67,109 @@ export default async function StoryPage({ params }: StoryPageProps) {
 
   if (!story) notFound();
 
-  return (
-    <article className="mx-auto w-full max-w-3xl px-5 py-14">
-      <nav aria-label="Breadcrumb" className="mb-6 text-sm">
-        <Link href="/stories" className="font-semibold text-brand hover:underline">
-          ← All stories
-        </Link>
-      </nav>
+  const related = await listRelatedStories({
+    contentId: story.id,
+    categoryIds: story.categories.map((category) => category.id),
+    limit: 3,
+  });
 
-      <p className="flex flex-wrap items-center gap-3 text-xs font-black uppercase tracking-[0.14em]">
-        <span className="rounded-full bg-leaf-soft px-3 py-1 text-leaf">
+  const readingMinutes = estimateReadingMinutes(story.body);
+  const bodyIsEmpty =
+    !story.body ||
+    (typeof story.body === "object" && Object.keys(story.body).length === 0);
+
+  return (
+    <>
+      <StoryJsonLd
+        data={buildStoryJsonLd({
+          baseUrl: siteUrl(),
+          path: `/stories/${story.slug}`,
+          headline: story.title,
+          description: story.seoDescription ?? story.excerpt,
+          datePublished: story.publishedAt,
+          dateModified: story.updatedAt,
+          contentType: story.contentType,
+          siteName: siteConfig.name,
+        })}
+      />
+
+      <article className="mx-auto w-full max-w-3xl px-5 py-12">
+        <nav aria-label="Breadcrumb" className="mb-6">
+          <ol className="flex flex-wrap items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-ink-muted">
+            <li>
+              <Link href="/" className="rounded hover:text-brand">
+                Home
+              </Link>
+            </li>
+            <li aria-hidden="true" className="text-ink-muted/50">
+              /
+            </li>
+            <li>
+              <Link href="/stories" className="rounded hover:text-brand">
+                Stories &amp; News
+              </Link>
+            </li>
+            <li aria-hidden="true" className="text-ink-muted/50">
+              /
+            </li>
+            <li aria-current="page" className="text-brand">
+              {storyTypeLabel(story.contentType)}
+            </li>
+          </ol>
+        </nav>
+
+        <span
+          className={`inline-block rounded-full px-3 py-1 text-xs font-black uppercase tracking-[0.12em] ${storyTypeChip(story.contentType)}`}
+        >
           {storyTypeLabel(story.contentType)}
         </span>
-        <time dateTime={story.publishedAt ?? undefined} className="text-ink-muted">
-          {formatDate(story.publishedAt)}
-        </time>
-      </p>
 
-      <h1 className="mt-4 text-balance text-4xl font-black leading-[1.1] tracking-tight text-brand sm:text-5xl">
-        {story.title}
-      </h1>
+        <h1 className="mt-4 text-balance text-4xl font-black leading-[1.1] tracking-tight text-brand sm:text-5xl">
+          {story.title}
+        </h1>
 
-      {story.excerpt ? <p className="mt-5 text-lg text-ink-muted">{story.excerpt}</p> : null}
+        {story.excerpt ? <p className="mt-5 text-lg leading-8 text-ink-muted">{story.excerpt}</p> : null}
 
-      <div className="mt-10">
-        <ContentBlocks body={story.body} />
-      </div>
+        <StoryByline
+          story={story}
+          readingMinutes={readingMinutes}
+          className="mt-6 border-y border-line py-4"
+        />
 
-      {!story.body ||
-      (typeof story.body === "object" && Object.keys(story.body).length === 0) ? (
-        <p className="mt-10 rounded-2xl border-2 border-dashed border-line bg-white p-6 text-sm text-ink-muted">
-          This story has been published with a summary only. The full body is added in the editorial
-          module.
-        </p>
-      ) : null}
-    </article>
+        <StoryChips categories={story.categories} tags={story.tags} className="mt-5" />
+
+        <div className="mt-10">
+          <ContentBlocks body={story.body} />
+        </div>
+
+        {bodyIsEmpty ? (
+          <p className="mt-10 rounded-2xl border-2 border-dashed border-line bg-white p-6 text-sm text-ink-muted">
+            This story has been published with a summary only. The full body is added in the
+            editorial module.
+          </p>
+        ) : null}
+
+        <div className="mt-10">
+          <Link
+            href="/stories"
+            className="inline-flex items-center gap-2 text-sm font-bold text-brand hover:underline"
+          >
+            ← All stories &amp; news
+          </Link>
+        </div>
+      </article>
+
+      <RelatedStories stories={related} />
+
+      <CtaBand
+        eyebrow="We Leave No Child Behind."
+        title="Every story starts with someone who cares."
+        description="Your time, or your gift, helps more children learn, belong and thrive."
+        actions={[
+          { label: "Get involved", href: "/get-involved", emphasis: "primary" },
+          { label: "Donate", href: "/donate", emphasis: "secondary" },
+        ]}
+      />
+    </>
   );
 }

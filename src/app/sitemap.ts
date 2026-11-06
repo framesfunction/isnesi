@@ -1,5 +1,7 @@
 import type { MetadataRoute } from "next";
 
+import { STORY_TYPES } from "@/features/editorial/helpers";
+import { listPublishedStories } from "@/features/editorial/queries";
 import { listPublishedPageLinks } from "@/features/pages/queries";
 import { publicNavigation } from "@/lib/site";
 
@@ -10,9 +12,10 @@ function siteUrl(): string {
 /**
  * Public sitemap.
  *
- * Contains the stable public routes plus any additional published page that is
- * flagged for navigation. Regenerated hourly so newly published CMS pages appear
- * without a redeploy.
+ * Contains the stable public routes, every published story and news item, the
+ * four story type indexes, plus any additional published page that is flagged
+ * for navigation. Regenerated hourly so newly published content appears without
+ * a redeploy.
  *
  * The admin application is never listed.
  */
@@ -38,8 +41,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  const publishedPages = await listPublishedPageLinks();
-  const known = new Set(staticEntries.map((entry) => entry.url));
+  const [publishedPages, stories] = await Promise.all([
+    listPublishedPageLinks(),
+    listPublishedStories({ limit: 500 }),
+  ]);
+
+  // Type-filtered story indexes, so every filter state is discoverable.
+  const storyTypeEntries: MetadataRoute.Sitemap = STORY_TYPES.map((type) => ({
+    url: `${base}/stories/type/${type}`,
+    lastModified: now,
+    changeFrequency: "monthly" as const,
+    priority: 0.6,
+  }));
+
+  // Every published story and news item, with its real last-updated date.
+  const storyEntries: MetadataRoute.Sitemap = stories.map((story) => ({
+    url: `${base}/stories/${story.slug}`,
+    lastModified: new Date(story.updatedAt),
+    changeFrequency: "monthly" as const,
+    priority: 0.6,
+  }));
+
+  const known = new Set(
+    [...staticEntries, ...storyTypeEntries, ...storyEntries].map((entry) => entry.url),
+  );
 
   const cmsEntries: MetadataRoute.Sitemap = publishedPages
     .map((page) => `${base}/${page.slug.replace(/^\/+/, "")}`)
@@ -51,5 +76,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.5,
     }));
 
-  return [...staticEntries, ...cmsEntries];
+  return [...staticEntries, ...storyTypeEntries, ...storyEntries, ...cmsEntries];
 }

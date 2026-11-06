@@ -40,6 +40,9 @@ export type AdminContentDetail = AdminContentListItem & {
     seoDescription: string | null;
     body: unknown;
   };
+  /** Category and tag ids currently attached, for the editor checkboxes. */
+  categoryIds: string[];
+  tagIds: string[];
   revisions: AdminContentRevision[];
   approvals: { id: string; decision: string; note: string | null; decidedAt: string; reviewerId: string }[];
 };
@@ -153,6 +156,11 @@ export async function getAdminContent(contentId: string): Promise<AdminContentDe
     .eq("content_id", contentId)
     .order("decided_at", { ascending: false });
 
+  const [{ data: categoryLinks }, { data: tagLinks }] = await Promise.all([
+    supabase.from("content_categories").select("category_id").eq("content_id", contentId),
+    supabase.from("content_tags").select("tag_id").eq("content_id", contentId),
+  ]);
+
   const base = item as ContentRow;
 
   return {
@@ -164,6 +172,8 @@ export async function getAdminContent(contentId: string): Promise<AdminContentDe
       seoDescription: en?.seo_description ?? null,
       body: en?.body ?? {},
     },
+    categoryIds: (categoryLinks ?? []).map((row) => row.category_id),
+    tagIds: (tagLinks ?? []).map((row) => row.tag_id),
     revisions: (revisions ?? []).map((revision) => ({
       id: revision.id,
       revisionNo: revision.revision_no,
