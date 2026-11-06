@@ -379,7 +379,7 @@ isOneToOne: false
                   }
                   ComputedFields: never
                   Insert: {
-                    "approved_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"currency"?: string | null,"description"?: string | null,"evidence_url"?: string | null,"id"?: string,"is_published"?: boolean,"key": string,"label": string,"reporting_period"?: string | null,"sort_order"?: number,"source_note"?: string | null,"unit": string,"updated_at"?: string,"updated_by"?: string | null,"value": number
+                    "approved_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"currency"?: string | null,"description"?: string | null,"evidence_url"?: string | null,"id"?: string,"is_published"?: boolean,"key": string,"label": string,"reporting_period"?: string | null,"sort_order"?: number,"source_note"?: string | null,"unit"?: string,"updated_at"?: string,"updated_by"?: string | null,"value": number
                   }
                   Update: {
                     "approved_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"currency"?: string | null,"description"?: string | null,"evidence_url"?: string | null,"id"?: string,"is_published"?: boolean,"key"?: string,"label"?: string,"reporting_period"?: string | null,"sort_order"?: number,"source_note"?: string | null,"unit"?: string,"updated_at"?: string,"updated_by"?: string | null,"value"?: number
