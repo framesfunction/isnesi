@@ -1,44 +1,81 @@
-import { requireSafeguardingCaller, serviceRequest } from "../_shared/safeguarding.ts";
+import { clientIp, rateLimit, requireSafeguardingCaller } from "../_shared/safeguarding.ts";
+import { serviceRequest } from "../_shared/safeguarding.ts";
+
+const RATE = { limit: 10, windowMs: 60 * 60 * 1000 };
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+type CaseRow = {
+  id: string;
+  reference_code: string;
+  status: string;
+  severity: string;
+  assigned_to: string | null;
+  received_at: string;
+  retention_review_at: string | null;
+};
+
+function toCaseDetail(row: CaseRow) {
+  return {
+    id: row.id,
+    referenceCode: row.reference_code,
+    status: row.status,
+    severity: row.severity,
+    assignedTo: row.assigned_to,
+    receivedAt: row.received_at,
+    retentionReviewAt: row.retention_review_at,
+  };
+}
 
 Deno.serve(async (request) => {
-  const auth = await requireSafeguardingCaller(request);
-  if (!auth.ok) return auth.response;
-
-  let body: { caseId?: unknown };
-  try { body = await request.json(); } catch { return Response.json({ error: "Invalid request" }, { status: 400 }); }
-  if (typeof body.caseId !== "string") return Response.json({ error: "Invalid case" }, { status: 400 });
-
-  const result = await serviceRequest(
-    `/rest/v1/cases?id=eq.${body.caseId}&select=id,reference_code,status,severity,assigned_to,received_at,closed_at,retention_review_at`,
-    { schema: "safeguarding" },
-  );
-  if (!result.ok) return result.response;
-  const caseRow = (result.data as Array<Record<string, unknown>>)[0];
-  if (!caseRow || (!auth.isLead && caseRow.assigned_to !== auth.userId)) {
-    return Response.json({ error: "Not found" }, { status: 404 });
+  if (request.method !== "POST") {
+    return Response.json({ error: "Method not allowed" }, { status: 405 });
   }
 
-  const audit = await serviceRequest("/rest/v1/case_access_events", {
-    method: "POST",
+  const caller = await requireSafeguardingCaller(request);
+  if (!caller.ok) return caller.response;
+
+  const ip = clientIp(request);
+  if (!rateLimit(`safeguarding:get-case:${ip}`, RATE.limit, RATE.windowMs).ok) {
+    return Response.json({ error: "Too many attempts. Please try again later." }, { status: 429 });
+  }
+
+  let body: { caseId?: unknown };
+  try {
+    body = await request.json();
+  } catch {
+    return Response.json({ error: "Invalid request" }, { status: 400 });
+  }
+  const caseId = typeof body.caseId === "string" ? body.caseId : "";
+  if (!UUID_RE.test(caseId)) {
+    return Response.json({ error: "Invalid case id" }, { status: 400 });
+  }
+
+  const fetched = await serviceRequest(
+    `/rest/v1/cases?id=eq.${caseId}&select=id,reference_code,status,severity,assigned_to,received_at,retention_review_at&limit=1`,
+    { schema: "safeguarding" },
+  );
+  if (!fetched.ok) {
+    return Response.json({ error: "Service unavailable" }, { status: 503 });
+  }
+  const rows = (fetched.data as Array<CaseRow>) ?? [];
+  const row = rows[0];
+  if (!row) {
+    return Response.json({ error: "Case not found" }, { status: 404 });
+  }
+
+  const isLead = caller.permissions.includes("safeguarding.lead");
+  if (!((isLead || row.assigned_to === caller.userId) as boolean)) {
+    return Response.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const logged = await serviceRequest("/rest/v1/case_access_events", {
     schema: "safeguarding",
-    body: { case_id: caseRow.id, actor_id: auth.userId, action: "view_case", purpose: "casework" },
+    method: "POST",
+    body: { case_id: row.id, actor_id: caller.userId, action: "view", purpose: "case_review" },
   });
-  if (!audit.ok) return audit.response;
+  if (!logged.ok) {
+    return Response.json({ error: "Service unavailable" }, { status: 503 });
+  }
 
-  const [intake, notes] = await Promise.all([
-    serviceRequest(`/rest/v1/intake_details?case_id=eq.${caseRow.id}&select=concern_type,location_general,immediate_risk,safe_contact_instructions,consent_or_legal_basis`, { schema: "safeguarding" }),
-    serviceRequest(`/rest/v1/case_notes?case_id=eq.${caseRow.id}&select=id,note_type,created_at&order=created_at.desc`, { schema: "safeguarding" }),
-  ]);
-  if (!intake.ok || !notes.ok) return Response.json({ error: "Unavailable" }, { status: 503 });
-
-  return Response.json({
-    case: {
-      id: caseRow.id, referenceCode: caseRow.reference_code, status: caseRow.status,
-      severity: caseRow.severity, assignedTo: caseRow.assigned_to,
-      receivedAt: caseRow.received_at, closedAt: caseRow.closed_at,
-      retentionReviewAt: caseRow.retention_review_at,
-    },
-    intake: (intake.data as Array<unknown>)[0] ?? null,
-    notes: notes.data ?? [],
-  });
+  return Response.json({ ok: true, data: { case: toCaseDetail(row) } });
 });

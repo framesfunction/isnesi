@@ -31,10 +31,10 @@ is fixed before implementation.
 | `newsletter-confirm` | Public (link) | Implemented. Confirm the opt-in token, set `subscribed`, record consent evidence. |
 | `newsletter-unsubscribe` | Public (link) | Implemented. One-click unsubscribe with token verification and suppression. |
 | `newsletter-send` | Not yet | Campaign delivery — not built yet; WhatsApp-ready rendering exists in the admin UI pending a provider. |
-| `safeguarding-list-cases` | Safeguarding officers | List assigned cases only; logs `case_access_events`. |
-| `safeguarding-get-case` | Safeguarding officers | Read one case with assignment check; logs access before returning. |
-| `safeguarding-update-case` | Safeguarding officers/leads | Status, severity, assignment; logs access and change. |
-| `safeguarding-add-note` | Safeguarding officers | Encrypted case note; logs access. |
+| `safeguarding-list-cases` | Safeguarding officers | Implemented. List assigned cases (all cases for leads); logs `case_access_events`. |
+| `safeguarding-get-case` | Safeguarding officers | Implemented. Read one case with assignment check; logs access before returning. |
+| `safeguarding-update-case` | Safeguarding officers/leads | Implemented. Status, severity, assignment; logs access and change. |
+| `safeguarding-add-note` | Safeguarding officers | Implemented. Encrypted case note (`SAFEGUARDING_ENCRYPTION_KEY`); logs access. |
 | `donation-create-intent` | Staff (donations.manage) | Implemented. MTN MoMo Collections requesttopay intent for a `created` donation; payer approves on their phone. |
 | `payment-webhook` | Payment provider | Implemented. Signature-free MoMo: status is re-verified against the provider before any transition; idempotent via `payment_events`. Issues receipt numbers on success. |
 | `donation-refund` | Finance officers | Authorised refund with audit record. |
@@ -54,6 +54,9 @@ MOMO_API_KEY=<server-only secret>
 MOMO_TARGET_ENV=sandbox
 MOMO_CURRENCY=XAF
 MOMO_COUNTRY_CODE=237
+
+# Safeguarding (safeguarding-*-* functions)
+SAFEGUARDING_ENCRYPTION_KEY=<base64-encoded 256-bit key, server-only secret>
 
 # Payment webhook verification (set the callback URL with this secret)
 PAYMENT_WEBHOOK_SECRET=<server-only secret>
@@ -81,3 +84,6 @@ npx supabase functions serve safeguarding-get-case --env-file supabase/.env.loca
   case, action and purpose.
 - Case content must never be included in notifications, logs, error messages or
   audit before/after payloads.
+- Case notes are encrypted at rest with `SAFEGUARDING_ENCRYPTION_KEY` (a
+  base64-encoded 256-bit key) before being written as `bytea`; the key is a
+  function secret and is never stored by the application.

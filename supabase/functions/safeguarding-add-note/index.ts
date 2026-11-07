@@ -1,38 +1,100 @@
-import { requireSafeguardingCaller, serviceRequest } from "../_shared/safeguarding.ts";
+import { clientIp, rateLimit, requireSafeguardingCaller } from "../_shared/safeguarding.ts";
+import { serviceRequest } from "../_shared/safeguarding.ts";
+import { encryptNote } from "../_shared/encrypted.ts";
+
+const RATE = { limit: 10, windowMs: 60 * 60 * 1000 };
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+type CaseRow = {
+  id: string;
+  assigned_to: string | null;
+};
 
 Deno.serve(async (request) => {
-  const auth = await requireSafeguardingCaller(request);
-  if (!auth.ok) return auth.response;
-  const body = await request.json().catch(() => null) as { caseId?: unknown; note?: unknown; noteType?: unknown } | null;
-  if (!body || typeof body.caseId !== "string" || typeof body.note !== "string" || !body.note.trim() || body.note.length > 20_000) {
+  if (request.method !== "POST") {
+    return Response.json({ error: "Method not allowed" }, { status: 405 });
+  }
+
+  const caller = await requireSafeguardingCaller(request);
+  if (!caller.ok) return caller.response;
+
+  const ip = clientIp(request);
+  if (!rateLimit(`safeguarding:add-note:${ip}`, RATE.limit, RATE.windowMs).ok) {
+    return Response.json({ error: "Too many attempts. Please try again later." }, { status: 429 });
+  }
+
+  let body: { caseId?: unknown; note?: unknown; noteType?: unknown };
+  try {
+    body = await request.json();
+  } catch {
     return Response.json({ error: "Invalid request" }, { status: 400 });
   }
-  const current = await serviceRequest(`/rest/v1/cases?id=eq.${body.caseId}&select=id,assigned_to`, { schema: "safeguarding" });
-  if (!current.ok) return current.response;
-  const row = (current.data as Array<Record<string, unknown>>)[0];
-  if (!row || (!auth.isLead && row.assigned_to !== auth.userId)) return Response.json({ error: "Not found" }, { status: 404 });
+  const caseId = typeof body.caseId === "string" ? body.caseId : "";
+  const note = typeof body.note === "string" ? body.note.trim() : "";
+  const noteType =
+    typeof body.noteType === "string" && body.noteType.trim().length > 0
+      ? body.noteType.trim()
+      : "case_note";
+  if (!UUID_RE.test(caseId)) {
+    return Response.json({ error: "Invalid case id" }, { status: 400 });
+  }
+  if (note.length === 0 || note.length > 4000) {
+    return Response.json({ error: "Invalid note" }, { status: 400 });
+  }
 
-  const audit = await serviceRequest("/rest/v1/case_access_events", {
-    method: "POST", schema: "safeguarding",
-    body: { case_id: body.caseId, actor_id: auth.userId, action: "add_note", purpose: "casework" },
-  });
-  if (!audit.ok) return audit.response;
-
-  const keyMaterial = Deno.env.get("SAFEGUARDING_NOTE_ENCRYPTION_KEY");
-  if (!keyMaterial) return Response.json({ error: "Encryption unavailable" }, { status: 503 });
-  const keyBytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(keyMaterial));
-  const cryptoKey = await crypto.subtle.importKey("raw", keyBytes, "AES-GCM", false, ["encrypt"]);
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const ciphertext = await crypto.subtle.encrypt(
-    { name: "AES-GCM", iv },
-    cryptoKey,
-    new TextEncoder().encode(body.note),
+  const current = await serviceRequest(
+    `/rest/v1/cases?id=eq.${caseId}&select=id,assigned_to&limit=1`,
+    { schema: "safeguarding" },
   );
-  const bytes = Array.from(new Uint8Array([...iv, ...new Uint8Array(ciphertext)]));
-  const saved = await serviceRequest("/rest/v1/case_notes", {
-    method: "POST",
+  if (!current.ok) {
+    return Response.json({ error: "Service unavailable" }, { status: 503 });
+  }
+  const rows = (current.data as Array<CaseRow>) ?? [];
+  const row = rows[0];
+  if (!row) {
+    return Response.json({ error: "Case not found" }, { status: 404 });
+  }
+
+  const isLead = caller.permissions.includes("safeguarding.lead");
+  if (!(isLead || row.assigned_to === caller.userId)) {
+    return Response.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const encrypted = await encryptNote(note, Deno.env);
+  if (!encrypted) {
+    return Response.json(
+      { error: "Safeguarding encryption is not configured on the server." },
+      { status: 503 },
+    );
+  }
+
+  const created = await serviceRequest("/rest/v1/case_notes", {
     schema: "safeguarding",
-    body: { case_id: body.caseId, author_id: auth.userId, note_encrypted: bytes, note_type: typeof body.noteType === "string" ? body.noteType.slice(0, 60) : "case_note" },
+    method: "POST",
+    body: {
+      case_id: row.id,
+      author_id: caller.userId,
+      note_encrypted: encrypted,
+      note_type: noteType,
+    },
   });
-  return saved.ok ? Response.json({ ok: true }) : saved.response;
+  if (!created.ok) {
+    return Response.json({ error: "Service unavailable" }, { status: 503 });
+  }
+
+  const logged = await serviceRequest("/rest/v1/case_access_events", {
+    schema: "safeguarding",
+    method: "POST",
+    body: {
+      case_id: row.id,
+      actor_id: caller.userId,
+      action: "note_added",
+      purpose: "case_work",
+    },
+  });
+  if (!logged.ok) {
+    return Response.json({ error: "Service unavailable" }, { status: 503 });
+  }
+
+  return Response.json({ ok: true, data: { ok: true } });
 });

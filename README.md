@@ -263,28 +263,26 @@ These are enforced in code, not just documented:
   public Impact page prefers over live record counts, managed from
   Admin → Impact metrics (counts, percentages and currency, each with a source
   and an evidence link).
-- Finance: donation campaigns, transactions, refunds and settlement
-  reconciliation in Admin → Donations, with per-currency volumes; the Mobile
-  Money payment-intent and webhook Edge Functions are implemented but await
-  provider secrets before online giving opens.
+- Finance: donation campaigns, transactions, refunds and per-currency
+  reconciliation in Admin → Donations; online giving opens once MTN MoMo
+  provider secrets are set.
+- Safeguarding: casework UI with the access-matrix tests; every read and write
+  goes through the safeguarding Edge Functions over the private schema.
+- Scheduled publishing: cron route `api/cron/publish-scheduled` flips
+  `scheduled` content items live (guard with `CRON_SECRET`).
 - PWA, SEO metadata, robots, sitemap, health endpoint.
-- Finance: donation campaigns, transactions, refunds and settlement
-  reconciliation in Admin → Donations, with per-currency volumes; the Mobile
-  Money payment-intent and webhook Edge Functions are implemented but await
-  provider secrets before online giving opens.
 
 ## What is deliberately not built yet
 
 | Area | State |
 |---|---|
-| Module CRUD screens | All six website modules plus Enquiries are built; remaining modules (users, settings, safeguarding, donations, kids-corner, accessibility, audit) still render their documented contract. |
-| Scheduled publishing cron | Items can be parked in `scheduled`; a cron job to flip them live is still to come. |
-| Edge Functions | Specified in `supabase/functions/README.md`; not deployed. |
-| Payments | Tables and provider-neutral fields exist; **no** provider adapter, so no money can move. |
-| Newsletter delivery | Signup routes to `newsletter-subscribe`, which does not exist yet, so it fails closed. |
-| Safeguarding UI | Blocked on the Edge Functions + an access-matrix test. |
-| French UI | Schema supports `en`/`fr`; only English copy is written. |
-| CSP | Needs nonce wiring; headers are otherwise in place. |
+| Module CRUD screens | All admin modules (pages, programmes, media, partners, navigation, impact-metrics, taxonomies, enquiries, donations, newsletter, kids-corner, users, settings, accessibility, audit) have working CRUD; safeguarding is a working shell that reaches its private schema through the safeguarding Edge Functions. |
+| Scheduled publishing cron | Cron route `api/cron/publish-scheduled` flips `scheduled` content items live once `scheduled_at` has passed; protect it with `CRON_SECRET`. |
+| Edge Functions | `newsletter-subscribe`/`confirm`/`unsubscribe`, `donation-create-intent`, `payment-webhook` and the four `safeguarding-*` functions are implemented in `supabase/functions/`; deploy them with their secrets before use. |
+| Payments | Mobile money (MTN MoMo Collections) is implemented in `donation-create-intent` / `payment-webhook`; provider secrets are not configured yet, so online giving stays closed until `MOMO_*` and `PAYMENT_WEBHOOK_SECRET` are set on the deployment. |
+| Newsletter delivery | Double opt-in Edge Functions (`newsletter-subscribe`, `newsletter-confirm`, `newsletter-unsubscribe`) are implemented; the email send provider is not connected, so campaigns can be drafted, approved and scheduled but not yet sent. WhatsApp-ready manual sending (rendered text + copy parts) is built in. |
+| Safeguarding UI | Implemented shell; reads and writes go through the safeguarding Edge Functions (await deploy + `SAFEGUARDING_ENCRYPTION_KEY`). Access-matrix test added. |
+| CSP | Nonce-based CSP wired through `src/proxy.ts` and applied to inline JSON-LD scripts. |
 
 ## Verification
 

@@ -76,16 +76,14 @@ describe("newsletterSubscribeSchema", () => {
     }
   });
 
-  it("keeps a supplied subscriber locale", () => {
-    const parsed = newsletterSubscribeSchema.safeParse({
-      email: "reader@example.org",
-      consent: true,
-      locale: "fr",
-    });
-    expect(parsed.success).toBe(true);
-    if (parsed.success) {
-      expect(parsed.data.locale).toBe("fr");
-    }
+  it("rejects any locale other than English", () => {
+    expect(
+      newsletterSubscribeSchema.safeParse({
+        email: "reader@example.org",
+        consent: true,
+        locale: "fr",
+      }).success,
+    ).toBe(false);
   });
 });
 

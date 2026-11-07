@@ -48,15 +48,12 @@ export const newsletterSubscribeSchema = z.object({
   email: z.string().trim().max(254).email("Enter a valid email address"),
   fullName: z.string().trim().max(120).optional().or(z.literal("")),
   consent: z.boolean().refine((v) => v === true, "You must consent to receive emails."),
-  // The subscriber's preferred language is recorded on the subscriber record
-  // (spec 3.10); the public form does not submit one yet, so it defaults to the
-  // site default.
+  // The subscriber's preferred language. ISNESI publishes in English only
+  // (siteConfig.defaultLocale), so the recorded locale is always "en".
   locale: z
-    .string()
-    .trim()
-    .max(10)
+    .literal("en")
     .optional()
-    .transform((value) => (value && value.length > 0 ? value : siteConfig.defaultLocale)),
+    .transform((value) => value ?? siteConfig.defaultLocale),
 });
 
 export type NewsletterSubscribeInput = z.infer<typeof newsletterSubscribeSchema>;
