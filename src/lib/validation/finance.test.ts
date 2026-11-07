@@ -188,6 +188,7 @@ describe("createDonationIntentSchema", () => {
         donationId: validUuid,
         amountMinor: 5000,
         currency: "XAF",
+        payerPhone: "+237 670 123 456",
       }).success,
     ).toBe(true);
   });
@@ -208,6 +209,27 @@ describe("createDonationIntentSchema", () => {
         donationId: "not-a-uuid",
         amountMinor: 5000,
         currency: "XAF",
+      }).success,
+    ).toBe(false);
+  });
+
+  it("rejects a missing payer phone", () => {
+    expect(
+      createDonationIntentSchema.safeParse({
+        donationId: validUuid,
+        amountMinor: 5000,
+        currency: "XAF",
+      }).success,
+    ).toBe(false);
+  });
+
+  it("rejects a payer phone with letters", () => {
+    expect(
+      createDonationIntentSchema.safeParse({
+        donationId: validUuid,
+        amountMinor: 5000,
+        currency: "XAF",
+        payerPhone: "06XX-ABC",
       }).success,
     ).toBe(false);
   });

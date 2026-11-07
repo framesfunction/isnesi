@@ -10,11 +10,14 @@ import {
   approveDonationRefundAction,
 } from "@/features/finance/actions";
 import {
+  describeVolumes,
   getAdminDonationStats,
+  groupVolumeByCurrency,
   listAdminDonationCampaigns,
   listAdminDonations,
   listAdminRefunds,
   listAdminReconciliations,
+  type CurrencyVolume,
 } from "@/features/finance/admin-queries";
 import {
   CampaignManager,
@@ -36,16 +39,17 @@ function money(amountMinor: number, currency: string): string {
 async function getDonationStats() {
   const stats = await getAdminDonationStats();
   if (!stats) return null;
+  const volumes = (entries: CurrencyVolume[]) => describeVolumes(entries, money);
   return {
     totalCount: stats.totalCount,
-    totalVolume: money(stats.totalVolume, "XAF"),
     succeededCount: stats.succeededCount,
-    succeededVolume: money(stats.succeededVolume, "XAF"),
+    succeededVolume: volumes(stats.succeededVolume),
     failedCount: stats.failedCount,
-    failedVolume: money(stats.failedVolume, "XAF"),
+    failedVolume: volumes(stats.failedVolume),
     pendingCount: stats.pendingCount,
+    pendingVolume: volumes(stats.pendingVolume),
     refundedCount: stats.refundedCount,
-    refundedVolume: money(stats.refundedVolume, "XAF"),
+    refundedVolume: volumes(stats.refundedVolume),
   };
 }
 async function handleCreateDonationIntent(formData: FormData): Promise<void> {
@@ -146,14 +150,14 @@ export default async function AdminDonationsPage({
   const filteredDonations = status
     ? donations.filter((d) => d.payment_status === status)
     : donations;
-  const succeededTotal = filteredDonations
-    .filter((d) => d.payment_status === "succeeded")
-    .reduce((acc, d) => acc + d.amount_minor, 0);
-  const pendingTotal = filteredDonations
-    .filter(
+  const filteredSucceeded = groupVolumeByCurrency(
+    filteredDonations.filter((d) => d.payment_status === "succeeded"),
+  );
+  const filteredPending = groupVolumeByCurrency(
+    filteredDonations.filter(
       (d) => d.payment_status === "created" || d.payment_status === "pending",
-    )
-    .reduce((acc, d) => acc + d.amount_minor, 0);
+    ),
+  );
   return (
     <div className="mx-auto max-w-6xl">
       {" "}
@@ -170,7 +174,7 @@ export default async function AdminDonationsPage({
             title="Total transactions"
             value={formatNumber(stats.totalCount)}
           />{" "}
-          <StatCard title="Total volume" value={stats.totalVolume} />{" "}
+          <StatCard title="Pending" value={stats.pendingVolume} delta={`${stats.pendingCount} awaiting payment`} variant="neutral" />{" "}
           <StatCard
             title="Succeeded"
             value={stats.succeededVolume}
@@ -281,8 +285,8 @@ export default async function AdminDonationsPage({
           {" "}
           <p className="text-sm font-bold text-ink">
             {" "}
-            Filtered total: {money(succeededTotal, "XAF")} succeeded ·{" "}
-            {money(pendingTotal, "XAF")} pending{" "}
+            Filtered totals: {describeVolumes(filteredSucceeded, money)} succeeded ·{" "}
+            {describeVolumes(filteredPending, money)} pending{" "}
           </p>{" "}
         </div>{" "}
       </div>{" "}

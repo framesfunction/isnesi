@@ -1,105 +1,123 @@
+import { checkStatus, readMoMoConfig } from "../_shared/momo.ts";
+import { serviceRequest } from "../_shared/safeguarding.ts";
+
+/**
+ * payment-webhook
+ *
+ * Callers: the payment provider (MTN MoMo callback delivery), gated by a
+ * shared secret header (`x-webhook-secret` === PAYMENT_WEBHOOK_SECRET).
+ *
+ * Provider callbacks carry no signature by themselves, so the payload is never
+ * trusted: every event is re-verified by querying the provider's requesttopay
+ * status endpoint directly. Idempotency is enforced by the
+ * `payment_events(provider_key, provider_event_id)` unique constraint.
+ *
+ * A verified SUCCESSFUL status is what issues a receipt number — never a
+ * redirect, never the caller's claim.
+ */
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function receiptNumber(): string {
+  const bytes = new Uint8Array(5);
+  crypto.getRandomValues(bytes);
+  const suffix = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+  return `RCP-${new Date().getUTCFullYear()}-${suffix.toUpperCase()}`;
+}
+
+const MOMO_TO_PAYMENT_STATUS: Record<string, "succeeded" | "failed" | "pending"> = {
+  SUCCESSFUL: "succeeded",
+  FAILED: "failed",
+  REJECTED: "failed",
+  TIMEOUT: "failed",
+  PENDING: "pending",
+  UNKNOWN: "pending",
+};
+
 Deno.serve(async (request) => {
-  if (request.method !== "POST") return Response.json({ error: "Method not allowed" }, { status: 405 });
+  if (request.method !== "POST") {
+    return Response.json({ error: "Method not allowed" }, { status: 405 });
+  }
 
-  const raw = await request.text();
-  const signature = request.headers.get("x-webhook-signature") ?? "";
-  const eventId = request.headers.get("x-provider-event-id") ?? "";
-  const providerKey = request.headers.get("x-provider-key") ?? "generic";
   const secret = Deno.env.get("PAYMENT_WEBHOOK_SECRET") ?? "";
-  if (!secret || !eventId || !signature) {
-    return Response.json({ error: "Invalid webhook" }, { status: 401 });
+  const presented = request.headers.get("x-webhook-secret") ?? "";
+  if (!secret || presented !== secret) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const key = await crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["verify"],
-  );
-  const expected = Uint8Array.from(
-    signature.match(/.{1,2}/g)?.map((byte) => Number.parseInt(byte, 16)) ?? [],
-  );
-  const valid = await crypto.subtle.verify(
-    "HMAC",
-    key,
-    expected,
-    new TextEncoder().encode(raw),
-  );
-  if (!valid) return Response.json({ error: "Invalid signature" }, { status: 401 });
-
-  let payload: {
-    donationId?: unknown;
-    providerTransactionId?: unknown;
-    eventType?: unknown;
-    status?: unknown;
-  };
+  let body: { donationReferenceId?: unknown };
   try {
-    payload = JSON.parse(raw);
+    body = await request.json();
   } catch {
-    return Response.json({ error: "Invalid payload" }, { status: 400 });
+    return Response.json({ error: "Invalid request" }, { status: 400 });
+  }
+  const referenceId = typeof body.donationReferenceId === "string" ? body.donationReferenceId : "";
+  if (!UUID_RE.test(referenceId)) {
+    return Response.json({ error: "Invalid request" }, { status: 400 });
   }
 
-  const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-  const headers = {
-    apikey: serviceRoleKey,
-    authorization: `Bearer ${serviceRoleKey}`,
-    "content-type": "application/json",
-    prefer: "resolution=ignore-duplicates,return=minimal",
-  };
+  const config = readMoMoConfig(Deno.env);
+  if (!config) {
+    return Response.json({ error: "Service unavailable" }, { status: 503 });
+  }
 
-  const exists = await fetch(
-    `${supabaseUrl}/rest/v1/payment_events?provider_key=eq.${encodeURIComponent(providerKey)}&provider_event_id=eq.${encodeURIComponent(eventId)}&select=id`,
-    { headers },
+  // Never trust the payload — verify with the provider.
+  const verified = await checkStatus(config, referenceId);
+  if (!verified.ok) {
+    return Response.json({ error: "Verification failed" }, { status: 502 });
+  }
+  const donationStatus = MOMO_TO_PAYMENT_STATUS[verified.status] ?? "pending";
+
+  const donationResult = await serviceRequest(
+    `/rest/v1/donations?id=eq.${referenceId}&select=id,payment_status,provider_key,receipt_number,currency,amount_minor`,
   );
-  const existingEvents = await exists.json();
-  if (Array.isArray(existingEvents) && existingEvents.length > 0) {
-    return Response.json({ ok: true, duplicate: true });
+  if (!donationResult.ok) {
+    return Response.json({ error: "Service unavailable" }, { status: 503 });
+  }
+  const rows = (donationResult.data as Array<Record<string, unknown>>) ?? [];
+  const donation = rows[0];
+  if (!donation) {
+    return Response.json({ error: "Donation not found" }, { status: 404 });
   }
 
-  const allowedStatuses = ["created", "pending", "succeeded", "failed", "cancelled", "refunded", "partially_refunded"];
-  if (typeof payload.donationId !== "string" ||
-      typeof payload.providerTransactionId !== "string" ||
-      typeof payload.status !== "string" ||
-      !allowedStatuses.includes(payload.status) ||
-      typeof payload.eventType !== "string") {
-    return Response.json({ error: "Invalid payload" }, { status: 400 });
-  }
-
-  const eventInsert = await fetch(`${supabaseUrl}/rest/v1/payment_events`, {
+  // Idempotent event record (unique on provider_key + provider_event_id).
+  const eventId = `callback:${referenceId}:${verified.status}`;
+  const eventInsert = await serviceRequest("/rest/v1/payment_events", {
     method: "POST",
-    headers,
-    body: JSON.stringify({
-      donation_id: payload.donationId,
-      provider_key: providerKey,
+    headers: { prefer: "resolution=ignore-duplicates" },
+    body: {
+      donation_id: donation.id,
+      provider_key: "mtn_momo",
       provider_event_id: eventId,
-      event_type: payload.eventType,
+      event_type: verified.status.toLowerCase(),
       signature_valid: true,
-      payload: {},
-    }),
+      payload: { verified_status: verified.status },
+    },
   });
-  if (!eventInsert.ok) return Response.json({ error: "Webhook storage failed" }, { status: 503 });
+  if (!eventInsert.ok) {
+    return Response.json({ error: "Service unavailable" }, { status: 503 });
+  }
 
-  const donationUpdate = await fetch(`${supabaseUrl}/rest/v1/donations?id=eq.${payload.donationId}`, {
-    method: "PATCH",
-    headers,
-    body: JSON.stringify({
-      provider_key: providerKey,
-      provider_transaction_id: payload.providerTransactionId,
-      payment_status: payload.status,
-      paid_at: payload.status === "succeeded" ? new Date().toISOString() : null,
-      receipt_number: payload.status === "succeeded"
-        ? `RCPT-${payload.providerTransactionId.slice(-12)}`
-        : null,
-    }),
-  });
-  if (!donationUpdate.ok) return Response.json({ error: "Donation update failed" }, { status: 503 });
+  if (donationStatus === "pending" || donation.payment_status === "succeeded") {
+    // Nothing to transition, or already terminal.
+    return Response.json({ ok: true, status: donation.payment_status });
+  }
 
-  await fetch(`${supabaseUrl}/rest/v1/payment_events?provider_key=eq.${encodeURIComponent(providerKey)}&provider_event_id=eq.${encodeURIComponent(eventId)}`, {
+  const patch: Record<string, unknown> = {
+    payment_status: donationStatus,
+    paid_at: donationStatus === "succeeded" ? new Date().toISOString() : null,
+  };
+  if (donationStatus === "succeeded" && !donation.receipt_number) {
+    patch.receipt_number = receiptNumber();
+  }
+
+  const updated = await serviceRequest(`/rest/v1/donations?id=eq.${donation.id}`, {
     method: "PATCH",
-    headers,
-    body: JSON.stringify({ donation_id: payload.donationId, processed_at: new Date().toISOString() }),
+    body: patch,
   });
-  return Response.json({ ok: true, duplicate: false });
+  if (!updated.ok) {
+    return Response.json({ error: "Service unavailable" }, { status: 503 });
+  }
+
+  return Response.json({ ok: true, status: donationStatus });
 });

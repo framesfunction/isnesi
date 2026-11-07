@@ -6,8 +6,7 @@ import { EmptyState } from "@/components/admin/empty-state";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { getDashboardSnapshot } from "@/features/dashboard/queries";
-import { getAdminDonationStats } from "@/features/finance/admin-queries";
-import { requireAdmin } from "@/lib/auth/guards";
+import { getAdminDonationStats, describeVolumes } from "@/features/finance/admin-queries";import { requireAdmin } from "@/lib/auth/guards";
 import { formatCurrency, formatDateTime } from "@/lib/format";
 import { canAny } from "@/lib/permissions/can";
 
@@ -148,7 +147,7 @@ export default async function AdminIntelligencePage() {
                 <MetricCard
                   title="Succeeded donations"
                   value={finance.succeededCount.toLocaleString()}
-                  detail={`${finance.succeededVolume === 0 ? "No" : formatCurrency(finance.succeededVolume, "XAF")} confirmed in settlement records.`}
+                  detail={`${describeVolumes(finance.succeededVolume, formatCurrency)} confirmed in settlement records.`}
                   href="/admin/donations"
                 />
               </li>

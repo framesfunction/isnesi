@@ -263,7 +263,15 @@ These are enforced in code, not just documented:
   public Impact page prefers over live record counts, managed from
   Admin → Impact metrics (counts, percentages and currency, each with a source
   and an evidence link).
+- Finance: donation campaigns, transactions, refunds and settlement
+  reconciliation in Admin → Donations, with per-currency volumes; the Mobile
+  Money payment-intent and webhook Edge Functions are implemented but await
+  provider secrets before online giving opens.
 - PWA, SEO metadata, robots, sitemap, health endpoint.
+- Finance: donation campaigns, transactions, refunds and settlement
+  reconciliation in Admin → Donations, with per-currency volumes; the Mobile
+  Money payment-intent and webhook Edge Functions are implemented but await
+  provider secrets before online giving opens.
 
 ## What is deliberately not built yet
 
@@ -283,7 +291,7 @@ These are enforced in code, not just documented:
 ```bash
 npm run typecheck   # clean
 npm run lint        # clean
-npm test            # 165 tests passing
+npm test            # 200 tests passing
 npm run build       # all routes build successfully
 ```
 

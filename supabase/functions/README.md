@@ -27,15 +27,16 @@ is fixed before implementation.
 | Function | Callers | Responsibility |
 |---|---|---|
 | `enquiry-intake` | Public (anon) | Rate-limited general enquiry intake as an alternative to the public insert path. Never accepts referrals. |
-| `newsletter-subscribe` | Public (anon) | Double opt-in: create `pending` subscriber, record consent, send confirmation. |
-| `newsletter-confirm` | Public (link) | Confirm the opt-in token, set `subscribed`, record consent evidence. |
-| `newsletter-unsubscribe` | Public (link) | One-click unsubscribe with token verification and suppression. |
+| `newsletter-subscribe` | Public (anon) | Implemented. Double opt-in: create `pending` subscriber, record consent, send confirmation link. |
+| `newsletter-confirm` | Public (link) | Implemented. Confirm the opt-in token, set `subscribed`, record consent evidence. |
+| `newsletter-unsubscribe` | Public (link) | Implemented. One-click unsubscribe with token verification and suppression. |
+| `newsletter-send` | Not yet | Campaign delivery — not built yet; WhatsApp-ready rendering exists in the admin UI pending a provider. |
 | `safeguarding-list-cases` | Safeguarding officers | List assigned cases only; logs `case_access_events`. |
 | `safeguarding-get-case` | Safeguarding officers | Read one case with assignment check; logs access before returning. |
 | `safeguarding-update-case` | Safeguarding officers/leads | Status, severity, assignment; logs access and change. |
 | `safeguarding-add-note` | Safeguarding officers | Encrypted case note; logs access. |
-| `donation-create-intent` | Public (anon) | Create a `created` donation and a provider payment intent. Amount validated server-side. |
-| `payment-webhook` | Payment provider | Signature verification, idempotency on `payment_events(provider_key, provider_event_id)`, status transition. |
+| `donation-create-intent` | Staff (donations.manage) | Implemented. MTN MoMo Collections requesttopay intent for a `created` donation; payer approves on their phone. |
+| `payment-webhook` | Payment provider | Implemented. Signature-free MoMo: status is re-verified against the provider before any transition; idempotent via `payment_events`. Issues receipt numbers on success. |
 | `donation-refund` | Finance officers | Authorised refund with audit record. |
 
 ## Environment
@@ -44,6 +45,18 @@ is fixed before implementation.
 SUPABASE_URL=https://<project>.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=<server-only secret>
 SUPABASE_ANON_KEY=<public key>
+
+# Mobile money (donation-create-intent / payment-webhook)
+MOMO_BASE_URL=https://sandbox.momodeveloper.mtn.com   # or https://proxy.momoapi.mtn.com
+MOMO_SUBSCRIPTION_KEY=<server-only secret>
+MOMO_API_USER=<server-only secret>
+MOMO_API_KEY=<server-only secret>
+MOMO_TARGET_ENV=sandbox
+MOMO_CURRENCY=XAF
+MOMO_COUNTRY_CODE=237
+
+# Payment webhook verification (set the callback URL with this secret)
+PAYMENT_WEBHOOK_SECRET=<server-only secret>
 ```
 
 Function secrets are configured with `supabase secrets set` and are never

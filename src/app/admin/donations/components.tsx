@@ -207,6 +207,14 @@ function DonationRow({
               value={String(donation.amount_minor)}
             />{" "}
             <input type="hidden" name="currency" value={donation.currency} />{" "}
+            <input
+              type="text"
+              name="payerPhone"
+              required
+              placeholder="Payer phone, e.g. +237 6XX XXX XXX"
+              aria-label={`Payer phone for ${donation.public_reference}`}
+              className="mr-2 min-h-8 w-52 rounded-lg border border-line bg-white px-2 text-xs text-ink"
+            />{" "}
             <Button type="submit" size="sm" variant="secondary">
               {" "}
               Pay now{" "}
@@ -226,7 +234,7 @@ type Refund = {
   reason: string | null;
   status: string;
   created_at: string;
-  donations: { public_reference: string; amount_minor: number };
+  donations: { public_reference: string; amount_minor: number; currency: string };
 };
 function RefundRow({
   refund,
@@ -243,7 +251,7 @@ function RefundRow({
       </td>{" "}
       <td className="p-3 text-sm text-right font-bold">
         {" "}
-        {money(refund.amount_minor, "XAF")}{" "}
+        {money(refund.amount_minor, refund.donations.currency)}{" "}
       </td>{" "}
       <td className="p-3 text-sm">{refund.reason ?? "—"}</td>{" "}
       <td className="p-3">

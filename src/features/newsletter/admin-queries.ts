@@ -53,6 +53,7 @@ export type AdminCampaignListItem = {
 
 export type AdminCampaignDetail = AdminCampaignListItem & {
   body: unknown;
+  channel: string;
   createdBy: string | null;
   events: { id: number; eventType: string; occurredAt: string; providerEventId: string | null }[];
 };
@@ -207,7 +208,7 @@ export async function getAdminCampaign(campaignId: string): Promise<AdminCampaig
 
   const { data: campaign, error } = await supabase
     .from("newsletter_campaigns")
-    .select("id, name, subject, body, status, scheduled_at, approved_at, sent_at, created_by, created_at")
+    .select("id, name, subject, body, channel, status, scheduled_at, approved_at, sent_at, created_by, created_at")
     .eq("id", campaignId)
     .maybeSingle();
 
@@ -234,6 +235,7 @@ export async function getAdminCampaign(campaignId: string): Promise<AdminCampaig
     sentAt: campaign.sent_at,
     createdAt: campaign.created_at,
     body: campaign.body,
+    channel: campaign.channel ?? "email",
     createdBy: campaign.created_by,
     events: (events ?? []).map((event) => ({
       id: event.id,

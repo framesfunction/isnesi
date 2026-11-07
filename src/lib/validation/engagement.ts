@@ -119,6 +119,13 @@ export const campaignWorkflowSchema = z.object({
   action: z.enum(["approve", "cancel"]),
 });
 
+export const CAMPAIGN_CHANNELS = ["email", "whatsapp"] as const;
+
+export const setCampaignChannelSchema = z.object({
+  campaignId: z.string().uuid(),
+  channel: z.enum(CAMPAIGN_CHANNELS),
+});
+
 export const deleteSubscriberSchema = z.object({ subscriberId: z.string().uuid() });
 
 export const deleteCampaignSchema = z.object({ campaignId: z.string().uuid() });

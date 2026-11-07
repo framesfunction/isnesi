@@ -123,7 +123,7 @@ export async function deleteDonationCampaignAction(
 export async function createDonationIntentAction(
   _state: unknown,
   formData: FormData,
-): Promise<ActionResult<{ providerReference: string }>> {
+): Promise<ActionResult> {
   const user = await assertPermission("donations.manage");
   if (!user || !isSupabaseConfigured()) return actionNotConfigured();
 
@@ -131,6 +131,7 @@ export async function createDonationIntentAction(
     donationId: formData.get("donationId"),
     amountMinor: formData.get("amountMinor"),
     currency: formData.get("currency"),
+    payerPhone: formData.get("payerPhone"),
   });
   if (!parsed.success) {
     return actionError("Please correct the highlighted fields.", fieldErrors(parsed.error));
@@ -155,6 +156,7 @@ export async function createDonationIntentAction(
         amountMinor: input.amountMinor,
         currency: input.currency,
         donationId: input.donationId,
+        payerPhone: input.payerPhone,
       }),
       cache: "no-store",
     });
@@ -164,21 +166,34 @@ export async function createDonationIntentAction(
 
   if (response.status === 404) return actionNotConfigured();
   if (response.status === 401 || response.status === 403) return actionForbidden();
+  if (response.status === 422) {
+    const failure = (await response.json().catch(() => null)) as { error?: string } | null;
+    return actionError(
+      failure?.error ?? "This payment provider does not accept this currency.",
+    );
+  }
   if (!response.ok) return actionError("The payment provider could not create an intent.");
 
-  const result = (await response.json()) as { providerReference?: string; donationId?: string };
+  const result = (await response.json()) as {
+    providerReference?: string;
+    resumed?: boolean;
+    message?: string;
+  };
   if (!result.providerReference) {
     return actionError("The provider returned no reference. Try again.");
   }
 
   const { error } = await supabase
     .from("donations")
-    .update({ provider_key: "generic", provider_transaction_id: result.providerReference })
+    .update({
+      provider_key: "mtn_momo",
+      provider_transaction_id: result.providerReference,
+    })
     .eq("id", input.donationId);
   if (error) return dbErrorMessage(error, "donation intent record");
 
   revalidatePath("/admin/donations");
-  return actionOk("Payment intent created.", { providerReference: result.providerReference });
+  return actionOk(result.message ?? "Payment intent created.");
 }
 
 export async function requestDonationRefundAction(

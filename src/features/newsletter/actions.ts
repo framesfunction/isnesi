@@ -21,6 +21,7 @@ import {
   saveCampaignSchema,
   segmentMembershipSchema,
   segmentSchema,
+  setCampaignChannelSchema,
   subscriberStatusSchema,
 } from "@/lib/validation/engagement";
 import { fieldErrors } from "@/lib/validation/form";
@@ -422,6 +423,46 @@ export async function saveCampaignAction(
 
   revalidateNewsletter(["/admin/newsletter/campaigns"]);
   return actionOk("Campaign created as a draft.", { campaignId: data.id });
+}
+
+export async function setCampaignChannelAction(
+  _state: unknown,
+  formData: FormData,
+): Promise<ActionResult> {
+  const user = await assertPermission("newsletter.manage");
+  if (!user) return actionForbidden();
+
+  if (!isSupabaseConfigured()) return actionNotConfigured();
+
+  const parsed = setCampaignChannelSchema.safeParse({
+    campaignId: formData.get("campaignId"),
+    channel: formData.get("channel"),
+  });
+  if (!parsed.success) return actionError("Malformed request.");
+
+  const supabase = await createClient();
+  const { data: campaign } = await supabase
+    .from("newsletter_campaigns")
+    .select("id, status")
+    .eq("id", parsed.data.campaignId)
+    .maybeSingle();
+  if (!campaign) return actionForbidden();
+  if (campaign.status !== "draft") {
+    return actionError("Only draft campaigns can change channel.");
+  }
+
+  const { error } = await supabase
+    .from("newsletter_campaigns")
+    .update({ channel: parsed.data.channel })
+    .eq("id", parsed.data.campaignId);
+  if (error) return dbErrorMessage(error, "campaign channel");
+
+  revalidateNewsletter([`/admin/newsletter/campaigns/${parsed.data.campaignId}`]);
+  return actionOk(
+    parsed.data.channel === "whatsapp"
+      ? "Campaign set to WhatsApp: copy the rendered text and send it manually."
+      : "Campaign set to email.",
+  );
 }
 
 export async function campaignWorkflowAction(_state: unknown, formData: FormData): Promise<ActionResult> {

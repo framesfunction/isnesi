@@ -25,6 +25,9 @@ const uses = [
 export default async function DonatePage() {
   const { donation } = await getPublicSiteSettings();
   const currency = donation.currency;
+  const currencies = donation.currencies.includes(currency)
+    ? donation.currencies
+    : [currency, ...donation.currencies];
   const suggested = [5000, 15000, 50000];
 
   return (
@@ -38,17 +41,37 @@ export default async function DonatePage() {
       <Section>
         <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="rounded-[1.75rem] border border-line bg-white p-6 shadow-[0_12px_40px_rgba(24,36,67,0.06)] sm:p-8">
-            <h2 className="text-2xl font-black tracking-tight text-brand">Online giving</h2>
+            <h2 className="text-2xl font-black tracking-tight text-brand">Ways to give</h2>
 
             <div className="mt-4 rounded-2xl border-2 border-sun/60 bg-sun-soft p-4 text-sm text-ink">
-              <strong className="font-black">Online giving is not open yet.</strong> We only accept
-              contributions once a verified payment provider is connected — a browser redirect is
-              never treated as proof of payment. Until then, contact us to arrange a contribution and
-              a receipt.
+              <strong className="font-black">Online giving is not open yet.</strong> Payments are
+              only accepted once a verified mobile money provider is connected — a payment is never
+              confirmed by a redirect. Until then, use the channels below and we will record and
+              receipt your contribution.
             </div>
 
             <p className="mt-6 text-sm font-bold uppercase tracking-[0.12em] text-ink-muted">
-              Suggested amounts
+              Contribution channels
+            </p>
+            <ul className="mt-3 grid gap-3 text-sm text-ink">
+              <li className="rounded-2xl border-2 border-line bg-cream p-4">
+                <span className="font-black text-brand">Mobile Money (XAF)</span> — MTN MoMo
+                collection is being activated; once live you approve a payment prompt on your phone
+                and a receipt is issued automatically.
+              </li>
+              {currencies
+                .filter((code) => code !== "XAF")
+                .map((code) => (
+                  <li key={code} className="rounded-2xl border-2 border-line bg-cream p-4">
+                    <span className="font-black text-brand">{code}</span> — bank transfer or
+                    international giving: contact us and the team shares the current account
+                    details and issues your receipt.
+                  </li>
+                ))}
+            </ul>
+
+            <p className="mt-6 text-sm font-bold uppercase tracking-[0.12em] text-ink-muted">
+              Suggested amounts ({currency})
             </p>
             <ul className="mt-3 flex flex-wrap gap-3">
               {suggested.map((amount) => (
@@ -62,9 +85,10 @@ export default async function DonatePage() {
             </ul>
 
             <p className="mt-6 text-xs text-ink-muted">
-              Amounts are shown in {currency}, the organisation&apos;s reporting currency. Every
-              donation record stores an explicit currency code, an amount and a public reference —
-              and a receipt number once settled.
+              Amounts are shown in {currency}, the organisation&apos;s reporting currency; gifts in{" "}
+              {currencies.filter((code) => code !== currency).join(", ") || "other currencies"} are
+              recorded in their original currency. Every donation record stores an explicit currency
+              code, an amount and a public reference — and a receipt number once settled.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">

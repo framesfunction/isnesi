@@ -1,5 +1,9 @@
 import { isSupabaseConfigured } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
+import { groupVolumeByCurrency } from "@/features/finance/volumes";
+
+export { describeVolumes, groupVolumeByCurrency } from "@/features/finance/volumes";
+export type { CurrencyVolume } from "@/features/finance/volumes";
 
 export async function listAdminDonations() {
   if (!isSupabaseConfigured()) return null;
@@ -49,7 +53,7 @@ export async function listAdminRefunds() {
       approved_by,
       approved_at,
       created_at,
-      donations!inner(public_reference, amount_minor, payment_status, donor_name)
+      donations!inner(public_reference, amount_minor, currency, payment_status, donor_name)
     `)
     .order("created_at", { ascending: false })
     .limit(500);
@@ -76,26 +80,30 @@ export async function getAdminDonationStats() {
   const [totalResult, succeededResult, failedResult, pendingResult, refundedResult] =
     await Promise.all([
       supabase.from("donations").select("amount_minor", { count: "exact", head: true }),
-      supabase.from("donations").select("amount_minor").eq("payment_status", "succeeded"),
-      supabase.from("donations").select("amount_minor").eq("payment_status", "failed"),
-      supabase.from("donations").select("amount_minor").in("payment_status", ["created", "pending"]),
-      supabase.from("donations").select("amount_minor").in("payment_status", ["refunded", "partially_refunded"]),
+      supabase.from("donations").select("amount_minor,currency").eq("payment_status", "succeeded"),
+      supabase.from("donations").select("amount_minor,currency").eq("payment_status", "failed"),
+      supabase
+        .from("donations")
+        .select("amount_minor,currency")
+        .in("payment_status", ["created", "pending"]),
+      supabase
+        .from("donations")
+        .select("amount_minor,currency")
+        .in("payment_status", ["refunded", "partially_refunded"]),
     ]);
 
-  const sum = (rows: { amount_minor: number }[] | null) =>
-    (rows ?? []).reduce((acc, row) => acc + (row.amount_minor ?? 0), 0);
+  const count = (rows: unknown[] | null) => (rows ?? []).length;
 
   return {
     totalCount: totalResult.count ?? 0,
-    totalVolume: sum(totalResult.data ?? []),
-    succeededCount: (succeededResult.data ?? []).length,
-    succeededVolume: sum(succeededResult.data ?? []),
-    failedCount: (failedResult.data ?? []).length,
-    failedVolume: sum(failedResult.data ?? []),
-    pendingCount: (pendingResult.data ?? []).length,
-    pendingVolume: sum(pendingResult.data ?? []),
-    refundedCount: (refundedResult.data ?? []).length,
-    refundedVolume: sum(refundedResult.data ?? []),
+    succeededCount: count(succeededResult.data),
+    succeededVolume: groupVolumeByCurrency(succeededResult.data),
+    failedCount: count(failedResult.data),
+    failedVolume: groupVolumeByCurrency(failedResult.data),
+    pendingCount: count(pendingResult.data),
+    pendingVolume: groupVolumeByCurrency(pendingResult.data),
+    refundedCount: count(refundedResult.data),
+    refundedVolume: groupVolumeByCurrency(refundedResult.data),
   };
 }
 

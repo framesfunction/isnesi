@@ -130,4 +130,10 @@ export const createDonationIntentSchema = z.object({
     .int("Amount must be a whole number of minor units.")
     .positive("Amount must be greater than zero."),
   currency: z.string().trim().min(1, "Currency is required.").max(3),
+  payerPhone: z
+    .string()
+    .trim()
+    .min(6, "Give us a valid payer phone number.")
+    .max(20, "Keep the number under 20 characters.")
+    .regex(/^[0-9+()\-\s]+$/, "Digits, spaces and +() only."),
 });
