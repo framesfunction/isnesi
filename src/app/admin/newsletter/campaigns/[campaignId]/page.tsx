@@ -9,7 +9,7 @@ import { StatusBadge } from "@/components/admin/status-badge";
 import { WhatsAppCopyButton } from "@/components/admin/whatsapp-copy-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAdminCampaign } from "@/features/newsletter/admin-queries";
-import { deleteCampaignAction, setCampaignChannelAction } from "@/features/newsletter/actions";
+import { deleteCampaignAction, sendCampaignAction, setCampaignChannelAction } from "@/features/newsletter/actions";
 import { buildWhatsAppMessage, splitWhatsAppMessage } from "@/features/newsletter/whatsapp";
 import { requirePermission } from "@/lib/auth/guards";
 import { formatDateTime } from "@/lib/format";
@@ -43,6 +43,20 @@ export default async function AdminNewsletterCampaignPage({
     "use server";
     await setCampaignChannelAction(undefined, formData);
   }
+
+  async function handleSendCampaign(formData: FormData): Promise<void> {
+    "use server";
+    await sendCampaignAction(undefined, formData);
+  }
+
+  const canSendCampaign = (): boolean => {
+    return (
+      campaign.channel === "email" &&
+      !campaign.sentAt &&
+      !!campaign.approvedAt &&
+      (campaign.status === "approved" || campaign.status === "scheduled")
+    );
+  };
 
   return (
     <div className="mx-auto max-w-4xl">
@@ -91,6 +105,44 @@ export default async function AdminNewsletterCampaignPage({
           ) : null}
         </CardContent>
       </Card>
+
+      <form action={handleSendCampaign} className="mb-6">
+        <input type="hidden" name="campaignId" value={campaign.id} />
+        <Card className="border border-leaf/40">
+          <CardHeader>
+            <CardTitle className="font-display text-base font-extrabold text-brand">
+              Send campaign
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4">
+            <p className="text-sm text-ink-muted mb-3">
+              Sends the campaign to every subscribed recipient. Delivery events
+              are recorded per recipient once the email provider is connected.
+            </p>
+            <div className="flex items-center gap-3">
+              <ActionButton
+                action={sendCampaignAction}
+                hidden={{ campaignId: campaign.id }}
+                label="Send campaign"
+                variant="default"
+                disabled={!canSendCampaign()}
+                confirm={`Send "${campaign.name}" to all subscribed recipients? This cannot be undone.`}
+              />
+              {canSendCampaign() ? null : (
+                <p className="text-xs text-ink-muted">
+                  Send once the campaign is approved (and scheduled, if a date
+                  is set) and an email provider is connected.
+                </p>
+              )}
+            </div>
+            {campaign.sentAt ? (
+              <p className="mt-3 text-xs font-bold text-leaf-strong">
+                Sent at {formatDateTime(campaign.sentAt)}.
+              </p>
+            ) : null}
+          </CardContent>
+        </Card>
+      </form>
 
       <WhatsAppCard name={campaign.name} subject={campaign.subject} body={campaign.body} />
 

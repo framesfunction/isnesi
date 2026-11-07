@@ -21,6 +21,7 @@ import {
   saveCampaignSchema,
   segmentMembershipSchema,
   segmentSchema,
+  sendCampaignSchema,
   setCampaignChannelSchema,
   subscriberStatusSchema,
 } from "@/lib/validation/engagement";
@@ -551,6 +552,62 @@ export async function scheduleCampaignAction(_state: unknown, formData: FormData
   revalidateNewsletter([`/admin/newsletter/campaigns/${campaignId}`, "/admin/newsletter/campaigns"]);
   return actionOk(
     "Campaign scheduled. Delivery runs through the newsletter provider once that integration is connected.",
+  );
+}
+
+/* ---------------------------------- Send ---------------------------------- */
+
+export async function sendCampaignAction(
+  _state: unknown,
+  formData: FormData,
+): Promise<ActionResult> {
+  const user = await assertPermission("newsletter.manage");
+  if (!user) return actionForbidden();
+
+  if (!isSupabaseConfigured()) return actionNotConfigured();
+
+  const parsed = sendCampaignSchema.safeParse({ campaignId: formData.get("campaignId") });
+  if (!parsed.success) return actionError("Malformed request.");
+
+  const { supabaseUrl, supabaseAnonKey } = getPublicEnv();
+  const supabase = await createClient();
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return actionForbidden();
+
+  let response: Response;
+  try {
+    response = await fetch(`${supabaseUrl}/functions/v1/newsletter-send`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        apikey: supabaseAnonKey,
+        authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ campaignId: parsed.data.campaignId }),
+      cache: "no-store",
+    });
+  } catch {
+    return actionError("The newsletter provider is unavailable right now.");
+  }
+
+  if (response.status === 404) return actionNotConfigured();
+  if (response.status === 401 || response.status === 403) return actionForbidden();
+  if (!response.ok) {
+    const failure = (await response.json().catch(() => null)) as { error?: string } | null;
+    return actionError(failure?.error ?? "The campaign could not be sent.");
+  }
+
+  const result = (await response.json()) as { ok?: boolean; data?: { queued?: number; note?: string } };
+  if (!result.ok) {
+    return actionError("The campaign could not be sent.");
+  }
+
+  revalidateNewsletter([`/admin/newsletter/campaigns/${parsed.data.campaignId}`, "/admin/newsletter"]);
+  const note = result.data?.note;
+  return actionOk(
+    note
+      ? `Campaign queued for ${result.data?.queued ?? 0} recipients. ${note}`
+      : `Campaign queued for ${result.data?.queued ?? 0} recipients.`,
   );
 }
 

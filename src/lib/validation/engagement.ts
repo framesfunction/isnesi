@@ -126,6 +126,10 @@ export const setCampaignChannelSchema = z.object({
   channel: z.enum(CAMPAIGN_CHANNELS),
 });
 
+export const sendCampaignSchema = z.object({
+  campaignId: z.string().uuid(),
+});
+
 export const deleteSubscriberSchema = z.object({ subscriberId: z.string().uuid() });
 
 export const deleteCampaignSchema = z.object({ campaignId: z.string().uuid() });

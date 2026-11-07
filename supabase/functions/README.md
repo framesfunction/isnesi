@@ -30,7 +30,7 @@ is fixed before implementation.
 | `newsletter-subscribe` | Public (anon) | Implemented. Double opt-in: create `pending` subscriber, record consent, send confirmation link. |
 | `newsletter-confirm` | Public (link) | Implemented. Confirm the opt-in token, set `subscribed`, record consent evidence. |
 | `newsletter-unsubscribe` | Public (link) | Implemented. One-click unsubscribe with token verification and suppression. |
-| `newsletter-send` | Not yet | Campaign delivery — not built yet; WhatsApp-ready rendering exists in the admin UI pending a provider. |
+| `newsletter-send` | Staff (newsletter.manage) | Implemented. Queue per-recipient `queued` delivery events and flip the campaign to `sent` once the provider adapter reports delivery. Fails closed (502) until `NEWSLETTER_PROVIDER` is set and an adapter is wired. |
 | `safeguarding-list-cases` | Safeguarding officers | Implemented. List assigned cases (all cases for leads); logs `case_access_events`. |
 | `safeguarding-get-case` | Safeguarding officers | Implemented. Read one case with assignment check; logs access before returning. |
 | `safeguarding-update-case` | Safeguarding officers/leads | Implemented. Status, severity, assignment; logs access and change. |
@@ -54,6 +54,9 @@ MOMO_API_KEY=<server-only secret>
 MOMO_TARGET_ENV=sandbox
 MOMO_CURRENCY=XAF
 MOMO_COUNTRY_CODE=237
+
+# Newsletter (newsletter-send)
+NEWSLETTER_PROVIDER=<resend|brevo|mailgun|ses|smtp — adapter not yet implemented>
 
 # Safeguarding (safeguarding-*-* functions)
 SAFEGUARDING_ENCRYPTION_KEY=<base64-encoded 256-bit key, server-only secret>

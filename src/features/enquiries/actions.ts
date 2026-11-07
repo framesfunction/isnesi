@@ -7,7 +7,7 @@ import { actionError, actionForbidden, actionNotConfigured, actionOk } from "@/l
 import type { ActionResult } from "@/lib/admin/action-result";
 import { dbErrorMessage } from "@/lib/admin/db-error";
 import { assertPermission } from "@/lib/auth/guards";
-import { isSupabaseConfigured } from "@/lib/env";
+import { getPublicEnv, isSupabaseConfigured } from "@/lib/env";
 import { clientKey, rateLimit } from "@/lib/security/rate-limit";
 import { createClient } from "@/lib/supabase/server";
 import { enquirySchema, fieldErrors } from "@/lib/validation/enquiry";
@@ -29,16 +29,17 @@ const RATE_LIMIT = { limit: 5, windowMs: 60 * 60 * 1000 };
 /**
  * Public enquiry intake.
  *
+ * Submission is routed through the `enquiry-intake` Edge Function when it is
+ * deployed; until then the action falls back to a direct server-side insert so
+ * the form keeps working in development and pre-launch environments.
+ *
  * Security notes:
- *  - The insert deliberately omits `status`, `assigned_to` and `reference_code`;
- *    the database defaults and RLS policy (`consent_to_contact = true`,
- *    `status = 'new'`, `assigned_to is null`) reject anything else.
- *  - No `.select()` is chained: anonymous visitors have no SELECT grant on
- *    `general_enquiries`, so the request uses `Prefer: return=minimal`.
- *  - Child safeguarding referrals must never be submitted through this form. The
- *    public referral route stays disabled until the dedicated Edge Function and
- *    the restricted workflow are in place.
- *  - Before public launch this moves behind the rate-limited intake Edge Function.
+ *  - The Edge Function insert deliberately omits `status`, `assigned_to` and
+ *    `reference_code`; the database defaults and RLS policy reject anything
+ *    else.
+ *  - Child safeguarding referrals must never be submitted through this form.
+ *    The public referral route stays disabled until the dedicated Edge Function
+ *    and the restricted workflow are in place.
  */
 export async function submitEnquiryAction(
   _previous: EnquiryFormState,
@@ -96,28 +97,80 @@ export async function submitEnquiryAction(
     };
   }
 
-  const supabase = await createClient();
-  const { error } = await supabase.from("general_enquiries").insert({
-    enquiry_type: data.enquiryType,
-    full_name: data.fullName,
-    email: data.email ? data.email : null,
-    phone: data.phone ? data.phone : null,
-    message: data.message,
-    source: "website",
-    consent_to_contact: true,
-  });
+  const { supabaseUrl, supabaseAnonKey } = getPublicEnv();
 
-  if (error) {
-    console.error("[isnesi] enquiry submission failed", { code: error.code });
+  // Route through the enquiry-intake Edge Function when deployed; fall back to
+  // a direct server-side insert until then (404 = not deployed yet).
+  let efResponse: Response;
+  try {
+    efResponse = await fetch(`${supabaseUrl}/functions/v1/enquiry-intake`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        apikey: supabaseAnonKey,
+      },
+      body: JSON.stringify({
+        enquiryType: data.enquiryType,
+        fullName: data.fullName,
+        email: data.email,
+        phone: data.phone,
+        message: data.message,
+        consentToContact: data.consentToContact,
+      }),
+    });
+  } catch {
+    efResponse = null as unknown as Response;
+  }
+
+  if (efResponse && efResponse.status === 404) {
+    // Edge Function not deployed yet: fall back to direct insert.
+    const supabase = await createClient();
+    const { error } = await supabase.from("general_enquiries").insert({
+      enquiry_type: data.enquiryType,
+      full_name: data.fullName,
+      email: data.email ? data.email : null,
+      phone: data.phone ? data.phone : null,
+      message: data.message,
+      source: "website",
+      consent_to_contact: true,
+    });
+
+    if (error) {
+      console.error("[isnesi] enquiry submission failed", { code: error.code });
+      return {
+        status: "error",
+        message: "We could not save your message. Please try again, or contact us directly.",
+      };
+    }
+
+    return {
+      status: "success",
+      message: "Thank you — your message has reached the ISNESI team and we will reply soon.",
+    };
+  }
+
+  if (!efResponse || !efResponse.ok) {
     return {
       status: "error",
       message: "We could not save your message. Please try again, or contact us directly.",
     };
   }
 
+  const result = (await efResponse.json()) as {
+    ok: boolean;
+    message?: string;
+    referenceCode?: string | null;
+  };
+  if (!result.ok) {
+    return {
+      status: "error",
+      message: result.message ?? "We could not save your message. Please try again, or contact us directly.",
+    };
+  }
+
   return {
     status: "success",
-    message: "Thank you — your message has reached the ISNESI team and we will reply soon.",
+    message: result.message ?? "Thank you — your message has reached the ISNESI team and we will reply soon.",
   };
 }
 

@@ -280,7 +280,7 @@ These are enforced in code, not just documented:
 | Scheduled publishing cron | Cron route `api/cron/publish-scheduled` flips `scheduled` content items live once `scheduled_at` has passed; protect it with `CRON_SECRET`. |
 | Edge Functions | `newsletter-subscribe`/`confirm`/`unsubscribe`, `donation-create-intent`, `payment-webhook` and the four `safeguarding-*` functions are implemented in `supabase/functions/`; deploy them with their secrets before use. |
 | Payments | Mobile money (MTN MoMo Collections) is implemented in `donation-create-intent` / `payment-webhook`; provider secrets are not configured yet, so online giving stays closed until `MOMO_*` and `PAYMENT_WEBHOOK_SECRET` are set on the deployment. |
-| Newsletter delivery | Double opt-in Edge Functions (`newsletter-subscribe`, `newsletter-confirm`, `newsletter-unsubscribe`) are implemented; the email send provider is not connected, so campaigns can be drafted, approved and scheduled but not yet sent. WhatsApp-ready manual sending (rendered text + copy parts) is built in. |
+| Newsletter delivery | Double opt-in Edge Functions (`newsletter-subscribe`, `newsletter-confirm`, `newsletter-unsubscribe`) and a `newsletter-send` send function are implemented; the email send provider is not connected, so campaigns can be drafted, approved, scheduled and queued but not yet delivered. WhatsApp-ready manual sending (rendered text + copy parts) is built in. |
 | Safeguarding UI | Implemented shell; reads and writes go through the safeguarding Edge Functions (await deploy + `SAFEGUARDING_ENCRYPTION_KEY`). Access-matrix test added. |
 | CSP | Nonce-based CSP wired through `src/proxy.ts` and applied to inline JSON-LD scripts. |
 
@@ -289,7 +289,7 @@ These are enforced in code, not just documented:
 ```bash
 npm run typecheck   # clean
 npm run lint        # clean
-npm test            # 200 tests passing
+npm test            # 205 tests passing
 npm run build       # all routes build successfully
 ```
 
