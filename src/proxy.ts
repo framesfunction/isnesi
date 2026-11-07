@@ -9,6 +9,9 @@ import { refreshSession } from "@/lib/supabase/session-refresh";
  *  1. Refresh the Supabase session so auth cookies stay valid.
  *  2. Redirect unauthenticated visitors away from /admin.
  *  3. Redirect already-signed-in staff away from /login.
+ *  4. Wire a per-request CSP nonce into request headers (for Server Components to
+ *     apply to inline script/style tags) and set the Content-Security-Policy
+ *     response header.
  *
  * Authorisation (roles and permissions) is intentionally NOT decided here; it is
  * enforced on the server in layouts/actions and by Row Level Security. This layer
@@ -34,16 +37,59 @@ function withSessionCookies(redirect: NextResponse, source: NextResponse): NextR
   return redirect;
 }
 
+/** Generate a URL-safe base64 nonce for CSP. */
+function makeNonce(): string {
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  return btoa(String.fromCharCode(...bytes));
+}
+
+/** Build a strict Content-Security-Policy header using a per-request nonce. */
+function buildCsp(nonce: string, supabaseUrl: string | null): string {
+  const connectSrc = ["'self'"];
+  if (supabaseUrl) {
+    try {
+      const parsed = new URL(supabaseUrl);
+      connectSrc.push(`${parsed.protocol}//${parsed.hostname}`);
+    } catch {
+      // Ignore malformed URLs; fall back to self-only connect.
+    }
+  }
+  return [
+    "default-src 'self'",
+    `script-src 'self' 'nonce-${nonce}'`,
+    `style-src 'self' 'nonce-${nonce}'`,
+    "img-src 'self' data: blob:",
+    "font-src 'self'",
+    `connect-src ${connectSrc.join(" ")}`,
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+  ].join("; ");
+}
+
 export async function proxy(request: NextRequest) {
   const { response, user } = await refreshSession(request);
   const { pathname, search } = request.nextUrl;
+
+  const nonce = makeNonce();
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-csp-nonce", nonce);
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? null;
+  const csp = buildCsp(nonce, supabaseUrl);
 
   if (isAdminPath(pathname) && !user) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = LOGIN_PATH;
     loginUrl.search = "";
     loginUrl.searchParams.set("next", `${pathname}${search}`);
-    return withSessionCookies(NextResponse.redirect(loginUrl), response);
+    const redirect = withSessionCookies(
+      NextResponse.redirect(loginUrl),
+      response,
+    );
+    redirect.headers.set("Content-Security-Policy", csp);
+    return redirect;
   }
 
   if (isLoginPath(pathname) && user) {
@@ -53,10 +99,19 @@ export async function proxy(request: NextRequest) {
     const [path, query] = destination.split("?");
     adminUrl.pathname = path;
     adminUrl.search = query ? `?${query}` : "";
-    return withSessionCookies(NextResponse.redirect(adminUrl), response);
+    const redirect = withSessionCookies(
+      NextResponse.redirect(adminUrl),
+      response,
+    );
+    redirect.headers.set("Content-Security-Policy", csp);
+    return redirect;
   }
 
-  return response;
+  const nextResponse = NextResponse.next({
+    request: { headers: requestHeaders },
+  });
+  nextResponse.headers.set("Content-Security-Policy", csp);
+  return nextResponse;
 }
 
 export const config = {

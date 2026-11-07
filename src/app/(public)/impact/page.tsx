@@ -1,5 +1,6 @@
 // app/(public)/impact/page.tsx
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { ArrowRight, Heart } from "lucide-react";
 import Link from "next/link";
 
@@ -59,10 +60,17 @@ function siteUrl(): string {
  * Values come from `buildImpactJsonLd`, which only ever emits plain strings and
  * numbers, so the serialised payload cannot carry markup.
  */
-function ImpactJsonLd({ data }: { data: Record<string, unknown>[] }) {
+function ImpactJsonLd({
+  data,
+  nonce,
+}: {
+  data: Record<string, unknown>[];
+  nonce: string;
+}) {
   return (
     <script
       type="application/ld+json"
+      nonce={nonce}
       dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
     />
   );
@@ -76,6 +84,8 @@ function ImpactJsonLd({ data }: { data: Record<string, unknown>[] }) {
  * today with live figures — never illustrative or projected numbers.
  */
 export default async function ImpactPage() {
+  const headersList = await headers();
+  const nonce = headersList.get("x-csp-nonce") ?? "";
   const baseUrl = siteUrl();
   const cmsPage = await getPublicPage("impact");
   const snapshot = await getImpactSnapshot({ storyLimit: 3 });
@@ -92,6 +102,7 @@ export default async function ImpactPage() {
           description,
           siteName: siteConfig.name,
         })}
+        nonce={nonce}
       />
 
       <PageHero

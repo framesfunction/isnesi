@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
@@ -49,10 +50,17 @@ function siteUrl(): string {
 }
 
 /** Structured data for the page; values are plain strings, never markup. */
-function GetInvolvedJsonLd({ data }: { data: Record<string, unknown>[] }) {
+function GetInvolvedJsonLd({
+  data,
+  nonce,
+}: {
+  data: Record<string, unknown>[];
+  nonce: string;
+}) {
   return (
     <script
       type="application/ld+json"
+      nonce={nonce}
       dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
     />
   );
@@ -67,6 +75,8 @@ function GetInvolvedJsonLd({ data }: { data: Record<string, unknown>[] }) {
  * this page.
  */
 export default async function GetInvolvedPage() {
+  const headersList = await headers();
+  const nonce = headersList.get("x-csp-nonce") ?? "";
   const cmsPage = await getPublicPage("get-involved");
   const cmsSections = cmsPage?.sections ?? [];
   const hasCmsIntro = cmsSections.length > 0;
@@ -84,6 +94,7 @@ export default async function GetInvolvedPage() {
           description,
           siteName: siteConfig.name,
         })}
+        nonce={nonce}
       />
 
       <PageHero

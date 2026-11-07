@@ -7,8 +7,7 @@ import { actionError, actionForbidden, actionNotConfigured, actionOk } from "@/l
 import type { ActionResult } from "@/lib/admin/action-result";
 import { dbErrorMessage } from "@/lib/admin/db-error";
 import { assertPermission } from "@/lib/auth/guards";
-import { isSupabaseConfigured } from "@/lib/env";
-import { createAdminClient, isAdminClientAvailable } from "@/lib/supabase/admin";
+import { getPublicEnv, isSupabaseConfigured } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 import { clientKey, rateLimit } from "@/lib/security/rate-limit";
 import { newsletterSubscribeSchema } from "@/lib/validation/enquiry";
@@ -80,81 +79,65 @@ export async function subscribeNewsletterAction(
     return { status: "error", message: "Too many attempts. Please try again later." };
   }
 
-  if (!isAdminClientAvailable()) {
+  if (!isSupabaseConfigured()) {
     return { status: "error", message: "Newsletter sign-up is not configured yet." };
   }
 
-  const supabase = createAdminClient();
+  const { supabaseUrl, supabaseAnonKey } = getPublicEnv();
   const email = parsed.data.email.toLowerCase();
-  const { data: existing } = await supabase
-    .from("newsletter_subscribers")
-    .select("id, status")
-    .eq("email", email)
-    .maybeSingle();
 
-  if (existing) {
-    if (existing.status === "subscribed" || existing.status === "pending") {
-      return {
-        status: "success",
-        message: "You are already on our newsletter list. Thank you.",
-      };
-    }
-
-    const { error } = await supabase
-      .from("newsletter_subscribers")
-      .update({
-        full_name: parsed.data.fullName || null,
-        locale: parsed.data.locale,
-        status: "pending",
-      })
-      .eq("id", existing.id);
-    if (error) {
-      console.error("[isnesi] newsletter resubscribe failed", { code: error.code });
-      return { status: "error", message: "We could not save your subscription. Please try again." };
-    }
-
-    const { error: consentError } = await supabase.from("newsletter_consents").insert({
-      subscriber_id: existing.id,
-      status: "granted",
-      source: "website",
-      policy_version: "1.0",
-    });
-    if (consentError) {
-      console.error("[isnesi] newsletter consent failed", { code: consentError.code });
-      return { status: "error", message: "We could not save your consent. Please try again." };
-    }
-  } else {
-    const { data: subscriber, error } = await supabase
-      .from("newsletter_subscribers")
-      .insert({
+  let response: Response;
+  try {
+    response = await fetch(`${supabaseUrl}/functions/v1/newsletter-subscribe`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        apikey: supabaseAnonKey,
+      },
+      body: JSON.stringify({
         email,
-        full_name: parsed.data.fullName || null,
+        fullName: parsed.data.fullName || undefined,
+        consent: parsed.data.consent,
         locale: parsed.data.locale,
-        status: "pending",
-      })
-      .select("id")
-      .single();
-    if (error || !subscriber) {
-      console.error("[isnesi] newsletter subscribe failed", { code: error?.code });
-      return { status: "error", message: "We could not save your subscription. Please try again." };
-    }
-
-    const { error: consentError } = await supabase.from("newsletter_consents").insert({
-      subscriber_id: subscriber.id,
-      status: "granted",
-      source: "website",
-      policy_version: "1.0",
+      }),
     });
-    if (consentError) {
-      console.error("[isnesi] newsletter consent failed", { code: consentError.code });
-      return { status: "error", message: "We could not save your consent. Please try again." };
-    }
+  } catch {
+    return {
+      status: "error",
+      message: "Newsletter sign-up is unavailable right now. Please try again later.",
+    };
+  }
+
+  if (response.status === 404) {
+    return { status: "error", message: "Newsletter sign-up is not configured yet." };
+  }
+  if (!response.ok) {
+    return { status: "error", message: "We could not save your subscription. Please try again." };
+  }
+
+  const result = (await response.json()) as {
+    ok: boolean;
+    alreadySubscribed?: boolean;
+    message?: string;
+  };
+  if (!result.ok) {
+    return {
+      status: "error",
+      message: result.message ?? "We could not save your subscription. Please try again.",
+    };
+  }
+
+  if (result.alreadySubscribed) {
+    return {
+      status: "success",
+      message: result.message ?? "You are already on our newsletter list. Thank you.",
+    };
   }
 
   revalidateNewsletter(["/admin/newsletter"]);
   return {
     status: "success",
-    message: "Thank you. Your newsletter subscription request has been recorded.",
+    message: result.message ?? "Thank you. Please confirm your subscription by email.",
   };
 }
 

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -52,16 +53,25 @@ export async function generateMetadata({ params }: StoryPageProps): Promise<Meta
 }
 
 /** Structured data for the article; values are plain strings, never markup. */
-function StoryJsonLd({ data }: { data: Record<string, unknown>[] }) {
+function StoryJsonLd({
+  data,
+  nonce,
+}: {
+  data: Record<string, unknown>[];
+  nonce: string;
+}) {
   return (
     <script
       type="application/ld+json"
+      nonce={nonce}
       dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
     />
   );
 }
 
 export default async function StoryPage({ params }: StoryPageProps) {
+  const headersList = await headers();
+  const nonce = headersList.get("x-csp-nonce") ?? "";
   const { slug } = await params;
   const story = await getPublishedStoryBySlug(slug);
 
@@ -91,6 +101,7 @@ export default async function StoryPage({ params }: StoryPageProps) {
           contentType: story.contentType,
           siteName: siteConfig.name,
         })}
+        nonce={nonce}
       />
 
       <article className="mx-auto w-full max-w-3xl px-5 py-12">
