@@ -5,7 +5,9 @@ import { serviceRequest } from "../_shared/safeguarding.ts";
 /**
  * donation-pay-intent
  *
- * Callers: the public donation form (no authentication required).
+ * Callers: authenticated donors/staff paying for a specific `created`
+ * donation. Requires a valid Supabase Auth bearer token — this is no longer a
+ * public endpoint.
  *
  * Creates (or resumes) a provider payment intent for an existing `created`
  * donation. Provider: MTN MoMo Collections (requesttopay) — the payer approves
@@ -13,7 +15,7 @@ import { serviceRequest } from "../_shared/safeguarding.ts";
  * transitions happen only after this function or `payment-webhook` verifies
  * the status directly with the provider.
  *
- * Rate-limited per IP to prevent abuse. Fails closed: undeployed provider
+ * Rate-limited per IP and per donation. Fails closed: undeployed provider
  * secrets → 502 with a clear reason.
  */
 
@@ -22,10 +24,43 @@ const ALLOWED_CURRENCIES = new Set(["XAF"]);
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MSISDN_RE = /^[0-9+()\-\s]{6,20}$/;
 
+async function requireAuthenticatedCaller(
+  request: Request,
+): Promise<{ ok: true; userId: string } | { ok: false; response: Response }> {
+  const token = request.headers.get("authorization")?.match(/^Bearer\s+(.+)$/i)?.[1];
+  if (!token) {
+    return { ok: false, response: Response.json({ error: "Unauthorized" }, { status: 401 }) };
+  }
+
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  if (!supabaseUrl || !serviceRoleKey) {
+    return { ok: false, response: Response.json({ error: "Service unavailable" }, { status: 503 }) };
+  }
+
+  const userResult = await fetch(`${supabaseUrl}/auth/v1/user`, {
+    headers: {
+      apikey: serviceRoleKey,
+      authorization: `Bearer ${token}`,
+    },
+  });
+  if (!userResult.ok) {
+    return { ok: false, response: Response.json({ error: "Unauthorized" }, { status: 401 }) };
+  }
+  const user = (await userResult.json()) as { id?: string };
+  if (!user.id) {
+    return { ok: false, response: Response.json({ error: "Unauthorized" }, { status: 401 }) };
+  }
+  return { ok: true, userId: user.id };
+}
+
 Deno.serve(async (request) => {
   if (request.method !== "POST") {
     return Response.json({ error: "Method not allowed" }, { status: 405 });
   }
+
+  const caller = await requireAuthenticatedCaller(request);
+  if (!caller.ok) return caller.response;
 
   const ip = clientIp(request);
   if (!rateLimit(`donation:pay:${ip}`, RATE.limit, RATE.windowMs).ok) {
@@ -70,7 +105,7 @@ Deno.serve(async (request) => {
 
   // Load the donation. Only `created` donations may start (or resume) an intent.
   const donationResult = await serviceRequest(
-    `/rest/v1/donations?id=eq.${donationId}&select=id,public_reference,payment_status,provider_key,provider_transaction_id,payer_phone`,
+    `/rest/v1/donations?id=eq.${donationId}&select=id,public_reference,payment_status,amount_minor,provider_key,provider_transaction_id,payer_phone`,
   );
   if (!donationResult.ok) {
     return Response.json({ error: "Service unavailable" }, { status: 503 });
@@ -85,18 +120,34 @@ Deno.serve(async (request) => {
     return Response.json({ error: `This donation is already ${status}.` }, { status: 422 });
   }
 
-  // If a previous attempt exists, check its status instead of re-charging.
-  if (typeof donation.provider_transaction_id === "string" && donation.provider_transaction_id) {
-    const existing = await checkStatus(config, donation.provider_transaction_id);
+  // The amount must match the donation total exactly — no over/under-payment
+  // through this endpoint.
+  if (amountMinor !== (donation.amount_minor as number)) {
+    return Response.json(
+      { error: "Payment amount does not match the donation total." },
+      { status: 422 },
+    );
+  }
+
+  // If a previous attempt exists, check its status instead of overwriting the
+  // payer phone or creating a duplicate request.
+  const existingTxn = donation.provider_transaction_id as string | null;
+  if (typeof existingTxn === "string" && existingTxn) {
+    const existing = await checkStatus(config, existingTxn);
     if (existing.ok) {
       return Response.json({
         ok: true,
         resumed: true,
-        providerReference: donation.provider_transaction_id,
+        providerReference: existingTxn,
         providerStatus: existing.status,
-        message: "A payment request is already active. The donor approves it on their phone.",
+        message: "A payment request is already active for this donation. The donor approves it on their phone.",
       });
     }
+  }
+
+  // Per-donation rate limit so a single donation cannot be spammed.
+  if (!rateLimit(`donation:pay:donation:${donationId}`, RATE.limit, RATE.windowMs).ok) {
+    return Response.json({ error: "Too many attempts for this donation. Please try again later." }, { status: 429 });
   }
 
   const referenceId = donationId; // idempotent: one reference per donation
