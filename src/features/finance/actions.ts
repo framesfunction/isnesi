@@ -287,16 +287,73 @@ export async function approveDonationRefundAction(
   if (!parsed.success) return actionError("Malformed request.");
 
   const supabase = await createClient();
-  const { error } = await supabase
+  const { data: refund } = await supabase
     .from("donation_refunds")
-    .update({ approved_by: user.id, approved_at: new Date().toISOString() })
+    .select("id, donation_id, amount_minor, reason, status, donations!inner(currency)")
     .eq("id", parsed.data.refundId)
     .eq("status", "requested")
-    .is("approved_at", null);
+    .maybeSingle();
+  if (!refund) return actionError("Refund not found or already processed.");
+
+  const { supabaseUrl, supabaseAnonKey } = getPublicEnv();
+  let response: Response;
+  try {
+    response = await fetch(`${supabaseUrl}/functions/v1/donation-refund`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        apikey: supabaseAnonKey,
+        authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token ?? ""}`,
+      },
+      body: JSON.stringify({
+        refundId: refund.id,
+        amountMinor: refund.amount_minor,
+        currency: (refund as { donations: { currency: string } }).donations
+          .currency,
+        reason: refund.reason,
+      }),
+      cache: "no-store",
+    });
+  } catch {
+    return actionError("The refund provider is unavailable right now.");
+  }
+
+  if (response.status === 404) return actionNotConfigured();
+  if (response.status === 401 || response.status === 403) return actionForbidden();
+  if (!response.ok) {
+    const failure = (await response.json().catch(() => null)) as { error?: string } | null;
+    return actionError(failure?.error ?? "The refund could not be processed.");
+  }
+
+  const result = (await response.json()) as {
+    ok: boolean;
+    providerReference?: string;
+    providerStatus?: string;
+    message?: string;
+  };
+  if (!result.ok) {
+    return actionError(result.message ?? "The refund could not be processed.");
+  }
+
+  const { error } = await supabase
+    .from("donation_refunds")
+    .update({
+      status: "succeeded",
+      provider_refund_id: result.providerReference ?? null,
+    })
+    .eq("id", refund.id)
+    .eq("status", "requested");
   if (error) return dbErrorMessage(error, "donation refund approval");
 
+  // Update the donation payment status to reflect the refund.
+  await supabase
+    .from("donations")
+    .update({ payment_status: "refunded" })
+    .eq("id", refund.donation_id)
+    .eq("payment_status", "succeeded");
+
   revalidatePath("/admin/donations");
-  return actionOk("Refund approved.");
+  return actionOk(result.message ?? "Refund approved and sent to the provider.");
 }
 
 /* ---------------------------------- Delete ---------------------------------- */

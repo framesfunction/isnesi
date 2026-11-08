@@ -1,4 +1,6 @@
 "use client";
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 import { useActionState } from "react";
 import { EmptyState } from "@/components/admin/empty-state";
 import { StatusBadge } from "@/components/admin/status-badge";
@@ -181,7 +183,12 @@ function DonationRow({
       <td className="p-3 text-sm">
         {" "}
         {donation.receipt_number ? (
-          <span className="font-mono">{donation.receipt_number}</span>
+          <Link
+            href={`/donations/receipt/${donation.public_reference}`}
+            className="font-mono text-brand hover:underline"
+          >
+            {donation.receipt_number}
+          </Link>
         ) : (
           <span className="text-ink-muted">—</span>
         )}{" "}
@@ -193,10 +200,13 @@ function DonationRow({
       <td className="p-3 text-right">
         {" "}
         {donation.payment_status === "succeeded" && donation.receipt_number ? (
-          <Button type="button" size="sm" variant="outline">
-            {" "}
-            Receipt{" "}
-          </Button>
+          <Link
+            href={`/donations/receipt/${donation.public_reference}`}
+            className="inline-flex items-center gap-2 rounded-full border-2 border-brand px-4 py-2 text-sm font-bold text-brand hover:bg-brand-soft"
+          >
+            View receipt
+            <ArrowRight className="size-4" />
+          </Link>
         ) : donation.payment_status === "created" ? (
           <form action={onCreateIntent} className="inline">
             {" "}

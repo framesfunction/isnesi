@@ -4,16 +4,18 @@ import type { Metadata } from "next";
 
 import { CtaBand } from "@/components/public/cta-band";
 import { PageHero, Section } from "@/components/public/page-hero";
+import { DonationForm } from "@/components/public/donation-form";
 import { getPublicSiteSettings } from "@/features/settings/queries";
 import { formatCurrency } from "@/lib/format";
 import { siteConfig } from "@/lib/site";
+import { isServiceRoleConfigured } from "@/lib/env";
 
 export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Donate",
   description:
-    "Support ISNESI's inclusive education and community programmes. Online giving is opened only once a verified payment provider is connected.",
+    "Support ISNESI's inclusive education and community programmes. Make a donation online or contact us for other ways to give.",
 };
 
 const uses = [
@@ -29,6 +31,7 @@ export default async function DonatePage() {
     ? donation.currencies
     : [currency, ...donation.currencies];
   const suggested = [5000, 15000, 50000];
+  const onlineGivingOpen = isServiceRoleConfigured() && !!process.env.MOMO_API_USER;
 
   return (
     <>
@@ -41,79 +44,94 @@ export default async function DonatePage() {
       <Section>
         <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="rounded-[1.75rem] border border-line bg-white p-6 shadow-[0_12px_40px_rgba(24,36,67,0.06)] sm:p-8">
-            <h2 className="text-2xl font-black tracking-tight text-brand">Ways to give</h2>
+            <h2 className="text-2xl font-black tracking-tight text-brand">
+              Ways to give
+            </h2>
 
-            <div className="mt-4 rounded-2xl border-2 border-sun/60 bg-sun-soft p-4 text-sm text-ink">
-              <strong className="font-black">Online giving is not open yet.</strong> Payments are
-              only accepted once a verified mobile money provider is connected — a payment is never
-              confirmed by a redirect. Until then, use the channels below and we will record and
-              receipt your contribution.
-            </div>
-
-            <p className="mt-6 text-sm font-bold uppercase tracking-[0.12em] text-ink-muted">
-              Contribution channels
-            </p>
-            <ul className="mt-3 grid gap-3 text-sm text-ink">
-              <li className="rounded-2xl border-2 border-line bg-cream p-4">
-                <span className="font-black text-brand">Mobile Money (XAF)</span> — MTN MoMo
-                collection is being activated; once live you approve a payment prompt on your phone
-                and a receipt is issued automatically.
-              </li>
-              {currencies
-                .filter((code) => code !== "XAF")
-                .map((code) => (
-                  <li key={code} className="rounded-2xl border-2 border-line bg-cream p-4">
-                    <span className="font-black text-brand">{code}</span> — bank transfer or
-                    international giving: contact us and the team shares the current account
-                    details and issues your receipt.
-                  </li>
-                ))}
-            </ul>
-
-            <p className="mt-6 text-sm font-bold uppercase tracking-[0.12em] text-ink-muted">
-              Suggested amounts ({currency})
-            </p>
-            <ul className="mt-3 flex flex-wrap gap-3">
-              {suggested.map((amount) => (
-                <li
-                  key={amount}
-                  className="rounded-2xl border-2 border-line bg-cream px-5 py-3 text-sm font-black text-brand"
-                >
-                  {formatCurrency(amount, currency)}
-                </li>
-              ))}
-            </ul>
-
-            <p className="mt-6 text-xs text-ink-muted">
-              Amounts are shown in {currency}, the organisation&apos;s reporting currency; gifts in{" "}
-              {currencies.filter((code) => code !== currency).join(", ") || "other currencies"} are
-              recorded in their original currency. Every donation record stores an explicit currency
-              code, an amount and a public reference — and a receipt number once settled.
-            </p>
-
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                href="/contact"
-                className="group inline-flex min-h-12 items-center gap-2 rounded-full bg-brand px-6 text-sm font-black text-white shadow-[0_6px_0_var(--brand-strong)] transition-transform hover:-translate-y-1 active:translate-y-1 active:shadow-none"
-              >
-                Arrange a contribution
-                <ArrowRight
-                  aria-hidden="true"
-                  className="size-4 transition-transform group-hover:translate-x-1"
+            {onlineGivingOpen ? (
+              <>
+                <DonationForm
+                  suggestedAmounts={suggested}
+                  defaultCurrency={currency}
                 />
-              </Link>
-              <Link
-                href="/get-involved"
-                className="inline-flex min-h-12 items-center rounded-full border-2 border-line bg-white px-6 text-sm font-black text-brand transition-colors hover:bg-brand-soft"
-              >
-                Other ways to help
-              </Link>
-            </div>
+              </>
+            ) : (
+              <>
+                <div className="mt-4 rounded-2xl border-2 border-sun/60 bg-sun-soft p-4 text-sm text-ink">
+                  <strong className="font-black">Online giving is not open yet.</strong> Payments are
+                  only accepted once a verified mobile money provider is connected — a payment is never
+                  confirmed by a redirect. Until then, use the channels below and we will record and
+                  receipt your contribution.
+                </div>
+
+                <p className="mt-6 text-sm font-bold uppercase tracking-[0.12em] text-ink-muted">
+                  Contribution channels
+                </p>
+                <ul className="mt-3 grid gap-3 text-sm text-ink">
+                  <li className="rounded-2xl border-2 border-line bg-cream p-4">
+                    <span className="font-black text-brand">Mobile Money (XAF)</span> — MTN MoMo
+                    collection is being activated; once live you approve a payment prompt on your phone
+                    and a receipt is issued automatically.
+                  </li>
+                  {currencies
+                    .filter((code) => code !== "XAF")
+                    .map((code) => (
+                      <li key={code} className="rounded-2xl border-2 border-line bg-cream p-4">
+                        <span className="font-black text-brand">{code}</span> — bank transfer or
+                        international giving: contact us and the team shares the current account
+                        details and issues your receipt.
+                      </li>
+                    ))}
+                </ul>
+
+                <p className="mt-6 text-sm font-bold uppercase tracking-[0.12em] text-ink-muted">
+                  Suggested amounts ({currency})
+                </p>
+                <ul className="mt-3 flex flex-wrap gap-3">
+                  {suggested.map((amount) => (
+                    <li
+                      key={amount}
+                      className="rounded-2xl border-2 border-line bg-cream px-5 py-3 text-sm font-black text-brand"
+                    >
+                      {formatCurrency(amount, currency)}
+                    </li>
+                  ))}
+                </ul>
+
+                <p className="mt-6 text-xs text-ink-muted">
+                  Amounts are shown in {currency}, the organisation&apos;s reporting currency; gifts in{" "}
+                  {currencies.filter((code) => code !== currency).join(", ") || "other currencies"} are
+                  recorded in their original currency. Every donation record stores an explicit currency
+                  code, an amount and a public reference — and a receipt number once settled.
+                </p>
+
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <Link
+                    href="/contact"
+                    className="group inline-flex min-h-12 items-center gap-2 rounded-full bg-brand px-6 text-sm font-bold text-white shadow-[0_6px_0_var(--brand-strong)] transition-transform hover:-translate-y-1 active:translate-y-1 active:shadow-none"
+                  >
+                    Arrange a contribution
+                    <ArrowRight
+                      aria-hidden="true"
+                      className="size-4 transition-transform group-hover:translate-x-1"
+                    />
+                  </Link>
+                  <Link
+                    href="/get-involved"
+                    className="inline-flex min-h-12 items-center rounded-full border-2 border-line bg-white px-6 text-sm font-bold text-brand transition-colors hover:bg-brand-soft"
+                  >
+                    Other ways to help
+                  </Link>
+                </div>
+              </>
+            )}
           </div>
 
           <div className="grid content-start gap-4">
             <div className="rounded-[1.75rem] border border-line bg-white p-6 shadow-[0_12px_40px_rgba(24,36,67,0.06)]">
-              <h2 className="font-display text-base font-extrabold text-brand">How funds are used</h2>
+              <h2 className="font-display text-base font-extrabold text-brand">
+                How funds are used
+              </h2>
               <ul className="mt-4 grid gap-3 text-sm text-ink-muted">
                 {uses.map(({ icon: Icon, label }) => (
                   <li key={label} className="flex items-center gap-3">
@@ -126,14 +144,14 @@ export default async function DonatePage() {
                     <span>{label}</span>
                   </li>
                 ))}
+                <p className="mt-4 text-xs text-ink-muted">
+                  We do not publish illustrative percentages. Approved financial figures appear on the{" "}
+                  <Link href="/impact" className="font-bold text-brand hover:underline">
+                    Impact page
+                  </Link>{" "}
+                  once the organisation&apos;s financial reporting is released.
+                </p>
               </ul>
-              <p className="mt-4 text-xs text-ink-muted">
-                We do not publish illustrative percentages. Approved financial figures appear on the{" "}
-                <Link href="/impact" className="font-bold text-brand hover:underline">
-                  Impact page
-                </Link>{" "}
-                once the organisation&apos;s financial reporting is released.
-              </p>
             </div>
 
             <div className="relative isolate overflow-hidden rounded-[1.75rem] bg-brand p-6 text-white">
