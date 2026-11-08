@@ -6,8 +6,10 @@ function response(body: unknown, status = 200): Response {
 }
 
 async function getPermissions(userId: string): Promise<string[]> {
+  // Mirror app_private.has_permission(): inactive profile or expired grant = no permissions.
+  const now = new Date().toISOString();
   const result = await serviceRequest(
-    `/rest/v1/user_roles?user_id=eq.${userId}&select=role:roles(role_permissions(permission:permissions(key)))`,
+    `/rest/v1/user_roles?select=role:roles(role_permissions(permission:permissions(key))),profiles!inner(is_active=eq.true)&user_id=eq.${userId}&or=(expires_at.is.null,expires_at.gt.${encodeURIComponent(now)})`,
   );
   if (!result.ok) return [];
   const rows = result.data as Array<{ role: { role_permissions: Array<{ permission: { key: string } }> } }>;

@@ -31,8 +31,11 @@ export async function requirePermissionCaller(
     return { ok: false, response: Response.json({ error: "Unauthorized" }, { status: 401 }) };
   }
 
+  // Mirror app_private.has_permission(): an inactive profile or expired role
+  // grant must be denied here, not just in the server-side admin UI.
+  const now = new Date().toISOString();
   const permsResult = await serviceRequest(
-    `/rest/v1/user_roles?user_id=eq.${user.id}&select=role:roles(role_permissions(permission:permissions(key)))`,
+    `/rest/v1/user_roles?select=role:roles(role_permissions(permission:permissions(key))),profiles!inner(is_active=eq.true)&user_id=eq.${user.id}&or=(expires_at.is.null,expires_at.gt.${encodeURIComponent(now)})`,
   );
   if (!permsResult.ok) {
     return { ok: false, response: Response.json({ error: "Forbidden" }, { status: 403 }) };
