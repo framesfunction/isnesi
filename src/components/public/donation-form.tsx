@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useTransition } from "react";
+import { useActionState } from "react";
 import { ArrowRight, CreditCard } from "lucide-react";
 import Link from "next/link";
 
@@ -28,14 +28,6 @@ export function DonationForm({
     createDonationAction,
     { status: "idle" },
   );
-  const [isTransitioning, startTransition] = useTransition();
-
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    startTransition(() => formAction(formData));
-  };
-
   if (state.status === "success" && state.data) {
     return (
       <div className="rounded-3xl border-2 border-leaf/30 bg-leaf-soft p-8 text-center">
@@ -68,7 +60,7 @@ export function DonationForm({
 
   return (
     <form
-      onSubmit={handleSubmit}
+      action={formAction}
       className="space-y-6"
       noValidate
     >
@@ -217,10 +209,10 @@ export function DonationForm({
         <Button
           type="submit"
           size="lg"
-          disabled={isPending || isTransitioning}
+          disabled={isPending}
           className="bg-brand text-white"
         >
-          {isPending || isTransitioning ? (
+          {isPending ? (
             <>
               <CreditCard className="size-4 mr-2 animate-spin" />
               Processing...

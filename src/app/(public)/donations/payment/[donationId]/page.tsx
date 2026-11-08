@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { formatCurrency } from "@/lib/format";
 import Link from "next/link";
-import { ArrowRight, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { ArrowRight, Loader2, AlertCircle } from "lucide-react";
 import { PageHero, Section } from "@/components/public/page-hero";
 import { notFound } from "next/navigation";
 

@@ -33,7 +33,7 @@ export function SiteFooter() {
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className="block rounded min-h-[44px] px-3 py-2 text-ink transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                  className="rounded text-ink transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
                 >
                   {item.label}
                 </Link>
@@ -42,7 +42,7 @@ export function SiteFooter() {
             <li>
               <Link
                 href="/kids-corner"
-                className="block rounded min-h-[44px] px-3 py-2 text-ink transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                className="rounded text-ink transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
               >
                 Kids&apos; Corner
               </Link>
@@ -58,7 +58,7 @@ export function SiteFooter() {
             <li>
               <Link
                 href="/get-involved"
-                className="block rounded min-h-[44px] px-3 py-2 text-ink transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                className="rounded text-ink transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
               >
                 Volunteer or partner
               </Link>
@@ -66,7 +66,7 @@ export function SiteFooter() {
             <li>
               <Link
                 href="/donate"
-                className="block rounded min-h-[44px] px-3 py-2 text-ink transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                className="rounded text-ink transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
               >
                 Donate
               </Link>
@@ -74,7 +74,7 @@ export function SiteFooter() {
             <li>
               <Link
                 href="/contact"
-                className="block rounded min-h-[44px] px-3 py-2 text-ink transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                className="rounded text-ink transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
               >
                 Contact the team
               </Link>
@@ -115,16 +115,16 @@ export function SiteFooter() {
             © {year} {siteConfig.legalName}. All rights reserved.
           </p>
           <nav aria-label="Legal" className="flex flex-wrap gap-x-4 gap-y-2">
-            <Link href="/privacy" className="block rounded min-h-[44px] px-3 py-2 hover:text-brand hover:underline">
+            <Link href="/privacy" className="hover:text-brand hover:underline">
               Privacy
             </Link>
-            <Link href="/terms" className="block rounded min-h-[44px] px-3 py-2 hover:text-brand hover:underline">
+            <Link href="/terms" className="hover:text-brand hover:underline">
               Terms
             </Link>
-            <Link href="/accessibility" className="block rounded min-h-[44px] px-3 py-2 hover:text-brand hover:underline">
+            <Link href="/accessibility" className="hover:text-brand hover:underline">
               Accessibility
             </Link>
-            <Link href="/safeguarding" className="block rounded min-h-[44px] px-3 py-2 hover:text-brand hover:underline">
+            <Link href="/safeguarding" className="hover:text-brand hover:underline">
               Safeguarding
             </Link>
           </nav>
