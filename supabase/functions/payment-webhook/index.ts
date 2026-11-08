@@ -1,5 +1,6 @@
 import { checkStatus, readMoMoConfig } from "../_shared/momo.ts";
 import { serviceRequest } from "../_shared/safeguarding.ts";
+import { timingSafeEqual } from "../_shared/timing-safe.ts";
 
 /**
  * payment-webhook
@@ -41,7 +42,7 @@ Deno.serve(async (request) => {
 
   const secret = Deno.env.get("PAYMENT_WEBHOOK_SECRET") ?? "";
   const presented = request.headers.get("x-webhook-secret") ?? "";
-  if (!secret || presented !== secret) {
+  if (!secret || !timingSafeEqual(secret, presented)) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 

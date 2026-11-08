@@ -25,6 +25,7 @@ const publicEnvSchema = supabaseSchema.extend({
 
 const serverEnvSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: nonEmpty,
+  CRON_SECRET: nonEmpty,
 });
 
 export type PublicEnv = {
