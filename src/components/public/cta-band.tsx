@@ -55,9 +55,9 @@ export function CtaBand({ eyebrow, title, description, actions, footer }: CtaBan
               key={`${action.href}-${action.label}`}
               href={action.href}
               className={
-                action.emphasis === "secondary"
-                  ? "inline-flex min-h-12 items-center rounded-full border-2 border-white px-7 text-sm font-black text-white transition-colors hover:bg-white/10"
-                  : "inline-flex min-h-12 items-center gap-2 rounded-full bg-sun px-7 text-sm font-black text-ink shadow-[0_5px_0_rgb(203_150_0/0.6)] transition-transform hover:-translate-y-0.5 active:translate-y-0 active:shadow-none"
+action.emphasis === "secondary"
+                   ? "inline-flex min-h-12 items-center rounded-full border-2 border-white px-7 text-sm font-black text-white transition-colors hover:bg-white/10"
+                   : "inline-flex min-h-12 items-center gap-2 rounded-full bg-sun px-7 text-sm font-black text-ink shadow-[0_5px_0_rgb(203_150_0/0.6)] transition-transform hover:-translate-y-1 active:translate-y-1 active:shadow-none"
               }
             >
               {action.label}

@@ -28,7 +28,7 @@ const WAYS = [
     icon: HeartHandshake,
     tone: "bg-leaf-soft text-leaf-strong",
     title: "Partner with us",
-    body: "Schools, clinics, NGOs, OPDs and businesses can deliver programmes together with ISNESI.",
+    body: "Schools, clinics, non-governmental organizations, organizations of persons with disabilities and businesses can deliver programmes together with ISNESI.",
     anchor: "#enquiry",
     cta: "Start a partnership enquiry",
   },

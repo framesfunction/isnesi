@@ -15,7 +15,7 @@ import { CtaBand } from "@/components/public/cta-band";
 import { EmptyNote } from "@/components/public/empty-note";
 import { NewsletterForm } from "@/components/public/newsletter-form";
 import { GrowingBookIllustration, KidsPlayingIllustration } from "@/components/public/home-art";
-import { Section } from "@/components/public/page-hero";
+import { PageHero, Section } from "@/components/public/page-hero";
 import { StoryCard } from "@/components/public/story-card";
 import { listPublishedStories } from "@/features/editorial/queries";
 import { listPublicPartners } from "@/features/partners/queries";
@@ -51,7 +51,7 @@ const waysToHelp = [
   {
     href: "/get-involved",
     title: "Partner with us",
-    body: "Schools, NGOs, OPDs and businesses co-deliver inclusion that lasts.",
+    body: "Schools, non-governmental organizations, organizations of persons with disabilities, and businesses co-deliver inclusion that lasts.",
     tone: "bg-leaf-strong text-white",
     chip: "bg-white/15 text-white",
     icon: HeartHandshake,
@@ -80,95 +80,57 @@ export default async function HomePage() {
 
   return (
     <>
-      <section className="relative isolate overflow-hidden bg-cream">
-        <div aria-hidden="true" className="absolute -left-36 top-16 size-80 rounded-full bg-brand-soft" />
-        <div aria-hidden="true" className="absolute -right-32 -top-24 size-96 rounded-full bg-brand-soft/80" />
-        <div aria-hidden="true" className="absolute -right-16 top-24 size-72 rounded-full bg-sun-soft" />
-        <div aria-hidden="true" className="absolute -bottom-16 left-1/3 size-64 rounded-full bg-leaf-soft" />
-        <p aria-hidden="true" className="absolute left-6 top-2 select-none text-6xl font-black text-sun/60">
-          ✳
-        </p>
-        <div className="relative mx-auto grid w-full max-w-6xl gap-14 px-5 pb-10 pt-16 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:pb-20 lg:pt-24">
-          <div>
-            <p className="inline-flex items-center gap-2 rounded-full border border-brand/15 bg-white px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-brand shadow-sm">
-              <Sparkles aria-hidden="true" className="size-4 text-leaf" />
-              A brighter, more inclusive tomorrow
-            </p>
-            <h1 className="mt-6 text-balance font-display text-5xl font-black leading-[1.04] tracking-tight text-brand sm:text-6xl">
-              Every child can{" "}
-              <span className="relative inline-block whitespace-nowrap">
-                <span
-                  aria-hidden="true"
-                  className="absolute -inset-x-1 bottom-1.5 -z-10 h-5 rounded-full bg-sun sm:h-7"
-                />
-                belong.
-              </span>
-            </h1>
-            <p className="mt-6 max-w-xl text-lg leading-8 text-ink-muted">
-              We help make learning welcoming and accessible for children with disabilities and
-              other vulnerable children, alongside their families, schools and communities.
-              Because every child deserves the chance to shine.
-            </p>
-            <div className="mt-9 flex flex-wrap items-center gap-3">
-              <Link
-                href="/programmes"
-                className="inline-flex min-h-12 items-center gap-2 rounded-full bg-brand px-7 text-sm font-black text-white shadow-[0_6px_0_var(--brand-strong)] transition-transform hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none"
-              >
-                Explore our work
-                <ArrowRight aria-hidden="true" className="size-4" />
-              </Link>
-              <Link
-                href="/get-involved"
-                className="inline-flex min-h-12 items-center gap-2 rounded-full border-2 border-brand bg-white px-7 text-sm font-black text-brand shadow-[0_4px_0_rgb(27_63_160/0.25)] transition-transform hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none"
-              >
-                Be part of it
-              </Link>
-            </div>
-            <div className="mt-10 flex flex-wrap items-center gap-x-4 gap-y-2">
-              <p className="font-display text-lg font-black text-ink">{siteConfig.tagline}</p>
-              <span aria-hidden="true" className="size-1.5 rounded-full bg-coral" />
-              <p className="text-sm font-semibold italic text-ink-muted">
-                Disability is part of human diversity.
-              </p>
-            </div>
-          </div>
-
-          <div className="relative mx-auto w-full max-w-lg">
-            <div
-              aria-hidden="true"
-              className="absolute -inset-3 rotate-3 rounded-[2.5rem] border-[3px] border-dashed border-sun"
-            />
-            <div className="relative overflow-hidden rounded-[2.25rem] border border-line bg-white p-8 shadow-[0_30px_80px_rgba(27,63,160,0.16)]">
-              <GrowingBookIllustration className="w-full" />
-              <p className="mt-4 max-w-xs font-display text-2xl font-black leading-snug text-brand">
-                Every barrier removed is a child moving forward.
-              </p>
-            </div>
-            <p className="absolute -left-3 top-24 -rotate-6 rounded-2xl bg-sun px-4 py-2.5 text-center text-sm font-black leading-snug text-ink shadow-md">
-              Big dreams
-              <br />
-              belong here!
-            </p>
-            <p className="absolute -bottom-5 right-4 rotate-2 rounded-2xl bg-leaf-strong px-4 py-2.5 text-center text-sm font-black text-white shadow-md">
-              Everyone is welcome 🌍
-            </p>
-            <p
-              aria-hidden="true"
-              className="absolute -right-4 top-6 grid size-14 place-items-center rounded-full bg-coral text-2xl shadow-md"
-            >
-              👋
-            </p>
-          </div>
-        </div>
-
-        <div className="relative border-t border-line bg-white/70 backdrop-blur">
+<PageHero
+  variant="peak"
+  eyebrow="A brighter, more inclusive tomorrow"
+  title="Every child can belong."
+  description="We help make learning welcoming and accessible for children with disabilities and other vulnerable children, alongside their families, schools and communities. Because every child deserves the chance to shine."
+>
+  <Link
+    href="/programmes"
+    className="inline-flex min-h-12 items-center gap-2 rounded-full bg-sun px-7 text-sm font-black text-ink shadow-[0_6px_0_rgb(203_150_0/0.6)] transition-transform hover:-translate-y-1 active:translate-y-1 active:shadow-none"
+  >
+    Explore our work
+    <ArrowRight aria-hidden="true" className="size-4" />
+  </Link>
+  <Link
+    href="/get-involved"
+    className="inline-flex min-h-12 items-center gap-2 rounded-full border-2 border-white bg-white px-7 text-sm font-black text-ink shadow-[0_4px_0_rgb(255_255_255/0.25)] transition-transform hover:-translate-y-1 active:translate-y-1 active:shadow-none"
+  >
+    Be part of it
+  </Link>
+</PageHero>
+<div className="mx-auto w-full max-w-6xl px-5 pt-6 pb-10">
+  <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+    <p className="font-display text-lg font-black text-ink">{siteConfig.tagline}</p>
+    <span aria-hidden="true" className="size-1.5 rounded-full bg-coral" />
+    <p className="text-sm font-semibold italic text-ink-muted">
+      Disability is part of human diversity.
+    </p>
+  </div>
+</div>
+<section className="mx-auto w-full max-w-6xl px-5 py-10">
+  <div className="relative mx-auto w-full max-w-lg">
+    <div
+      aria-hidden="true"
+      className="absolute -inset-3 rotate-3 rounded-[2.5rem] border-[3px] border-dashed border-sun"
+    />
+    <div className="relative overflow-hidden rounded-[2.25rem] border border-line bg-white p-8 shadow-[0_30px_80px_rgba(27,63,160,0.16)]">
+      <GrowingBookIllustration className="w-full" />
+      <p className="mt-4 max-w-xs font-display text-2xl font-black leading-snug text-brand">
+        Every barrier removed is a child moving forward.
+      </p>
+    </div>
+  </div>
+</section>
+<div className="relative border-t border-line bg-white/70 backdrop-blur">
           <dl className="mx-auto grid w-full max-w-6xl gap-px overflow-hidden px-5 py-8 sm:grid-cols-2">
             {stats.map(({ value, label }) => (
               <div key={label} className="flex flex-col items-center gap-1 px-4 text-center">
-                <dt className="order-2 text-xs font-black uppercase tracking-[0.14em] text-ink-muted">
+                <dt className="order-2 text-xs font-black uppercase tracking-[0.14em] text-brand-strong">
                   {label}
                 </dt>
-                <dd className="order-1 font-display text-4xl font-black text-brand sm:text-5xl">
+                <dd className="order-1 font-display text-5xl font-black text-brand sm:text-6xl">
                   {value}
                 </dd>
               </div>
@@ -178,7 +140,6 @@ export default async function HomePage() {
             Counts reflect what is published on this website today, not projections.
           </p>
         </div>
-      </section>
 
       <section className="mx-auto w-full max-w-6xl px-5 py-16 lg:py-20">
         <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
@@ -299,9 +260,12 @@ export default async function HomePage() {
             </p>
             <Link
               href="/donate"
-              className="mt-8 inline-flex min-h-12 items-center gap-2 rounded-full bg-sun px-7 text-sm font-black text-ink shadow-[0_5px_0_rgb(163_90_0/0.6)] transition-transform hover:-translate-y-0.5"
+              className="mt-8 inline-flex min-h-12 items-center gap-2 rounded-full bg-sun px-7 text-sm font-black text-ink shadow-[0_5px_0_rgb(163_90_0/0.6)] transition-transform hover:-translate-y-1 active:translate-y-1 active:shadow-none"
             >
-              Make a difference 🧡
+              <span className="flex items-center gap-1">
+                Make a difference
+                <span aria-hidden="true">🧡</span>
+              </span>
             </Link>
           </div>
           <ul className="grid gap-4 sm:grid-cols-3">
@@ -326,28 +290,28 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="bg-sun-soft">
+      <section className="bg-sun">
         <div className="mx-auto grid w-full max-w-6xl gap-10 px-5 py-16 md:grid-cols-[1fr_0.85fr] md:items-center">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.16em] text-coral-strong">
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-brand-strong">
               A little space for big imaginations
             </p>
-            <h2 className="mt-3 text-balance text-3xl font-black tracking-tight text-brand sm:text-4xl">
+            <h2 className="mt-3 text-balance text-4xl font-black tracking-tight text-ink sm:text-5xl">
               Welcome to the Kids&apos; Corner!
             </h2>
-            <p className="mt-4 max-w-xl text-lg text-ink-muted">
+            <p className="mt-4 max-w-xl text-lg text-ink">
               Stories, creative activities and learning games about friendship, kindness and
               inclusion, in a space made for children and reviewed for child safety.
             </p>
             <Link
               href="/kids-corner"
-              className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-full bg-coral px-7 text-sm font-black text-ink shadow-[0_5px_0_rgb(196_62_70/0.7)] transition-transform hover:-translate-y-0.5"
+              className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-full bg-brand px-7 text-sm font-black text-white shadow-[0_5px_0_rgb(20_43_105/0.7)] transition-transform hover:-translate-y-1 active:translate-y-1 active:shadow-none"
             >
               Learn · Play · Belong <ArrowRight aria-hidden="true" className="size-4" />
             </Link>
           </div>
           <div className="relative">
-            <div aria-hidden="true" className="absolute -inset-2 rounded-[2rem] bg-sun/60" />
+            <div aria-hidden="true" className="absolute -inset-2 rounded-[2rem] bg-white/20" />
             <KidsPlayingIllustration className="relative w-full rounded-[1.75rem] bg-white p-6 shadow-md" />
           </div>
         </div>
@@ -450,10 +414,13 @@ export default async function HomePage() {
           <div>
             <p className="text-xs font-black uppercase tracking-[0.16em] text-leaf-strong">Stay connected</p>
             <h2 className="mt-3 text-3xl font-black tracking-tight text-brand">Good news in your inbox</h2>
-            <p className="mt-3 max-w-xl text-ink-muted">
-              Occasional ISNESI updates, stories and opportunities to support inclusive education.
-              No noise, unsubscribe anytime.
-            </p>
+      <p className="mt-3 max-w-xl text-ink-muted">
+        Occasional ISNESI updates, stories and opportunities to support inclusive education.
+        No noise, unsubscribe anytime.
+      </p>
+      <p className="mt-2 text-sm text-ink-muted">
+        We’ll send a confirmation email before anything lands in your inbox.
+      </p>
           </div>
           <NewsletterForm />
         </div>

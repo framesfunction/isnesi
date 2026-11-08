@@ -127,6 +127,7 @@ function MediaAssetCard({ asset, onSelect }: { asset: PickerMediaAsset; onSelect
               alt={asset.altText ?? asset.fileName}
               fill
               unoptimized
+              sizes="(max-width: 768px) 100vw, 320px"
               className="object-cover"
               loading="lazy"
             />

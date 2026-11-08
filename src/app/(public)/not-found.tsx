@@ -40,13 +40,13 @@ export default function PublicNotFound() {
       <div className="mt-10 flex flex-wrap gap-3">
         <Link
           href="/"
-          className="inline-flex min-h-12 items-center rounded-full bg-brand px-6 text-sm font-black text-white shadow-[0_6px_0_var(--brand-strong)] transition-transform hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none"
+          className="inline-flex min-h-12 items-center rounded-full bg-brand px-6 text-sm font-black text-white shadow-[0_6px_0_var(--brand-strong)] transition-transform hover:-translate-y-1 active:translate-y-1 active:shadow-none"
         >
           Back to the homepage
         </Link>
         <Link
           href="/contact"
-          className="inline-flex min-h-12 items-center rounded-full border-2 border-brand bg-white px-6 text-sm font-black text-brand transition-transform hover:-translate-y-0.5"
+          className="inline-flex min-h-12 items-center rounded-full border-2 border-brand bg-white px-6 text-sm font-black text-brand transition-transform hover:-translate-y-1 active:translate-y-1 active:shadow-none"
         >
           Report a broken link
         </Link>

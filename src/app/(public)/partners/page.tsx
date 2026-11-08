@@ -38,14 +38,15 @@ function PartnerLogoSlot({ partner }: { partner: PublicPartner }) {
   return (
     <div className="grid h-24 place-items-center rounded-2xl bg-cream ring-1 ring-line">
       {partner.logoUrl ? (
-        <Image
-          src={partner.logoUrl}
-          alt=""
-          width={200}
-          height={64}
-          unoptimized
-          className="max-h-14 w-auto max-w-[80%] object-contain"
-        />
+                <Image
+                  src={partner.logoUrl}
+                  alt={`${partner.name} logo`}
+                  width={200}
+                  height={64}
+                  unoptimized
+                  loading="lazy"
+                  className="max-h-16 w-auto max-w-full object-contain"
+                />
       ) : (
         <Monogram name={partner.name} />
       )}
@@ -78,7 +79,7 @@ function PartnerCard({ partner }: { partner: PublicPartner }) {
           Visit website
           <ArrowUpRight
             aria-hidden="true"
-            className="size-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+            className="size-4 transition-transform group-hover:-translate-y-1 group-hover:translate-x-1"
           />
         </a>
       ) : null}

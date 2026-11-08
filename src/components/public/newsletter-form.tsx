@@ -87,6 +87,12 @@ export function NewsletterForm() {
           <span>{state.message}</span>
         </p>
       ) : null}
+      {state.status === "success" ? (
+        <p className="mt-2 text-sm text-ink-muted">
+          You are subscribed. We will share programmes, stories, and ways to help
+          — always with dignity at the centre.
+        </p>
+      ) : null}
 
       <div>
         <Button type="submit" size="lg" disabled={pending}>

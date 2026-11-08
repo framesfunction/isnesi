@@ -54,7 +54,7 @@ export function SiteHeader() {
                 href={item.href}
                 aria-current={active ? "page" : undefined}
                 className={[
-                  "rounded-full px-3 py-2 text-sm font-semibold transition-colors",
+                  "rounded-full px-3 py-2.5 min-h-[44px] text-sm font-semibold transition-colors",
                   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
                   active ? "bg-brand-soft text-brand" : "text-ink hover:bg-brand-soft hover:text-brand",
                 ].join(" ")}
@@ -68,7 +68,7 @@ export function SiteHeader() {
         <div className="flex items-center gap-2">
           <Link
             href={primaryCallsToAction.donate.href}
-            className="hidden items-center gap-2 rounded-full bg-brand px-5 py-3 text-sm font-bold text-white shadow-[0_4px_0_#10296e] transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand sm:inline-flex"
+            className="hidden items-center gap-2 rounded-full bg-brand px-5 py-3 text-sm font-bold text-white shadow-[0_4px_0_#10296e] transition-transform hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand sm:inline-flex"
           >
             <Heart aria-hidden="true" className="size-4" />
             {primaryCallsToAction.donate.label}
@@ -79,7 +79,7 @@ export function SiteHeader() {
             aria-expanded={open}
             aria-controls="mobile-navigation"
             aria-label={open ? "Close menu" : "Open menu"}
-            className="inline-flex size-11 items-center justify-center rounded-xl border-2 border-line bg-white text-brand transition-colors hover:border-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand lg:hidden"
+            className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border-2 border-line bg-white text-brand transition-colors hover:border-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand lg:hidden"
           >
             {open ? <X aria-hidden="true" className="size-5" /> : <Menu aria-hidden="true" className="size-5" />}
           </button>

@@ -158,7 +158,6 @@ export async function ContentBlocks({
                   alt={block.altText}
                   fill
                   sizes="(max-width: 768px) 100vw, 640px"
-                  unoptimized
                   className="object-cover"
                   style={{ objectPosition }}
                 />

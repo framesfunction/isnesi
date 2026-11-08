@@ -104,14 +104,14 @@ export default async function GetInvolvedPage() {
       >
         <a
           href="#enquiry"
-          className="inline-flex min-h-12 items-center gap-2 rounded-full bg-brand px-6 text-sm font-black text-white shadow-[0_6px_0_var(--brand-strong)] transition-transform hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none"
+          className="inline-flex min-h-12 items-center gap-2 rounded-full bg-brand px-6 text-sm font-black text-white shadow-[0_6px_0_var(--brand-strong)] transition-transform hover:-translate-y-1 active:translate-y-1 active:shadow-none"
         >
           Start an enquiry
           <ArrowRight aria-hidden="true" className="size-4" />
         </a>
         <Link
           href="/donate"
-          className="inline-flex min-h-12 items-center rounded-full border-2 border-brand bg-white px-6 text-sm font-black text-brand shadow-[0_4px_0_rgb(27_63_160/0.25)] transition-transform hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none"
+          className="inline-flex min-h-12 items-center rounded-full border-2 border-brand bg-white px-6 text-sm font-black text-brand shadow-[0_4px_0_rgb(27_63_160/0.25)] transition-transform hover:-translate-y-1 active:translate-y-1 active:shadow-none"
         >
           Donate
         </Link>

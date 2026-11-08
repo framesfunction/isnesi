@@ -7,6 +7,7 @@ import { getDashboardSnapshot } from "@/features/dashboard/queries";
 import { requireAdmin } from "@/lib/auth/guards";
 import { visibleAdminModules } from "@/lib/permissions/admin-nav";
 import { formatDateTime } from "@/lib/format";
+import { WelcomeCallout } from "@/components/admin/welcome-callout";
 export const metadata: Metadata = { title: "Dashboard" };
 export default async function AdminDashboardPage() {
   const user = await requireAdmin();
@@ -17,6 +18,7 @@ export default async function AdminDashboardPage() {
   return (
     <div className="mx-auto max-w-6xl">
       {" "}
+      <WelcomeCallout />
       <AdminPageHeader
         eyebrow="Overview"
         title={`Welcome, ${user.displayName ?? "colleague"}`}
@@ -56,9 +58,9 @@ export default async function AdminDashboardPage() {
                     {metric.label}{" "}
                   </CardTitle>{" "}
                 </CardHeader>{" "}
-                <CardContent>
+                <CardContent className="min-w-0">
                   {" "}
-                  <p className="text-3xl font-black tabular-nums text-brand">
+                  <p className="text-3xl font-black tabular-nums text-brand truncate">
                     {" "}
                     {metric.value === null
                       ? "—"

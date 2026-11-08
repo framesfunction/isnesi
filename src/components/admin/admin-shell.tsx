@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Accessibility,
   BookOpen,
@@ -20,7 +22,9 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
+import { useEffect } from "react";
 import type { ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { AdminNavLink } from "@/components/admin/admin-nav-link";
 import { BrandMark } from "@/components/shared/brand-mark";
 import { signOutAction } from "@/features/auth/actions";
@@ -75,8 +79,53 @@ function initials(name: string | null, email: string | null): string {
   groups: AdminShellGroup[];
   children: ReactNode;
 }) {
+  const moduleLinks = groups.flatMap((group) =>
+    group.modules.map((module) => ({ key: module.key, href: module.href })),
+  );
+  const router = useRouter();
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement || event.target instanceof HTMLSelectElement) {
+        return;
+      }
+
+      // ? — help
+      if (event.key === "?") {
+        event.preventDefault();
+        router.push("/admin/help");
+        return;
+      }
+
+      // / — focus search
+      if (event.key === "/") {
+        event.preventDefault();
+        const search = document.querySelector('input[type="search"]') as HTMLInputElement | null;
+        search?.focus();
+        return;
+      }
+
+      // 1-9 — switch module by index in navigation order
+      const index = Number.parseInt(event.key, 10);
+      if (!Number.isNaN(index) && index >= 1 && index <= 9) {
+        const target = moduleLinks[index - 1];
+        if (target) {
+          event.preventDefault();
+          router.push(target.href);
+        }
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [moduleLinks, router]);
+
   return (
     <div className="min-h-dvh bg-muted">
+      {" "}
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
       {" "}
       <div className="lg:grid lg:min-h-dvh lg:grid-cols-[264px_minmax(0,1fr)]">
         {" "}
@@ -109,7 +158,7 @@ function initials(name: string | null, email: string | null): string {
             </Link>{" "}
             <Link
               href="/"
-              className="rounded-full border border-white/25 px-3 py-1.5 text-xs font-semibold text-white/80 hover:bg-white/10 lg:hidden"
+              className="rounded-full border border-white/25 px-3 py-2.5 min-h-[44px] text-xs font-semibold text-white/80 hover:bg-white/10 lg:hidden"
             >
               {" "}
               View site{" "}
@@ -174,10 +223,10 @@ function initials(name: string | null, email: string | null): string {
             </div>{" "}
             <form action={signOutAction} className="mt-3">
               {" "}
-              <button
-                type="submit"
-                className="w-full rounded-xl border border-white/20 px-3 py-2 text-xs font-bold text-white/80 hover:bg-white/10"
-              >
+                <button
+                  type="submit"
+                  className="w-full rounded-xl border border-white/20 px-3 py-2.5 min-h-[44px] text-xs font-bold text-white/80 hover:bg-white/10"
+                >
                 {" "}
                 Sign out{" "}
               </button>{" "}
@@ -197,14 +246,14 @@ function initials(name: string | null, email: string | null): string {
               {" "}
               <Link
                 href="/admin/help"
-                className="hidden rounded-full border border-line px-4 py-2 text-xs font-bold text-ink-muted transition-colors hover:border-brand hover:text-brand sm:inline-flex"
+                className="hidden rounded-full border border-line px-4 py-2.5 min-h-[44px] text-xs font-bold text-ink-muted transition-colors hover:border-brand hover:text-brand sm:inline-flex"
               >
                 {" "}
                 How to use this{" "}
               </Link>{" "}
               <Link
                 href="/"
-                className="hidden rounded-full border border-line px-4 py-2 text-xs font-bold text-ink-muted transition-colors hover:border-brand hover:text-brand sm:inline-flex"
+                className="hidden rounded-full border border-line px-4 py-2.5 min-h-[44px] text-xs font-bold text-ink-muted transition-colors hover:border-brand hover:text-brand sm:inline-flex"
               >
                 {" "}
                 View public site{" "}
@@ -213,7 +262,7 @@ function initials(name: string | null, email: string | null): string {
                 {" "}
                 <button
                   type="submit"
-                  className="rounded-full bg-brand px-4 py-2 text-xs font-bold text-white"
+                  className="rounded-full bg-brand px-4 py-2.5 min-h-[44px] text-xs font-bold text-white"
                 >
                   {" "}
                   Sign out{" "}

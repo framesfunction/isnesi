@@ -13,13 +13,24 @@ type PageHeroProps = {
   /** Optional trail from the home page; the last item is the current page. */
   breadcrumb?: PageHeroBreadcrumb[];
   children?: ReactNode;
+  /** "peak" turns the hero into a brand-first scroll peak: brand-strong background,
+     sun eyebrow, white text, and a sun accent blob. Used on the homepage only. */
+  variant?: "peak";
 };
 
 /** Consistent page introduction for every public page. */
-export function PageHero({ eyebrow, title, description, breadcrumb, children }: PageHeroProps) {
+export function PageHero({
+  eyebrow,
+  title,
+  description,
+  breadcrumb,
+  children,
+  variant,
+}: PageHeroProps) {
+  const isPeak = variant === "peak";
   return (
-    <section className="border-b-2 border-line/70 bg-brand-soft/60">
-      <div className="mx-auto w-full max-w-6xl px-5 py-14 sm:py-16">
+    <section className={`border-b-2 border-line/70 ${isPeak ? "bg-brand-strong" : "bg-brand-soft/60"} ${isPeak ? "text-white" : ""}`}>
+      <div className="mx-auto w-full max-w-6xl px-5 py-14 sm:py-16 relative">
         {breadcrumb && breadcrumb.length > 0 ? (
           <nav aria-label="Breadcrumb" className="mb-5">
             <ol className="flex flex-wrap items-center gap-2 text-xs font-black uppercase tracking-[0.14em]">
@@ -33,12 +44,12 @@ export function PageHero({ eyebrow, title, description, breadcrumb, children }: 
                   {crumb.href ? (
                     <Link
                       href={crumb.href}
-                      className="rounded text-ink-muted transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                      className={`rounded transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${isPeak ? "text-sun hover:text-white" : "text-ink-muted hover:text-brand"}`}
                     >
                       {crumb.label}
                     </Link>
                   ) : (
-                    <span aria-current="page" className="text-brand">
+                    <span aria-current="page" className={`text-${isPeak ? "sun" : "brand"}`}>
                       {crumb.label}
                     </span>
                   )}
@@ -47,14 +58,19 @@ export function PageHero({ eyebrow, title, description, breadcrumb, children }: 
             </ol>
           </nav>
         ) : null}
-        {eyebrow ? (
-          <p className="mb-3 text-xs font-black uppercase tracking-[0.16em] text-leaf-strong">{eyebrow}</p>
+        {isPeak ? (
+          <div aria-hidden="true" className="absolute -right-24 -top-56 size-96 rounded-full bg-sun/20" />
         ) : null}
-        <h1 className="max-w-3xl text-balance text-4xl font-black leading-[1.1] tracking-tight text-brand sm:text-5xl">
+        {eyebrow ? (
+          <p className={`mb-3 ${isPeak ? "text-sm" : "text-xs"} font-black uppercase tracking-[0.16em] ${isPeak ? "text-sun" : "text-leaf-strong"}`}>
+            {eyebrow}
+          </p>
+        ) : null}
+        <h1 className={`max-w-3xl text-balance ${isPeak ? "text-5xl sm:text-6xl" : "text-4xl sm:text-5xl"} font-black leading-[1.1] tracking-tight ${isPeak ? "text-white" : "text-brand"}`}>
           {title}
         </h1>
         {description ? (
-          <p className="mt-5 max-w-2xl text-lg text-ink-muted">{description}</p>
+          <p className={`mt-5 max-w-2xl text-lg ${isPeak ? "text-white/90" : "text-ink-muted"}`}>{description}</p>
         ) : null}
         {children ? <div className="mt-8 flex flex-wrap items-center gap-3">{children}</div> : null}
       </div>

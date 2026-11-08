@@ -272,3 +272,19 @@
     background: #ffffff;
   }
 }
+
+/* Detect input method, not just screen size. Touch users can't hover,
+   so hover-only interactions should not be required. */
+@media (pointer: coarse) {
+  .btn {
+    padding: 12px 20px; /* Larger touch target */
+  }
+}
+
+@media (hover: hover) {
+  /* Fine pointer (mouse, trackpad) — hover states are safe here */
+}
+
+@media (hover: none) {
+  /* Coarse pointer (touch, stylus) — no hover state, use active instead */
+}

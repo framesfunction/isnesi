@@ -46,7 +46,7 @@ export function AdminNavLink({
       href={href}
       aria-current={active ? "page" : undefined}
       className={[
-        "group flex items-start gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors",
+        "group flex items-start gap-3 rounded-xl min-h-[44px] px-3 py-3 text-sm font-semibold transition-colors",
         "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sun",
         active
           ? "bg-white/15 text-white shadow-[inset_3px_0_0_var(--sun)]"
