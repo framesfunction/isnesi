@@ -78,8 +78,8 @@ Dates span 2026-11-03 to 2026-11-09. The project has not made a public release.
   content and seeded sample media. [`2291303`, `9f3bfde`]
 - Impact metrics and taxonomy admin modules; Kids' Corner; Partners; Contact,
   Donate, Get involved and Impact pages; stories pagination with honest
-  counts; admin navigation polish; full data seeding with comprehensive admin
-  delete capability; rich open media seed assets. [`b5339fd`, `1d762ea`, `01763c5`, `e2d285e`, `c96faa3`, `ce35232`, `50029db`, `91df794`, `d2a6eb0`]
+  counts; admin navigation polish; full data seeding with admin delete
+  capability; rich open media seed assets. [`b5339fd`, `1d762ea`, `01763c5`, `e2d285e`, `c96faa3`, `ce35232`, `50029db`, `91df794`, `d2a6eb0`]
 - AA-safe strong token steps in the design system and DESIGN.md. [`5fd496c`, `57044c3`]
 
 **Fixed**

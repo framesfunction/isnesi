@@ -98,7 +98,7 @@ sources should be included in the TypeScript check config — backlog.
    gracefully instead of failing legitimate requests.
 
 Count summary: CRITICAL 2/2 FIXED; HIGH 3/3 FIXED (ISN-003 via the late
-comprehensive fix); MEDIUM 6/6 resolved (incl. ISN-015 REMOVED); LOW 2/2
+complete fix); MEDIUM 6/6 resolved (incl. ISN-015 REMOVED); LOW 2/2
 FIXED; DOCUMENTED 2; post-audit findings: 3, all resolved.
 
 ## Remaining backlog

@@ -74,7 +74,9 @@ Everything mocked is a Supabase client, network fetch, or provider HTTP call. No
 - Anything that talks to a real Supabase instance (RLS policies are only smoke-tested by the SQL in `supabase/tests/rls_smoke_tests.sql`, which must be run manually against a live database — not run during this verification).
 - Payment flows, refund approval or newsletter sends end-to-end.
 - Any browser/E2E behavior — no Playwright/Cypress suite exists.
-- The production build cannot currently pass (see build failure), so no build-gate CI exists to catch regressions of exactly this kind.
+- The production build had no CI gate until the `5f41b3a` regression slipped
+  through with green tests (fixed in `746225f`); until a build gate runs on
+  push, that class of regression is unguarded.
 
 ## Known gaps
 

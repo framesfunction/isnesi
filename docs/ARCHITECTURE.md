@@ -77,8 +77,9 @@ Key relationships:
   memoised with React `cache()`), honouring expired grants and inactive profiles.
 - **Mutations are Server Actions** in each feature's `actions.ts`, guarded by
   `assertPermission(...)`. There is no hand-written REST layer; exceptions are
-  `/api/health`, `/api/cron/publish-scheduled`, `/api/donations/[donationId]`
-  and `/auth/callback`.
+  `/api/health`, `/api/cron/publish-scheduled`
+  and `/auth/callback`. (A third route, `/api/donations/[donationId]`, existed
+  and was removed — see docs/API.md.)
 - **The service-role client exists server-side only** (`src/lib/supabase/admin.ts`)
   and refuses to run in a browser. It backs the cron route and privileged actions.
 
