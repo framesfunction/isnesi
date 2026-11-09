@@ -1,312 +1,99 @@
 # ISNESI — public website and administration panel
 
-Production foundation for the ISNESI public website and staff admin panel: a single
-Next.js application backed by Supabase (PostgreSQL, Auth, Row Level Security and
-Storage), with an installable PWA shell for the public site.
+ISNESI is a single Next.js application that provides the public ISNESI website
+and the staff administration panel, backed by Supabase (PostgreSQL, Auth,
+Row Level Security, Storage and Edge Functions). Staff manage content,
+programmes, stories, media, partnerships, enquiries, donations, newsletters,
+safeguarding cases, users and settings in `/admin`; public visitors browse
+published content and submit enquiries, donations and newsletter sign-ups.
 
-This is **not** the HTML prototype connected to a database. The prototype and the
-specification live in [`docs/reference/`](docs/reference) and are treated as design
-input; the application below is the rebuild.
-
-## Stack
-
-| Concern | Choice |
-|---|---|
-| Framework | Next.js 16.4 (App Router, React 19, Server Components, Server Actions) |
-| Language | TypeScript, `strict` |
-| Styling | Tailwind CSS v4 + ISNESI design tokens |
-| UI | shadcn/ui component set in `src/components/ui` (Base UI/RSC-safe variants) |
-| Data | Supabase: Postgres, Auth, RLS, Storage, Edge Functions |
-| Forms | React Hook Form + Zod (client) and Zod again on the server |
-| Icons | lucide-react |
-| Tests | Vitest |
+Current status: all code applications build and their unit test suite passes,
+but nothing is deployed yet in this repository's control, no CI exists, and
+integration points such as provider secrets and Edge Function deployment are
+unconfigured. Details: [STATUS.md](STATUS.md).
 
 ## Quick start
 
+*PowerShell:*
+
+```powershell
+npm install
+Copy-Item .env.example .env.local   # then fill in the Supabase values
+npm run dev                         # http://localhost:3000
 ```
 
-To seed a hosted project with reference rows and the bundled sample media:
+*bash:*
 
 ```bash
-npm run db:seed
-```
-
-This applies migrations and `supabase/seed.sql`, then uploads the sample files in
-`public/brand/` and `public/icons/` to the `public-media` Storage bucket. It
-requires the server-only `SUPABASE_SERVICE_ROLE_KEY` in `.env.local`. Seeded
-records are dummy data and can be edited or deleted from the admin panel.bash
 npm install
-cp .env.example .env.local     # then fill in the Supabase values
-npm run dev                    # http://localhost:3000
+cp .env.example .env.local   # then fill in the Supabase values
+npm run dev                  # http://localhost:3000
 ```
 
 The app starts without Supabase configured: public pages render their real
-(empty) states and the dashboard shows "Database not connected". Nothing is faked.
+(empty) states and the dashboard shows "Database not connected". Nothing is
+faked. Minimum useful configuration is `NEXT_PUBLIC_SUPABASE_URL` and
+`NEXT_PUBLIC_SUPABASE_ANON_KEY`; the full picture is in
+[docs/CONFIGURATION.md](docs/CONFIGURATION.md).
 
-### Connecting Supabase
+Connecting a Supabase project (local with Docker, or hosted) and creating the
+first administrator: [docs/SETUP.md](docs/SETUP.md).
 
-1. Create a project (or run the stack locally — Docker Desktop required):
+## Stack
 
-   ```bash
-   npx supabase start      # local Postgres, Auth, Storage, Studio
-   npx supabase db reset   # applies supabase/migrations + supabase/seed.sql
-   ```
+| Concern | Choice | Version in use |
+|---|---|---|
+| Framework | Next.js (App Router, Server Components, Server Actions) | 16.4.4 |
+| UI runtime | React, react-dom | 19.3.0 |
+| Language | TypeScript (`strict`) | 5.x |
+| Styling | Tailwind CSS | 4.x |
+| UI kit | shadcn/ui primitives in `src/components/ui` | — |
+| Data | Supabase (Postgres, Auth, RLS, Storage, Edge Functions) | supabase-js 2.118.x |
+| Forms | React Hook Form + Zod (client) and Zod again server-side | — |
+| Tests | Vitest | 5.1.0 |
+| Lint | ESLint 9, `eslint-config-next` | 9.x |
 
-2. Put the project URL and **anon** key in `.env.local`:
+## Commands
 
-   ```
-   NEXT_PUBLIC_SUPABASE_URL=...
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=...
-   ```
-
-3. Add the service role key to **server-side environment only**
-   (`SUPABASE_SERVICE_ROLE_KEY`). Never expose it with a `NEXT_PUBLIC_` prefix.
-
-4. Create the first administrator (see `supabase/README.md`) and assign
-   `super_admin`. Staff accounts are invite-only; public sign-up is disabled in
-   `supabase/config.toml`.
-
-5. Regenerate database types once the database is reachable:
-
-   ```bash
-   npm run db:types    # writes src/types/database.gen.ts
-   ```
-
-## Scripts
-
-| Script | Purpose |
+| Command | Purpose |
 |---|---|
-| `npm run dev` | Development server |
+| `npm run dev` | Development server on port 3000 |
 | `npm run build` / `npm start` | Production build / serve |
-| `npm run lint` | ESLint (flat config, Next core-web-vitals + TS) |
+| `npm run lint` | ESLint |
 | `npm run typecheck` | `tsc --noEmit` |
-| `npm test` | Vitest unit tests |
-| `npm run db:start` / `db:reset` | Local Supabase stack (Docker) via the CLI shim |
-| `npm run db:push` | Apply pending migrations to the hosted project (reads `.env.local`; supports `-- --dry-run` and `-- --include-seed`) |
-| `npm run db:types` | Generate `Database` types from the hosted project into `src/types/database.gen.ts` (reads `SUPABASE_DB_PASSWORD`; see `.env.example`) |
+| `npm test` | Vitest unit tests (no database needed) |
+| `npm run db:start` / `db:reset` | Local Supabase stack via Docker Desktop, through the CLI shim |
+| `npm run db:push` | Apply pending migrations to the hosted project (reads `.env.local`) |
+| `npm run db:types` | Generate `src/types/database.gen.ts` from the hosted project |
+| `npm run db:seed` | Seed reference rows and sample media into the hosted project |
 
-## Supabase CLI on Windows
+On Windows the `supabase` npm wrapper's platform binary download can fail; the
+local shim (`node scripts/supabase.mjs install`) bootstraps a real CLI binary
+into the git-ignored `.tools/` folder. All `db:*` scripts route through it.
 
-The `supabase` npm wrapper ships platform binaries as optional dependencies, and on
-constrained networks that download can fail or arrive corrupted — every command then
-dies with `No matching Supabase CLI binary package found for win32-x64`. The local
-wrapper at `npm run supabase` handles this: if an official release binary exists at
-`.tools/supabase.exe` (git-ignored) it is used via the CLI's documented
-`SUPABASE_CLI_BINARY_OVERRIDE` escape hatch. Every `db:*` script routes through
-this shim, so `npm run db:push` works against the hosted project too. Bootstrap
-the binary once:
+## Documentation
 
-```bash
-node scripts/supabase.mjs install
-```
+- [STATUS.md](STATUS.md) — what actually works, what does not, known gaps.
+- [REMEDIATION_TRACKER.md](REMEDIATION_TRACKER.md) — security audit findings and their final fix status.
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — components, data flow, trust boundaries.
+- [docs/SETUP.md](docs/SETUP.md) — development setup from a clean machine.
+- [docs/CONFIGURATION.md](docs/CONFIGURATION.md) — every environment variable, derived from the code.
+- [docs/API.md](docs/API.md) — HTTP endpoints and Supabase Edge Functions.
+- [docs/TESTING.md](docs/TESTING.md) — test architecture: what is covered, what is not.
+- [docs/OPERATIONS.md](docs/OPERATIONS.md) — runbook: health checks, cron, Edge Function deploy.
+- [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) — how this deploys today (no automated pipeline exists).
+- [docs/reference/](docs/reference) — the original prototype and 1.0 specification.
+  Design input, not documentation of what was built.
+- [supabase/README.md](supabase/README.md) — database migrations, RLS model, first administrator.
+- [supabase/functions/README.md](supabase/functions/README.md) — Edge Function contracts and secrets.
+- [CONTRIBUTING.md](CONTRIBUTING.md) — conventions used in this repo.
+- [SECURITY.md](SECURITY.md) — security model, reporting, limits.
+- [CHANGELOG.md](CHANGELOG.md) — built from git history.
+- [ROADMAP.md](ROADMAP.md) — explicitly not built yet.
+- [DESIGN.md](DESIGN.md) — the design system rules for public pages.
 
-## Database operations against the hosted project
+## License
 
-The default database host (`db.<ref>.supabase.co`) resolves IPv6-only, so DB
-operations target the **session pooler**. With `SUPABASE_DB_PASSWORD` set in
-`.env.local`:
-
-```bash
-# 1. Probe the session pooler until "select 1" succeeds — that region is the project's.
-#    User = postgres.<project-ref>; replace <urlencoded-password> accordingly.
-#    A wrong region reports "tenant/user postgres.<ref> not found".
-npm run supabase -- db query --remote "postgresql://postgres.<ref>:<urlencoded-password>@aws-0-eu-west-1.pooler.supabase.com:5432/postgres" --read-only "select 1"
-
-# 2. Apply pending migrations to the hosted project (reads .env.local).
-#    Add -- --dry-run to preview, or -- --include-seed to also load seed.sql.
-npm run db:push
-#    Equivalent manual form: npm run supabase -- db push --remote <pooler-url> --yes
-
-# 3. Generate types (no manual URL needed)
-npm run db:types
-```
-
-`npm run db:types` always runs against the hosted project (reads
-`NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_DB_PASSWORD`, optional
-`SUPABASE_POOLER_REGION` or a full `SUPABASE_DB_URL` override from `.env.local`)
-and writes `src/types/database.gen.ts`; `src/types/database.ts` re-exports it and
-must never be edited by hand. Migrations are applied with `db push`; seed data is
-applied per statement (`db query -f supabase/seed.sql` accepts only one statement
-per call).
-
-## Repository layout
-
-```
-src/
-├── app/
-│   ├── (public)/          # public website (ISR, 5-minute revalidate)
-│   ├── (auth)/            # sign-in, standalone layout
-│   ├── admin/             # admin application: dashboard + module routes
-│   ├── api/health/        # operational health endpoint
-│   ├── auth/callback/     # Supabase PKCE callback
-│   ├── manifest.ts        # PWA manifest
-│   ├── robots.ts, sitemap.ts, error.tsx, not-found.tsx
-│   └── globals.css        # design tokens + base layer
-├── components/
-│   ├── ui/                # shadcn/ui primitives
-│   ├── public/            # header, footer, CMS renderers, enquiry form
-│   ├── admin/             # shell, navigation, module scaffold
-│   └── shared/            # brand mark, service worker registration
-├── features/              # one folder per domain: queries, actions, state
-├── lib/
-│   ├── supabase/          # browser, server, public (stateless), admin, session refresh
-│   ├── auth/              # session resolution + route guards
-│   ├── permissions/       # permission catalogue, pure checks, admin module map
-│   ├── validation/        # Zod schemas shared by client and server
-│   ├── security/          # rate limiting
-│   └── env.ts, site.ts, format.ts, utils.ts
-├── types/database.ts      # typed model of the public schema
-└── proxy.ts               # Next 16 proxy (formerly middleware)
-
-supabase/                  # migrations, seed, tests, config, Edge Function docs
-docs/reference/            # original prototype HTML and specification
-public/                    # icons, brand assets, service worker, offline page
-```
-
-## Architecture decisions
-
-**One application, two surfaces.** The public website and admin panel share a
-codebase, design tokens and database, but not their shells: `(public)` renders the
-marketing chrome, `admin` renders the staff shell, and the two never share a
-layout. Separation is enforced by route groups, guards and RLS rather than by
-deploying two apps.
-
-**Server-first data access.** Reads happen in Server Components; mutations happen
-in Server Actions (`"use server"`). There is no hand-written REST layer to keep in
-sync — with the deliberate exception of `/api/health` and the auth callback.
-
-**Two Supabase clients for two jobs.** Public content is read with a *stateless*
-anonymous client (no cookies) so pages stay cacheable with ISR. Anything
-user-scoped uses the cookie-bound server client, so RLS sees the real caller. The
-service-role client exists but is guarded by a runtime check that refuses to run
-in a browser.
-
-**Permissions come from the database, not the token.** `getCurrentUser()` resolves
-roles and permissions from `user_roles → role_permissions → permissions`, honours
-expired grants and the active-profile rule, and is memoised per request. The
-sidebar is filtered by permission, and every page re-checks before rendering data.
-
-**One module map.** `src/lib/permissions/admin-nav.ts` declares every admin module
-with its route, permission, tables, capabilities and non-negotiable controls. The
-sidebar, route guards and scaffold pages all read from it, so a module cannot be
-added without stating what it may touch.
-
-## Security model
-
-These are enforced in code, not just documented:
-
-- **`safeguarding` is a private schema.** It is absent from the exposed API
-  schemas and grants nothing to `anon`/`authenticated`. The admin UI reaches it
-  only through server-side Edge Functions (`src/features/safeguarding/edge-client.ts`
-  fails closed while they are undeployed).
-- **Public enquiry intake cannot escalate.** The insert omits `status`,
-  `assigned_to` and `reference_code`; the RLS policy requires
-  `consent_to_contact = true`, `status = 'new'` and `assigned_to is null`.
-- **The service worker never sees private data.** `/admin`, `/api`, `/auth` and
-  `/login` are bypassed entirely, cross-origin (Supabase) requests are never
-  intercepted, and responses marked `private`/`no-store` or carrying `Set-Cookie`
-  are never cached.
-- **Auth redirects cannot be weaponised.** `safeRedirectPath()` rejects
-  protocol-relative, absolute and backslash paths, so `?next=` is not an open
-  redirect.
-- **Sign-in failures are uniform.** The login action returns one message for any
-  credential failure, preventing account enumeration.
-- **Security headers** are set in `next.config.ts` (nosniff, frame denial,
-  referrer policy, permissions policy, HSTS) and private routes are marked
-  `no-store`. A nonce-based CSP is the remaining hardening step.
-- **Audit trail.** The database makes `audit_events` append-only and attaches audit
-  triggers to the important tables; the application never writes audit rows by hand.
-
-## Progressive web app
-
-- `src/app/manifest.ts` → `/manifest.webmanifest`, installable, public-site only.
-- `public/sw.js` → network-first for navigations, cache-first for static assets,
-  an offline fallback, and the bypass rules above. Registered in production only.
-- `public/offline.html` → self-contained offline screen.
-- Icons are generated from the brand logo (`public/icons/`), including a maskable
-  variant and an Apple touch icon.
-
-## What is implemented now
-
-- Foundation: Next.js, TypeScript strict, Tailwind v4 tokens, shadcn/ui, ESLint,
-  Vitest, environment validation, security headers.
-- Data layer: nine ordered migrations, generated schema types
-  (`npm run db:types` → `src/types/database.gen.ts`), seed data and RLS
-  smoke-test SQL.
-- Auth: sign-in/out, PKCE callback, session refresh in the proxy, database-backed
-  permission resolution, admin gate and `no-access` handling.
-- Admin: permission-aware shell, live dashboard metrics, and every module route
-  with guards and documented contracts. Working CRUD is implemented for Pages &
-  sections (with publication safety checks and automatic navigation-link
-  repair), the Media library (Supabase Storage upload/rights/delete),
-  Programmes (bilingual translations, ordering, activation, and the full content
-  model: featured image, objectives, activities, target beneficiaries,
-  geographic coverage and SEO metadata), Stories & news
-  (full editorial workflow: draft → review → approval → scheduled/published,
-  immutable revisions, independent approvals, re-approval on material change),
-  Partners (approval workflow, visibility gate), Navigation (menus, items,
-  nesting, cycle guard, broken-link detection, visibility toggles and ordering)
-  and Categories & tags (terms authored once with an English label and a usage
-  count, then attached to a story from the editor).
-- Public: home (live programmes, stories, partners), programmes list and detail
-  (summary, rich body, objectives, activities, beneficiaries, coverage, SEO),
-  a Stories & News index (featured spotlight, path-based type filters with live
-  counts, per-type routes that stay static, honest empty states) and story detail
-  (breadcrumb, category/tag chips, reading time, related stories, article
-  JSON-LD, safe structured-content renderer), partners, Kids' Corner, donate
-  (settings-driven, honest about the missing provider), a designed Get Involved
-  page (four ways to help, "what happens next", a safeguarding-first enquiry form
-  with an honest FAQ and ContactPage JSON-LD), the contact enquiry flow, designed
-  About and Impact pages (each overridden by a matching published CMS page), 404
-  and error states.
-- Impact metrics: an English-only, approval-gated `impact_metrics` table that the
-  public Impact page prefers over live record counts, managed from
-  Admin → Impact metrics (counts, percentages and currency, each with a source
-  and an evidence link).
-- Finance: donation campaigns, transactions, refunds and per-currency
-  reconciliation in Admin → Donations; online giving opens once MTN MoMo
-  provider secrets are set.
-- Safeguarding: casework UI with the access-matrix tests; every read and write
-  goes through the safeguarding Edge Functions over the private schema.
-- Scheduled publishing: cron route `api/cron/publish-scheduled` flips
-  `scheduled` content items live (guard with `CRON_SECRET`).
-- PWA, SEO metadata, robots, sitemap, health endpoint.
-
-## What is deliberately not built yet
-
-| Area | State |
-|---|---|
-| Module CRUD screens | All admin modules (pages, programmes, media, partners, navigation, impact-metrics, taxonomies, enquiries, donations, newsletter, kids-corner, users, settings, accessibility, audit) have working CRUD; safeguarding is a working shell that reaches its private schema through the safeguarding Edge Functions. |
-| Scheduled publishing cron | Cron route `api/cron/publish-scheduled` flips `scheduled` content items live once `scheduled_at` has passed; protect it with `CRON_SECRET`. |
-| Edge Functions | `newsletter-subscribe`/`confirm`/`unsubscribe`, `donation-create-intent`, `payment-webhook` and the four `safeguarding-*` functions are implemented in `supabase/functions/`; deploy them with their secrets before use. |
-| Payments | Mobile money (MTN MoMo Collections) is implemented in `donation-create-intent` / `payment-webhook`; provider secrets are not configured yet, so online giving stays closed until `MOMO_*` and `PAYMENT_WEBHOOK_SECRET` are set on the deployment. |
-| Newsletter delivery | Double opt-in Edge Functions (`newsletter-subscribe`, `newsletter-confirm`, `newsletter-unsubscribe`) and a `newsletter-send` send function are implemented; the email send provider is not connected, so campaigns can be drafted, approved, scheduled and queued but not yet delivered. WhatsApp-ready manual sending (rendered text + copy parts) is built in. |
-| Safeguarding UI | Implemented shell; reads and writes go through the safeguarding Edge Functions (await deploy + `SAFEGUARDING_ENCRYPTION_KEY`). Access-matrix test added. |
-| CSP | Nonce-based CSP wired through `src/proxy.ts` and applied to inline JSON-LD scripts. |
-
-## Verification
-
-```bash
-npm run typecheck   # clean
-npm run lint        # clean
-npm test            # 205 tests passing
-npm run build       # all routes build successfully
-```
-
-Tests cover the pure permission logic (including inactive and missing subjects),
-the rate limiter and its key derivation, currency/date formatting, the Zod
-schemas (including the programme and impact-metric schemas and the redirect
-sanitiser), the media-library path/URL helpers, the Impact page's figure, metric
-value and JSON-LD builders, the Stories & News type labels, reading-time estimate
-and article JSON-LD builders, the enquiry type labels and ContactPage JSON-LD
-builder, the category/tag and content-taxonomy schemas, and the navigation
-link-resolution rule.
-Security-critical decisions such as "an inactive profile satisfies no permission"
-are asserted, not assumed.
-
-## Decisions still open with the organisation
-
-Payment provider, newsletter provider, transactional email, retention schedule,
-MFA enforcement policy, backup budget and the French-first content strategy. The
-architecture accommodates each without a rebuild; see
-`docs/reference/specifications.md` §14.
+No LICENSE file or license field exists in this repository. Unless an owner
+adds one, all rights default to the copyright holder. See the Open Questions
+section in [STATUS.md](STATUS.md).

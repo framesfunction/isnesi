@@ -100,9 +100,10 @@ The SQL migrations establish the database structures and baseline authorization.
 The Next.js application in `src/` is wired to Supabase Auth and this schema:
 public pages read published rows with the anonymous key, the admin application
 resolves permissions from the RBAC tables, and public enquiry intake inserts
-through the narrow RLS policy.
+through the narrow RLS policy or the `enquiry-intake` Edge Function.
 
-What remains is privileged workflow code: the Edge Functions listed in
-`supabase/functions/README.md` (safeguarding casework, newsletter double opt-in,
-payment webhooks). Until those exist, the corresponding UI fails closed rather
-than bypassing the security model.
+The privileged workflows (safeguarding casework, newsletter double opt-in and
+sending, donation intents/webhook/refunds) run through the Edge Functions in
+`supabase/functions/`, which are implemented but not deployed from this
+repository. Until they are deployed with their secrets, the corresponding UI
+fails closed rather than bypassing the security model.

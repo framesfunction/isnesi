@@ -1,10 +1,12 @@
 # Supabase Edge Functions
 
 This directory holds the Deno Edge Functions that run with the Supabase **service
-role key**. They are the only place privileged data may be read or written.
+role** key. They are the only place privileged data may be read or written.
 
-Nothing is deployed yet. The functions below are specified here so their contract
-is fixed before implementation.
+All functions listed below are implemented in this directory. None of them is
+deployed to a Supabase project from this repository — deployment is a manual
+step (see docs/DEPLOYMENT.md), and until it happens the corresponding UI fails
+closed rather than bypassing the security model.
 
 ## Rules that apply to every function
 
@@ -22,11 +24,11 @@ is fixed before implementation.
 6. **Fail closed.** If the caller, the permission or the audit write cannot be
    verified, return 401/403 and do nothing else.
 
-## Planned functions
+## Implemented functions
 
 | Function | Callers | Responsibility |
 |---|---|---|
-| `enquiry-intake` | Public (anon) | Rate-limited general enquiry intake as an alternative to the public insert path. Never accepts referrals. |
+| `enquiry-intake` | Public (anon) | Implemented. Rate-limited general enquiry intake as an alternative to the public insert path. Never accepts referrals. |
 | `newsletter-subscribe` | Public (anon) | Implemented. Double opt-in: create `pending` subscriber, record consent, send confirmation link. |
 | `newsletter-confirm` | Public (link) | Implemented. Confirm the opt-in token, set `subscribed`, record consent evidence. |
 | `newsletter-unsubscribe` | Public (link) | Implemented. One-click unsubscribe with token verification and suppression. |
@@ -37,7 +39,7 @@ is fixed before implementation.
 | `safeguarding-add-note` | Safeguarding officers | Implemented. Encrypted case note (`SAFEGUARDING_ENCRYPTION_KEY`); logs access. |
 | `donation-create-intent` | Staff (donations.manage) | Implemented. MTN MoMo Collections requesttopay intent for a `created` donation; payer approves on their phone. |
 | `payment-webhook` | Payment provider | Implemented. Signature-free MoMo: status is re-verified against the provider before any transition; idempotent via `payment_events`. Issues receipt numbers on success. |
-| `donation-refund` | Finance officers | Authorised refund with audit record. |
+| `donation-refund` | Finance officers | Implemented. Authorised refund with audit record. Rate limit 20/h. |
 
 ## Environment
 
@@ -56,7 +58,12 @@ MOMO_CURRENCY=XAF
 MOMO_COUNTRY_CODE=237
 
 # Newsletter (newsletter-send)
-NEWSLETTER_PROVIDER=<resend|brevo|mailgun|ses|smtp — adapter not yet implemented>
+NEWSLETTER_PROVIDER=<resend|brevo|mailgun|smtp — ses is not implemented>
+
+# Edge Function rate limiting (all privileged functions)
+# Counts live in app_private.rate_limit_buckets via app_private.consume_rate_limit
+# (migration 202611090001). No extra secret is required; the RPC runs with the
+# service role.
 
 # Safeguarding (safeguarding-*-* functions)
 SAFEGUARDING_ENCRYPTION_KEY=<base64-encoded 256-bit key, server-only secret>

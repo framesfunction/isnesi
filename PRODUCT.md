@@ -28,13 +28,13 @@ Environments: local Supabase stack via Docker Desktop, or a hosted Supabase proj
 
 ## Capabilities and Constraints
 
-- Confirmed: Next.js 16.4 App Router, React 19, TypeScript strict, Tailwind CSS v4 with ISNESI design tokens, shadcn/ui, Supabase (PostgreSQL, Auth, RLS, Storage, Edge Functions), React Hook Form + Zod, lucide-react, Vitest (205 tests passing), PWA shell for the public site, ISR (5-minute revalidate) on public pages, nonce-based CSP planned, security headers in `next.config.ts`.
+- Confirmed: Next.js 16.4 App Router, React 19, TypeScript strict, Tailwind CSS v4 with ISNESI design tokens, shadcn/ui, Supabase (PostgreSQL, Auth, RLS, Storage, Edge Functions), React Hook Form + Zod, lucide-react, Vitest, PWA shell for the public site, ISR (5-minute revalidate) on public pages, nonce-based CSP implemented in `src/proxy.ts`, security headers in `next.config.ts`.
 - Open with the organisation: payment provider, newsletter provider, transactional email, retention schedule, MFA enforcement policy, backup budget, French-first content strategy. The architecture accommodates each without a rebuild (`docs/reference/specifications.md` §14).
 - Online giving stays closed until `MOMO_*` and `PAYMENT_WEBHOOK_SECRET` are set; the donate page is honest about the missing provider.
 - WCAG 2.2 AA target, with manual testing in addition to automated checks.
 - Currency: public-facing currency may be XAF, but financial tables retain an explicit currency code.
 - Public sign-up is disabled; staff accounts are invite-only with `super_admin` for the first administrator.
-- Safeguarding Edge Functions (`newsletter-subscribe/confirm/unsubscribe`, `donation-create-intent`, `payment-webhook`, four `safeguarding-*` functions) are implemented but await deploy and secrets.
+- Privileged workflows (newsletter double opt-in/sending, donation intents, payment webhook, four `safeguarding-*` casework functions) are implemented as Supabase Edge Functions but await deployment and their secrets.
 
 ## Brand Commitments
 
@@ -50,7 +50,7 @@ Environments: local Supabase stack via Docker Desktop, or a hosted Supabase proj
 - `DESIGN.md` — incumbent design system (brand tokens, contrast rules, page shell, signature card, chips, buttons, empty states, lists/pagination, motion, copy rules).
 - `docs/reference/stack.md` — original prototype HTML and stack recommendation.
 - `docs/reference/specifications.md` — foundational functional requirements and backend architecture specification (v1.0).
-- `supabase/migrations/` — nine ordered migrations; `supabase/seed.sql` — seed data (dummy records).
+- `supabase/migrations/` - ordered migrations (see the folder for the current count); `supabase/seed.sql` - seed data (dummy records).
 - `src/types/database.gen.ts` — generated schema types; `src/lib/permissions/admin-nav.ts` — one module map for admin modules.
 - `public/brand/` and `public/icons/` — brand assets and icon set.
 - 205 tests passing; typecheck and lint clean; all routes build successfully.
