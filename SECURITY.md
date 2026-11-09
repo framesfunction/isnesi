@@ -56,9 +56,15 @@ Include: affected file/route/Edge Function, commit hash, how to reproduce, and
 - **Nothing here has been run against deployed infrastructure** from this
   repository. The DB-backed rate limiter migration, RLS policies, and Edge
   Function auth paths are unit-tested, not integration-tested.
-- **No distributed rate limiting on the Next.js side.** `login` and cron
-  limits in `src/lib/security/rate-limit.ts` are per-server-instance — a
-  multi-instance deployment gets multiple token buckets.
+- **No distributed rate limiting on the Next.js side.** Sign-in and the
+  publishing cron now consume `app_private.consume_rate_limit()` via the
+  service-role client (`src/lib/security/distributed-rate-limit.ts`), shared
+  across server instances, with a per-instance in-memory fallback when the
+  privileged env or the RPC is unavailable — the request is never failed by
+  the limiter.
+- **CI pipeline now runs on every push** (`.github/workflows/ci.yml`): lint,
+  typecheck, Vitest, `next build`, `npm audit`. This is the build gate that
+  would have caught the `5f41b3a` regression.
 - **The donate page gate** opens online giving when `MOMO_API_USER` plus the
   service-role config are present; the payment capture details live in Edge
   Functions whose secrets must be set at deployment time.
@@ -68,8 +74,10 @@ Include: affected file/route/Edge Function, commit hash, how to reproduce, and
 - **No formal security review of legal/compliance text** has happened; before
   touching real child-safeguarding data, counsel review is a stated
   prerequisite.
-- **Email deliverability/adapters** (resend/brevo/mailgun/smtp) have a
-  fail-closed contract but have never sent a live message from this repo.
+- **Email deliverability/adapters** (resend/brevo/mailgun/smtp/ses) have a
+  fail-closed contract. `ses` is implemented (AWS SES v2, Signature V4 via
+  `fetch`, structurally unit-tested) but has not sent a live message — no AWS
+  credentials exist in this environment.
 
 See [STATUS.md](STATUS.md) Known Gaps and
 [REMEDIATION_TRACKER.md](REMEDIATION_TRACKER.md) for the complete, current list

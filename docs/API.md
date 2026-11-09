@@ -89,7 +89,7 @@ limitation, not a global guarantee (`supabase/functions/_shared/caller.ts`).
 | `newsletter-subscribe` | public (anon) | none | 5/h/IP | same 2 |
 | `newsletter-confirm` | public (link, token) | token = credential | 10/h/IP | same 2 |
 | `newsletter-unsubscribe` | public (link, token) | token = credential | 10/h/IP | same 2 |
-| `newsletter-send` | staff | `requirePermissionCaller` — JWT + `newsletter.manage` | 5/h per campaign and per IP | + `NEWSLETTER_PROVIDER` and provider secrets |
+| `newsletter-send` | staff | `requirePermissionCaller` — JWT + `newsletter.manage` | 5/h per campaign and per IP (rate cap configurable via `NEWSLETTER_SEND_RATE_LIMIT` / `NEWSLETTER_SEND_RATE_WINDOW_MS` function secrets, defaults 5/h and 1 hour) | + `NEWSLETTER_PROVIDER` and provider secrets |
 | `donation-create-intent` | staff | JWT + `donations.manage` | 20/h/IP | + MoMo set |
 | `donation-pay-intent` | donor/staff (authenticated) | Bearer JWT, verified via Supabase Auth; amount must equal donation; donation must be `created`, XAF; will not overwrite an existing `provider_transaction_id` | 10/h per IP **and** per donation | + MoMo set |
 | `donation-refund` | staff | JWT + `donations.manage` | 20/h/IP | + MoMo set |
@@ -114,6 +114,11 @@ Notes applying to all Edge Functions:
   to a per-isolate in-memory bucket rather than failing the request — meaning
   limits degrade to per-isolate during a database outage, which is the weakest
   mode documented.
+- Unknown or unconfigured providers fail closed. Available providers:
+  `resend`, `brevo`, `mailgun`, `smtp` (documented stub, fails closed), and
+  `ses` (AWS SES v2 with Signature V4 signing via `fetch`; implemented and
+  structurally unit-tested, not exercised against live AWS — no credentials in
+  this environment).
 - Unknown requests fail with 401/403/404 before any sensitive read; stated
   bundled rules: verify-then-act, minimum data returned, no secrets leaving the
   function environment.

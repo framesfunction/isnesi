@@ -110,17 +110,33 @@ FIXED; DOCUMENTED 2; post-audit findings: 3, all resolved.
 2. Integration/E2E tests for payments, refunds, safeguarding, and RLS-with-JWT
    (ISN-013 follow-up; `ISN-003` only has unit coverage of the fallback path,
    not a live DB round-trip).
-3. CI pipeline (lint, typecheck, vitest, `next build`, `npm audit`, and the
-   Edge Function sources brought under `tsc`/lint scope — today only ESLint
-   parses the Edge Functions). A build gate would have caught ISN-014 and the
-   two latent import breaks.
+3. CI pipeline — lint, typecheck, Vitest, `next build`, `npm audit` now run on
+   every push via `.github/workflows/ci.yml`. Remaining: bring
+   `supabase/functions/**` under a compiled check (tsc) — blocked today
+   because Edge Function sources use Deno globals (`Deno.env`).
 4. Payment provider + newsletter provider go-live: secrets, sandbox
    verification, adapter soak test (no live traffic has ever been exercised).
 5. Backups/PITR evidence, retention schedules, MFA policy (organizational items).
-6. `ses` newsletter adapter remains unimplemented (resend/brevo/mailgun/smtp
-   are the available options).
-7. Newsletter-send rate limit of 5 per hour may be restrictive for bulk sends;
-   acceptable for now, revisit when a real list size is known.
+6. `ses` newsletter adapter — implemented (`supabase/functions/_shared/providers/ses.ts`,
+   AWS SES v2, Signature V4 via `fetch`, structurally unit-tested) but not
+   exercised against live AWS (no credentials in this environment).
+7. Newsletter-send rate limit — now configurable via
+   `NEWSLETTER_SEND_RATE_LIMIT` / `NEWSLETTER_SEND_RATE_WINDOW_MS` (defaults
+   5/h and 1 hour).
+
+## Post-tracker implementation notes
+
+- `src/lib/env.ts` `readRaw()` did not read `CRON_SECRET` although
+  `serverEnvSchema` requires it, so `getServerEnv()`,
+  `isServiceRoleConfigured()` and `isAdminClientAvailable()` always failed:
+  the cron route could never publish and the service-role client could never
+  be constructed. Fixed by reading `CRON_SECRET` in `readRaw()`.
+- Distributed rate limiting on the Next.js side: sign-in (`signInAction`) and
+  the publishing cron now consume `app_private.consume_rate_limit()` via the
+  service-role client (`src/lib/security/distributed-rate-limit.ts`), shared
+  across server instances, with a per-instance in-memory fallback when the
+  privileged env or the RPC is unavailable — the request is never failed by
+  the limiter.
 
 ## Concurrency note
 

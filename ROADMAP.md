@@ -5,10 +5,10 @@ an owner decision before work starts. Facts, not aspiration.
 
 ## Operations and delivery
 
-- **CI pipeline.** Lint + typecheck + Vitest + `next build` + `npm audit` on
-  every push, and bring `supabase/functions/**` under a compiled check (tsc).
-  Would have caught the `5f41b3a` build regression and the two latent Edge
-  Function import breaks.
+- **CI pipeline — DONE.** `.github/workflows/ci.yml` runs lint, typecheck,
+  Vitest, `next build` and `npm audit` on every push. Remaining backlog: bring
+  `supabase/functions/**` under a compiled check (tsc) — blocked today because
+  Edge Function sources use Deno globals (`Deno.env`).
 - **Deployment target.** No `vercel.json`, Dockerfile, or deploy script exists.
   TODO(owner): choose the host.
 - **Pre-deploy integrity checks for Edge Function source** (commit signing or
@@ -29,10 +29,6 @@ an owner decision before work starts. Facts, not aspiration.
 
 ## Deferred code work
 
-- **Distributed rate limiting on the Next.js server** (login, cron) — today it
-  is per-instance; Edge Functions already share a DB-backed counter.
-- **`ses` newsletter adapter** — `NEWSLETTER_PROVIDER` supports
-  resend/brevo/mailgun/smtp.
 - **Real SMTP adapter** inside Edge Functions (`_shared/providers/smtp.ts` is
   a documented stub that fails closed with a message).
 - **Dark-mode toggle for visitors** — the tokens are wired; no UI exists.

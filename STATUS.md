@@ -44,9 +44,9 @@ A table is worth little without knowing how each status is defined:
 | SEO (metadata, robots, sitemap, JSON-LD builders) | DONE | `robots.ts`, `sitemap.ts`, JSON-LD builders tested in editorial/enquiries/impact suites | — |
 | Security headers (HSTS, nosniff, DENY, referrer, permissions policy) + nonce CSP | DONE | `next.config.ts`, `src/proxy.ts` (CSP now includes `object-src 'none'`) | Verified by reading the builders; header emission exercised in the build's Proxy output |
 | Audit trail (append-only, DB triggers) | DONE | `supabase/migrations/202611030005_storage_audit_hardening.sql` + audit feature read-only admin page (`src/app/admin/audit`) | Database-level enforcement; not exercised live in this pass |
-| Rate limiting (in-app + Edge Functions) | DONE (with stated fallback) | `src/lib/security/rate-limit.ts` (6 tests) for login (5/h/IP) and cron (30/h); Edge Functions use the DB-backed distributed limiter `enforceRateLimit` (`supabase/functions/_shared/caller.ts`, 4 tests) against `app_private.consume_rate_limit` (migration `202611090001`) | DB-backed counts are shared across isolates; if the limiter RPC is unavailable the Edge Functions degrade to the per-isolate in-memory bucket instead of failing requests. |
+| Rate limiting (in-app + Edge Functions) | DONE (with stated fallback) | `src/lib/security/rate-limit.ts` (6 tests) for login (5/h/IP) and cron (30/h); Edge Functions use the DB-backed distributed limiter `enforceRateLimit` (`supabase/functions/_shared/caller.ts`, 4 tests) against `app_private.consume_rate_limit` (migration `202611090001`); Next.js sign-in and cron now also use `src/lib/security/distributed-rate-limit.ts` with the same RPC, falling back to the per-instance in-memory bucket when the privileged env or RPC is unavailable | DB-backed counts are shared across instances/isolates; if the limiter RPC is unavailable both sides degrade to per-instance in-memory instead of failing requests. |
 | Dependency health | PARTIAL | `npm audit --omit=dev` result recorded in this file's verification log | See Verification log below |
-| CI/CD pipeline | NOT DONE | No `.github/workflows`, no `vercel.json`, no Dockerfile, no deploy scripts in repo | All verification and deployment is manual today |
+| CI/CD pipeline | PARTIAL (CI exists; no deployment) | `.github/workflows/ci.yml` runs lint, typecheck, tests, `next build`, `npm audit` on every push. No host configuration or deploy script exists; deployment is manual (docs/DEPLOYMENT.md). | The build gate would have caught the `5f41b3a` regression; deployment itself needs credentials and a platform choice. |
 | Deployment | NOT DONE | No deployment target is wired in this repo; `docs/DEPLOYMENT.md` states what exists (nothing automated) | — |
 | Integration / end-to-end tests (payments, browser flows, RLS live) | NOT DONE | `supabase/tests/rls_smoke_tests.sql` exists to be run manually against a live instance; no automated integration suite | — |
 
@@ -54,7 +54,7 @@ A table is worth little without knowing how each status is defined:
 
 | Check | Result |
 |---|---|
-| `npm test` | 251 tests passing in 24 files (Vitest) |
+| `npm test` | 258 tests passing in 26 files (Vitest) |
 | `npm run typecheck` | 0 errors |
 | `npm run lint` | 0 errors, 0 warnings |
 | `npm run build` | PASS — all routes build (verified after a one-time `.next` cache clear; see Known Gaps 10 for the regression lesson) |
@@ -62,11 +62,11 @@ A table is worth little without knowing how each status is defined:
 
 ## Test reality
 
-251 Vitest unit tests in 24 files. They cover:
+258 Vitest unit tests in 26 files. They cover:
 
 - Pure permission logic, including inactive-profile and expired-grant denial (9 tests) and the safeguarding access matrix (16 tests).
 - Zod validation schemas (enquiry, newsletter, impact metric, programme, category, tag, content taxonomy, users, kids, finance/donations — 88 tests across the validation suite).
-- The rate limiter and timing-safe comparison primitives (12 tests), plus the DB-backed distributed limiter and its fallback behavior (4 tests).
+- The rate limiter and timing-safe comparison primitives (12 tests), plus the DB-backed distributed limiter and its fallback behavior (8 tests across Edge Functions and Next.js).
 - Helper/builder logic for stories, enquiries, impact figures, media, navigation links, newsletter email/WhatsApp rendering (65+ tests).
 - Server-action units: auth sign-in rate limiting, refund status computation (`src/features/finance/refund-status.ts`), admin donation queries (15 tests).
 - Edge Function entry behavior: `donation-pay-intent` auth and amount checks (5 tests), shared permission caller `is_active`/`expires_at` handling (6 tests), `enforceRateLimit` RPC and fallback paths (4 tests).
@@ -77,17 +77,21 @@ Everything mocked is a Supabase client, network fetch, or provider HTTP call. No
 - Payment flows, refund approval or newsletter sends end-to-end.
 - Any browser/E2E behavior — no Playwright/Cypress suite exists.
 - The production build had no CI gate until the `5f41b3a` regression slipped
-  through with green tests (fixed in `746225f`); until a build gate runs on
-  push, that class of regression is unguarded.
+  through with green tests (fixed in `746225f`); CI now runs `next build` on
+  every push (`.github/workflows/ci.yml`), so that class of regression is
+  guarded.
 
 ## Known gaps
 
 1. **Nothing is deployed.** No Supabase Edge Functions are running on a project
    this repo controls, no database migrations have been pushed against a live
-   project by this repo's process, no host configuration (Vercel or otherwise)
-   and no CI exist. Every "works when deployed" claim is an inference from
-   code, not evidence. The migration `202611090001_rate_limit_buckets.sql`
-   (distributed rate limiting) and all other migrations included.
+   project by this repo's process, and no host configuration (Vercel or
+   otherwise) exists. A CI pipeline now runs lint, typecheck, tests, build and
+   dependency audit on every push (`.github/workflows/ci.yml`), but deployment
+   itself requires credentials and a platform choice that are not in this repo.
+   Every "works when deployed" claim is an inference from code, not evidence.
+   The migration `202611090001_rate_limit_buckets.sql` (distributed rate
+   limiting) and all other migrations are included.
 2. **No integration/E2E tests for money, safeguarding, or RLS-under-JWT.**
    The riskiest paths have zero black-box coverage; RLS policies are only
    smoke-checked by the manual SQL in `supabase/tests/rls_smoke_tests.sql`,
@@ -96,36 +100,51 @@ Everything mocked is a Supabase client, network fetch, or provider HTTP call. No
    and all newsletter adapters exist only as code; token caching in
    `_shared/momo.ts`, refunds and delivery flows are unproven against the real
    provider (sandbox included).
-4. **Edge Function sources are outside the TypeScript check boundary.** The
-   two latent compile breaks found during ISN-003 (missing imports in
+4. **Edge Function sources are outside the TypeScript check boundary.** The two
+   latent compile breaks found during ISN-003 (missing imports in
    `newsletter-unsubscribe`, non-existent imports in the safeguarding
-   functions) were invisible to typecheck/tests; only ESLint's parse catches
-   syntax-level issues. Fold `supabase/functions/**` into a compiled check
-   (see REMEDIATION_TRACKER backlog).
-5. **Backups, retention schedules, MFA policy, transactional e-mail and
-   payment provider selection are organizational decisions never closed** (see
+   functions) were fixed in `f873211`. The functions are lint-parsed and their
+   entry points are unit-tested, but `supabase/functions/**` is not type-checked
+   by `tsc` (Deno globals) — folding it into a compiled check is on the
+   backlog (see REMEDIATION_TRACKER).
+5. **Backups, retention schedules, MFA policy, transactional e-mail and payment
+   provider selection are organizational decisions never closed** (see
    `supabase/README.md` "follow-up hardening"). No documented or executable
    backup/restore procedure exists in this repo.
 6. **French (`fr`) content is not authored.** The schema and UI support
    locales, but `NEXT_PUBLIC_DEFAULT_LOCALE` is a Zod literal of `"en"` and
-   only English content exists.
-7. **Dark mode is not offered to visitors** (tokens are wired for it; no toggle).
-8. **Newsletter `ses` adapter is absent.** `NEWSLETTER_PROVIDER` accepts
-   resend, brevo, mailgun, smtp.
-9. **The newsletter-send rate limit (5/h) may be restrictive during bulk
-   sends.** Acceptable until a real subscriber list size exists.
-10. **The build-failure regression lesson:** commit `5f41b3a` broke `next build`
-    while tests stayed green, and it was never caught because no CI exists.
-    Until a build gate runs on every push, treat the absence as a standing gap.
+   only English content exists. Content localization is an editorial decision,
+   not something to fabricate in code.
+7. **Dark mode is not offered to visitors** (tokens are wired for it; no
+   toggle). A theme toggle is a product/UI decision, not yet taken.
 
-Resolved during this pass (historic detail in REMEDIATION_TRACKER.md): the
-`5f41b3a` "use server" build break (ISN-014, fixed in `746225f`); per-isolate
-Edge Function rate limiting (ISN-003, fixed in `f873211`); the unused
-unauthenticated donor-PII endpoint `/api/donations/[donationId]` (ISN-015,
-removed in `735b16f`); missing `object-src` in CSP (ISN-016, fixed in
-`735b16f`); two latent Edge Function import breaks (fixed in `f873211`); a
-duplicate untracked ISN-004 migration artifact and the unused SMTP import
-(cleaned in `6d7346e`).
+Resolved during this pass (historic detail in REMEDIATION_TRACKER.md):
+- `src/lib/env.ts` `readRaw()` did not read `CRON_SECRET` although
+  `serverEnvSchema` requires it, so `getServerEnv()`, `isServiceRoleConfigured()`
+  and `isAdminClientAvailable()` always failed — the cron route could never
+  publish and the service-role client could never be constructed. Fixed by
+  reading `CRON_SECRET` in `readRaw()`.
+- Distributed rate limiting on the Next.js side: sign-in (`signInAction`) and
+  the publishing cron now consume `app_private.consume_rate_limit()` via the
+  service-role client (`src/lib/security/distributed-rate-limit.ts`), falling
+  back to the per-instance in-memory bucket when the privileged env or the RPC
+  is unavailable — the request is never failed by the limiter.
+- `ses` newsletter provider implemented (`supabase/functions/_shared/providers/ses.ts`,
+  AWS SigV4 via `fetch`, structurally unit-tested; not exercised against live
+  AWS — no credentials in this environment) and registered in `ProviderName`.
+- Newsletter-send rate limit is now configurable via
+  `NEWSLETTER_SEND_RATE_LIMIT` / `NEWSLETTER_SEND_RATE_WINDOW_MS` (defaults 5/h
+  and 1 hour).
+- CI pipeline (`.github/workflows/ci.yml`) runs lint, typecheck, tests,
+  `next build` and `npm audit` on every push — the build gate that would have
+  caught the `5f41b3a` regression.
+- `5f41b3a` "use server" build break (ISN-014, fixed in `746225f`); per-isolate
+  Edge Function rate limiting (ISN-003, fixed in `f873211`); the unused
+  unauthenticated donor-PII endpoint `/api/donations/[donationId]` (ISN-015,
+  removed in `735b16f`); missing `object-src` in CSP (ISN-016, fixed in
+  `735b16f`); two latent Edge Function import breaks (fixed in `f873211`); a
+  duplicate untracked ISN-004 migration artifact and the unused SMTP import
+  (cleaned in `6d7346e`).
 
 ## Not suitable for
 

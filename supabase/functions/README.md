@@ -58,7 +58,17 @@ MOMO_CURRENCY=XAF
 MOMO_COUNTRY_CODE=237
 
 # Newsletter (newsletter-send)
-NEWSLETTER_PROVIDER=<resend|brevo|mailgun|smtp — ses is not implemented>
+NEWSLETTER_PROVIDER=<resend|brevo|mailgun|smtp|ses>
+
+# Newsletter-send rate cap (per IP + per campaign)
+# NEWSLETTER_SEND_RATE_LIMIT=5
+# NEWSLETTER_SEND_RATE_WINDOW_MS=3600000
+
+# Amazon SES (only needed when NEWSLETTER_PROVIDER=ses)
+# SES_REGION=us-east-1
+# SES_ACCESS_KEY_ID=<server-only secret>
+# SES_SECRET_ACCESS_KEY=<server-only secret>
+# SES_FROM=<defaults to campaign from>
 
 # Edge Function rate limiting (all privileged functions)
 # Counts live in app_private.rate_limit_buckets via app_private.consume_rate_limit

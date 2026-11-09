@@ -6,7 +6,8 @@ No real secrets appear here. `.env.example` at the repo root mirrors the Next.js
 app surface; Edge Function secrets live in Supabase's secret store, not in a
 committed file.
 
-Verified 2026-11-09 against commit `5f41b3a`.
+Verified 2026-11-09 against commit `3b2bde5` (branch `impl-gaps`; application
+code last changed at `3b2bde5`).
 
 ## Next.js application
 
@@ -62,7 +63,12 @@ Configured with `supabase secrets set`, never committed. Collected from
 | `MOMO_CURRENCY` | same | Defaults `XAF` |
 | `MOMO_COUNTRY_CODE` | donation-* | Defaults `237` (Cameroon); used to normalize phone numbers to MSISDN |
 | `PAYMENT_WEBHOOK_SECRET` | payment-webhook | `x-webhook-secret` header compared timing-safe; 401 on mismatch |
-| `NEWSLETTER_PROVIDER` | newsletter-send | `resend` / `brevo` / `mailgun` / `smtp`. Unset ⇒ 502 fail-closed. (`ses` not implemented) |
+| `NEWSLETTER_PROVIDER` | newsletter-send | `resend` / `brevo` / `mailgun` / `smtp` / `ses`. Unset ⇒ 502 fail-closed. (`ses` implemented but not exercised against live AWS — no credentials in this environment) |
+| `NEWSLETTER_SEND_RATE_LIMIT` | newsletter-send (per-IP rate cap) | Optional; defaults `5` per hour |
+| `NEWSLETTER_SEND_RATE_WINDOW_MS` | newsletter-send (rate window) | Optional; defaults `3600000` (1 hour) |
+| `SES_REGION` | newsletter-send (ses adapter) | Optional; defaults `us-east-1` |
+| `SES_ACCESS_KEY_ID` / `SES_SECRET_ACCESS_KEY` | newsletter-send (ses adapter) | Required when `NEWSLETTER_PROVIDER=ses`; AWS credentials for Signature V4 signing |
+| `SES_FROM` | newsletter-send (ses adapter) | Optional; defaults to the campaign's `from` |
 | `RESEND_API_KEY`, `RESEND_FROM` | newsletter-send (adapter) | `RESEND_FROM` defaults to the campaign's `from` |
 | `MAILGUN_API_KEY`, `MAILGUN_DOMAIN`, `MAILGUN_FROM` | newsletter-send (adapter) | |
 | `BREVO_API_KEY`, `BREVO_FROM_NAME`, `BREVO_FROM_EMAIL` | newsletter-send (adapter) | From-name defaults `ISNESI` |
