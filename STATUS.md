@@ -1,9 +1,11 @@
 # Status
 
-Last verified: 2026-11-09 against commit `63a801a` (branch `audit-remediation`).
-Because code and docs changed during this pass, the verification runs
-below were re-executed on that head: `npm test`, `npm run typecheck`,
-`npm run lint`, `npm run build`, and `npm audit --omit=dev`.
+Last verified: 2026-11-09 against head `bf2ba10` (branch `audit-remediation`;
+the application code last changed at `735b16f` — later commits are
+documentation only). All checks below were re-run on that tree: `npm test`,
+`npm run typecheck`, `npm run lint`, `npm run build`, `npm audit --omit=dev`,
+plus a fresh-clone walkthrough of every command in docs/SETUP.md (install,
+copy env, dev server start, typecheck, tests, lint) in a separate worktree.
 
 ## Feature table
 
@@ -55,7 +57,7 @@ A table is worth little without knowing how each status is defined:
 | `npm test` | 251 tests passing in 24 files (Vitest) |
 | `npm run typecheck` | 0 errors |
 | `npm run lint` | 0 errors, 0 warnings |
-| `npm run build` | PASS — all routes build (after removing the deleted dev-types cache; see Known Gaps 1 note) |
+| `npm run build` | PASS — all routes build (verified after a one-time `.next` cache clear; see Known Gaps 10 for the regression lesson) |
 | `npm audit --omit=dev` | 0 vulnerabilities |
 
 ## Test reality
