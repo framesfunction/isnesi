@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { formatCurrency } from "@/lib/format";
 import Link from "next/link";
-import { ArrowRight, Loader2, AlertCircle } from "lucide-react";
+import { ArrowRight, AlertCircle } from "lucide-react";
 import { PageHero, Section } from "@/components/public/page-hero";
 import { notFound } from "next/navigation";
 
@@ -209,11 +209,25 @@ export default async function DonationPaymentPage({
         ) : (
           <Section title="Waiting for payment" className="rounded-[1.75rem] border border-line bg-white p-6 sm:p-8 shadow-[0_12px_40px_rgba(24,36,67,0.06)]">
             <p className="text-sm text-ink-muted">
-              Your donation is being processed. Please wait while we confirm
-              the payment with the provider.
+              A payment prompt has not yet been sent to your phone. Mobile
+              money payment requires a configured provider — until one is set
+              up, use the channels below and we will record and receipt your
+              contribution manually.
             </p>
-            <div className="mt-4 flex items-center justify-center">
-              <Loader2 className="size-6 animate-spin text-brand" />
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link
+                href="/donate"
+                className="inline-flex items-center gap-2 rounded-full bg-brand px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-strong"
+              >
+                Create a new donation
+                <ArrowRight className="size-4 ml-2" />
+              </Link>
+              <Link
+                href="/contact"
+                className="inline-flex items-center gap-2 rounded-full border-2 border-line bg-white px-5 py-2.5 text-sm font-bold text-brand hover:bg-brand-soft"
+              >
+                Arrange a contribution
+              </Link>
             </div>
           </Section>
         )}
