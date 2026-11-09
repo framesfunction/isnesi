@@ -61,6 +61,7 @@ function buildCsp(nonce: string, supabaseUrl: string | null): string {
     `style-src 'self' 'nonce-${nonce}'`,
     "img-src 'self' data: blob:",
     "font-src 'self'",
+    "object-src 'none'",
     `connect-src ${connectSrc.join(" ")}`,
     "frame-ancestors 'none'",
     "base-uri 'self'",
