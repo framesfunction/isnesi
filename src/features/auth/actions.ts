@@ -6,7 +6,8 @@ import { redirect } from "next/navigation";
 
 import { isSupabaseConfigured } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
-import { clientKey, rateLimit } from "@/lib/security/rate-limit";
+import { clientKey } from "@/lib/security/rate-limit";
+import { enforceRateLimit } from "@/lib/security/distributed-rate-limit";
 import { safeRedirectPath, signInSchema } from "@/lib/validation/auth";
 import type { SignInState } from "@/features/auth/state";
 
@@ -33,7 +34,11 @@ export async function signInAction(
   }
 
   const requestHeaders = await headers();
-  const limit = rateLimit(clientKey(requestHeaders, "login"), LOGIN_RATE);
+  const limit = await enforceRateLimit(
+    clientKey(requestHeaders, "login"),
+    LOGIN_RATE.limit,
+    LOGIN_RATE.windowMs,
+  );
   if (!limit.ok) {
     return {
       status: "error",

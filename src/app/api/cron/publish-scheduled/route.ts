@@ -2,7 +2,8 @@ import { NextResponse, type NextRequest } from "next/server";
 import { headers } from "next/headers";
 
 import { createAdminClient, isAdminClientAvailable } from "@/lib/supabase/admin";
-import { clientKey, rateLimit } from "@/lib/security/rate-limit";
+import { clientKey } from "@/lib/security/rate-limit";
+import { enforceRateLimit } from "@/lib/security/distributed-rate-limit";
 import { timingSafeEqual } from "@/lib/security/timing-safe";
 
 /**
@@ -35,7 +36,11 @@ export async function POST(request: NextRequest): Promise<Response> {
 
   // Rate-limit cron invocations per IP to prevent brute-forcing the secret.
   const requestHeaders = await headers();
-  const limit = rateLimit(clientKey(requestHeaders, "cron"), CRON_RATE);
+  const limit = await enforceRateLimit(
+    clientKey(requestHeaders, "cron"),
+    CRON_RATE.limit,
+    CRON_RATE.windowMs,
+  );
   if (!limit.ok) {
     return NextResponse.json(
       { error: "Too many attempts. Please try again later." },
