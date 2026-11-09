@@ -10,7 +10,7 @@
  * fetch-based SMTP relay service, then register it in `providers.ts`.
  */
 
-import type { ProviderAdapter, SendInput, SendResult } from "../providers.ts";
+import type { ProviderAdapter, SendResult } from "../providers.ts";
 
 export const smtpAdapter: ProviderAdapter = async (): Promise<SendResult> => {
   return {
