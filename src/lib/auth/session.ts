@@ -22,7 +22,8 @@ export type CurrentUser = {
 };
 
 export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
-  if (!isSupabaseConfigured()) return null;
+  try {
+    if (!isSupabaseConfigured()) return null;
 
   const supabase = await createClient();
 
@@ -93,4 +94,9 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
     roles: roleRows ?? [],
     permissions,
   };
+  } catch {
+    // Any failure (network, missing tables, invalid session) degrades to no
+    // user rather than crashing the admin layout.
+    return null;
+  }
 });
