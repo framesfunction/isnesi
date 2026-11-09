@@ -23,6 +23,10 @@ import {
 } from "@/lib/validation/finance";
 import { fieldErrors } from "@/lib/validation/form";
 
+import type { Database } from "@/types/database";
+
+type PaymentStatus = Database["public"]["Enums"]["payment_status"];
+
 export async function createDonationCampaignAction(
   _state: unknown,
   formData: FormData,
@@ -276,6 +280,22 @@ export async function saveReconciliationAction(
   return actionOk("Reconciliation record saved.");
 }
 
+/**
+ * Compute a donation's payment status after a refund is applied.
+ *
+ * Pure function: easy to unit-test in isolation (see actions.test.ts).
+ * Keeps the refund approval action free of branching logic.
+ */
+export function computeRefundPaymentStatus(
+  totalRefunded: number,
+  amountMinor: number,
+  currentStatus: PaymentStatus,
+): PaymentStatus {
+  if (totalRefunded >= amountMinor) return "refunded";
+  if (totalRefunded > 0) return "partially_refunded";
+  return currentStatus;
+}
+
 export async function approveDonationRefundAction(
   _state: unknown,
   formData: FormData,
@@ -345,12 +365,38 @@ export async function approveDonationRefundAction(
     .eq("status", "requested");
   if (error) return dbErrorMessage(error, "donation refund approval");
 
-  // Update the donation payment status to reflect the refund.
-  await supabase
+  // Recompute the donation's payment status based on the total refunded
+  // amount, so partial refunds are recorded as partially_refunded rather
+  // than incorrectly marked fully refunded.
+  const { data: refundedRows } = await supabase
+    .from("donation_refunds")
+    .select("amount_minor")
+    .eq("donation_id", refund.donation_id)
+    .eq("status", "succeeded");
+  const totalRefunded = (refundedRows ?? []).reduce(
+    (sum, row) => sum + (Number((row as { amount_minor: unknown }).amount_minor) || 0),
+    0,
+  );
+
+  const { data: donation } = await supabase
     .from("donations")
-    .update({ payment_status: "refunded" })
+    .select("amount_minor, payment_status")
     .eq("id", refund.donation_id)
-    .eq("payment_status", "succeeded");
+    .maybeSingle();
+  if (donation) {
+    const amountMinor = Number(donation.amount_minor);
+    const nextStatus = computeRefundPaymentStatus(
+      totalRefunded,
+      amountMinor,
+      donation.payment_status,
+    );
+    if (nextStatus !== donation.payment_status) {
+      await supabase
+        .from("donations")
+        .update({ payment_status: nextStatus })
+        .eq("id", refund.donation_id);
+    }
+  }
 
   revalidatePath("/admin/donations");
   return actionOk(result.message ?? "Refund approved and sent to the provider.");
