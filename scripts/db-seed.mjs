@@ -32,6 +32,17 @@ const localEnv = parseEnvFile(await readFile(path.join(repoRoot, ".env.local"), 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL || localEnv.NEXT_PUBLIC_SUPABASE_URL;
 const serviceRoleKey =
   process.env.SUPABASE_SERVICE_ROLE_KEY || localEnv.SUPABASE_SERVICE_ROLE_KEY;
+
+// Seed data (reference content + sample media) is development-only. It must
+// never be applied to a production environment.
+if (process.env.NODE_ENV !== "development") {
+  console.error(
+    "Refusing to apply seed data: NODE_ENV is not 'development'. Seed data " +
+      "is for local development only.",
+  );
+  process.exit(1);
+}
+
 const databaseUrl =
   process.env.SUPABASE_DB_URL || localEnv.SUPABASE_DB_URL;
 

@@ -1,5 +1,6 @@
 // app/(public)/programmes/page.tsx
 import type { Metadata } from "next";
+import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
@@ -34,24 +35,29 @@ export default async function ProgrammesPage() {
           </EmptyNote>
         ) : (
           <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {programmes.map((programme, index) => (
+            {programmes.map((programme) => (
               <li
                 key={programme.id}
                 className="group relative flex min-h-64 flex-col overflow-hidden rounded-[1.75rem] border border-line bg-white p-6 shadow-[0_12px_40px_rgba(24,36,67,0.06)] transition-transform hover:-translate-y-1"
               >
-                <div
-                  aria-hidden="true"
-                  className="absolute -right-6 -top-6 size-20 rounded-full bg-brand-soft transition-colors group-hover:bg-brand"
-                />
-                <div className="relative flex items-center gap-5">
-                  <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-sun-soft text-2xl leading-none shadow-sm">
-                    {programme.icon ?? programme.title.charAt(0)}
-                  </span>
-                  <span className="font-display text-xs font-black uppercase tracking-[0.14em] text-ink-muted">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
+                <div className="relative h-48 w-full overflow-hidden rounded-[1.75rem] bg-muted mb-4 group-hover:scale-105 transition-transform duration-300">
+                  {programme.featuredImageUrl ? (
+                    <Image
+                      src={programme.featuredImageUrl}
+                      alt={programme.title}
+                      fill
+                      className="object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center text-xs text-ink-muted">
+                      <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-sun-soft text-2xl leading-none shadow-sm">
+                        {programme.icon ?? programme.title.charAt(0)}
+                      </span>
+                    </div>
+                  )}
                 </div>
-                <h2 className="mt-5 font-display text-xl font-black text-brand">
+                <h2 className="mt-3 font-display text-xl font-black text-brand">
                   {programme.title}
                 </h2>
                 {programme.summary ? (

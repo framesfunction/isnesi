@@ -11,6 +11,7 @@ export type ProgrammeSummary = {
   isActive: boolean;
   title: string;
   summary: string | null;
+  featuredImageUrl: string | null;
 };
 
 type ProgrammeTranslation = {
@@ -61,7 +62,7 @@ export async function listProgrammes(
     const supabase = createPublicClient();
     let query = supabase
       .from("programmes")
-      .select("id, key, icon, sort_order, is_active")
+      .select("id, key, icon, sort_order, is_active, featured_image_id")
       .order("sort_order", { ascending: true });
 
     if (!options.includeInactive) {
@@ -91,6 +92,29 @@ export async function listProgrammes(
 
     const rows = translations ?? [];
 
+    // Resolve featured image URLs for programmes that reference media assets.
+    const programmesWithImages = programmes.filter(
+      (p): p is { featured_image_id: string } & typeof p => p.featured_image_id !== null,
+    );
+    const featuredImageUrls: Record<string, string> = {};
+    if (programmesWithImages.length > 0) {
+      const { data: mediaRows } = await supabase
+        .from("media_assets")
+        .select("id, bucket_id, object_path")
+        .in(
+          "id",
+          programmesWithImages.map((p) => p.featured_image_id),
+        );
+      const { supabaseUrl } = getPublicEnv();
+      for (const media of mediaRows ?? []) {
+        featuredImageUrls[media.id] = publicObjectUrl(
+          supabaseUrl,
+          media.bucket_id,
+          media.object_path,
+        );
+      }
+    }
+
     return programmes.flatMap((programme) => {
       const translation = pickTranslation(rows, programme.id);
       if (!translation) return [];
@@ -103,6 +127,10 @@ export async function listProgrammes(
           isActive: programme.is_active,
           title: translation.title,
           summary: translation.summary,
+          featuredImageUrl:
+            programme.featured_image_id !== null
+              ? featuredImageUrls[programme.featured_image_id] ?? null
+              : null,
         },
       ];
     });
