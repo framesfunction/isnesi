@@ -7,7 +7,7 @@
  * fail closed.
  */
 
-export type ProviderName = "resend" | "brevo" | "mailgun" | "smtp";
+export type ProviderName = "resend" | "brevo" | "mailgun" | "smtp" | "ses";
 
 export type SendResult = {
   ok: boolean;
@@ -29,12 +29,14 @@ import { resendAdapter } from "./providers/resend.ts";
 import { brevoAdapter } from "./providers/brevo.ts";
 import { mailgunAdapter } from "./providers/mailgun.ts";
 import { smtpAdapter } from "./providers/smtp.ts";
+import { sesAdapter } from "./providers/ses.ts";
 
 const adapters: Record<string, ProviderAdapter | null> = {
   resend: resendAdapter,
   brevo: brevoAdapter,
   mailgun: mailgunAdapter,
   smtp: smtpAdapter,
+  ses: sesAdapter,
 };
 
 /** Register a provider adapter by name. */

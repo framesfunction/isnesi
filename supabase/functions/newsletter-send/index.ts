@@ -2,7 +2,17 @@ import { clientIp, enforceRateLimit, requirePermissionCaller } from "../_shared/
 import { serviceRequest } from "../_shared/safeguarding.ts";
 import { buildEmailMessage } from "../_shared/email.ts";
 
-const RATE = { limit: 5, windowMs: 60 * 60 * 1000 };
+function rateLimitEnv(name: string, fallback: number): number {
+  const raw = Deno.env.get(name);
+  if (!raw) return fallback;
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+const RATE = {
+  limit: rateLimitEnv("NEWSLETTER_SEND_RATE_LIMIT", 5),
+  windowMs: rateLimitEnv("NEWSLETTER_SEND_RATE_WINDOW_MS", 60 * 60 * 1000),
+};
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const SENDABLE_STATUSES = new Set(["approved", "scheduled"]);
 const BATCH_SIZE = 500;
