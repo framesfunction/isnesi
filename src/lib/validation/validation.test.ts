@@ -65,7 +65,7 @@ describe("newsletterSubscribeSchema", () => {
     ).toBe(false);
   });
 
-  it("defaults the subscriber locale to the site default", () => {
+  it("defaults the subscriber locale to English", () => {
     const parsed = newsletterSubscribeSchema.safeParse({
       email: "reader@example.org",
       consent: true,
@@ -76,14 +76,16 @@ describe("newsletterSubscribeSchema", () => {
     }
   });
 
-  it("rejects any locale other than English", () => {
-    expect(
-      newsletterSubscribeSchema.safeParse({
-        email: "reader@example.org",
-        consent: true,
-        locale: "fr",
-      }).success,
-    ).toBe(false);
+  it("accepts only English as the subscriber locale", () => {
+    const parsed = newsletterSubscribeSchema.safeParse({
+      email: "reader@example.org",
+      consent: true,
+      locale: "en",
+    });
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data.locale).toBe("en");
+    }
   });
 });
 

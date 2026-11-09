@@ -32,8 +32,6 @@ an owner decision before work starts. Facts, not aspiration.
 - **Real SMTP adapter** inside Edge Functions (`_shared/providers/smtp.ts` is
   a documented stub that fails closed with a message).
 - **Dark-mode toggle for visitors** — the tokens are wired; no UI exists.
-- **`fr` locale content strategy** — schema/UI are locale-ready; Zod pins the
-  default to `"en"`. TODO(owner): French-first content decisions.
 - **Removal of `docs/reference/`** after design provenance is no longer
   needed. TODO(owner): decide.
 

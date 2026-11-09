@@ -1,7 +1,5 @@
 import { z } from "zod";
 
-import { siteConfig } from "@/lib/site";
-
 /**
  * Shared validation schemas.
  *
@@ -48,12 +46,12 @@ export const newsletterSubscribeSchema = z.object({
   email: z.string().trim().max(254).email("Enter a valid email address"),
   fullName: z.string().trim().max(120).optional().or(z.literal("")),
   consent: z.boolean().refine((v) => v === true, "You must consent to receive emails."),
-  // The subscriber's preferred language. ISNESI publishes in English only
-  // (siteConfig.defaultLocale), so the recorded locale is always "en".
+  // The subscriber's preferred language. ISNESI publishes in English only,
+  // so the recorded locale is always "en".
   locale: z
     .literal("en")
     .optional()
-    .transform((value) => value ?? siteConfig.defaultLocale),
+    .transform((value) => value ?? "en"),
 });
 
 export type NewsletterSubscribeInput = z.infer<typeof newsletterSubscribeSchema>;

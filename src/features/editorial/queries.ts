@@ -1,5 +1,4 @@
 import { createPublicClient, hasPublicContentAccess } from "@/lib/supabase/public";
-import { siteConfig } from "@/lib/site";
 import type { ContentType, Json } from "@/types/database";
 
 import { STORY_TYPES, isStoryType } from "./helpers";
@@ -78,7 +77,7 @@ async function attachTitles(supabase: PublicClient, rows: ContentRow[]): Promise
     grouped.set(row.content_id, list);
   }
 
-  const defaultLocale = siteConfig.defaultLocale;
+  const defaultLocale = "en";
 
   return rows.flatMap((row) => {
     const options = grouped.get(row.id) ?? [];
@@ -196,7 +195,7 @@ async function getStoryLabels(
       .from("category_translations")
       .select("category_id, label")
       .in("category_id", categoryIds)
-      .eq("locale", siteConfig.defaultLocale);
+      .eq("locale", "en");
     categories = (data ?? []).map((row) => ({ id: row.category_id, label: row.label }));
   }
 
@@ -206,7 +205,7 @@ async function getStoryLabels(
       .from("tag_translations")
       .select("tag_id, label")
       .in("tag_id", tagIds)
-      .eq("locale", siteConfig.defaultLocale);
+      .eq("locale", "en");
     tags = (data ?? []).map((row) => ({ id: row.tag_id, label: row.label }));
   }
 
@@ -246,7 +245,7 @@ export async function getPublishedStoryBySlug(slug: string): Promise<StoryDetail
       .eq("content_id", row.id);
 
     const options = translations ?? [];
-    const translation = options.find((option) => option.locale === siteConfig.defaultLocale) ?? options[0];
+    const translation = options.find((option) => option.locale === "en") ?? options[0];
     if (!translation) return null;
 
     const { categories, tags } = await getStoryLabels(supabase, row.id);

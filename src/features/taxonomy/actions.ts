@@ -12,7 +12,6 @@ import type { ActionResult } from "@/lib/admin/action-result";
 import { dbErrorMessage } from "@/lib/admin/db-error";
 import { assertPermission } from "@/lib/auth/guards";
 import { isSupabaseConfigured } from "@/lib/env";
-import { siteConfig } from "@/lib/site";
 import { createClient } from "@/lib/supabase/server";
 import {
   deleteCategorySchema,
@@ -87,7 +86,7 @@ export async function saveCategoryAction(
   }
 
   const { error: translationError } = await supabase.from("category_translations").upsert(
-    { category_id: categoryId, locale: siteConfig.defaultLocale, label: input.labelEn },
+    { category_id: categoryId, locale: "en", label: input.labelEn },
     { onConflict: "category_id,locale" },
   );
   if (translationError) return dbErrorMessage(translationError, "category label save");
@@ -155,7 +154,7 @@ export async function saveTagAction(
   }
 
   const { error: translationError } = await supabase.from("tag_translations").upsert(
-    { tag_id: tagId, locale: siteConfig.defaultLocale, label: input.labelEn },
+    { tag_id: tagId, locale: "en", label: input.labelEn },
     { onConflict: "tag_id,locale" },
   );
   if (translationError) return dbErrorMessage(translationError, "tag label save");

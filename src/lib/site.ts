@@ -4,13 +4,9 @@ export const siteConfig = {
   tagline: "We Leave No Child Behind.",
   description:
     "ISNESI helps every child learn, belong and thrive through inclusive education and community-led support.",
-  defaultLocale: "en" as const,
-  locales: ["en"] as const,
   currency: "XAF" as const,
   themeColor: "#1B3FA0",
 } as const;
-
-export type SiteLocale = (typeof siteConfig.locales)[number];
 
 export type PublicNavItem = {
   label: string;

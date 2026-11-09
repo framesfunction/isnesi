@@ -1,4 +1,3 @@
-import { siteConfig } from "@/lib/site";
 import { createPublicClient, hasPublicContentAccess } from "@/lib/supabase/public";
 import type { KidsResourceType } from "@/types/database";
 
@@ -63,7 +62,7 @@ export async function listKidsResources(): Promise<PublicKidsResource[]> {
     return resources.flatMap((resource) => {
       const forResource = rows.filter((row) => row.resource_id === resource.id);
       const translation =
-        forResource.find((row) => row.locale === siteConfig.defaultLocale) ??
+        forResource.find((row) => row.locale === "en") ??
         forResource[0];
       const resourceType = asResourceType(resource.resource_type);
       if (!resourceType) return [];

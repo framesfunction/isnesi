@@ -1,4 +1,3 @@
-import { siteConfig } from "@/lib/site";
 import { createPublicClient, hasPublicContentAccess } from "@/lib/supabase/public";
 import type { Json } from "@/types/database";
 
@@ -54,7 +53,7 @@ export async function getPublicPage(
       .eq("page_id", page.id);
 
     const rows = translations ?? [];
-    const defaultLocale = siteConfig.defaultLocale;
+    const defaultLocale = "en";
     const translation =
       rows.find((row) => row.locale === defaultLocale) ?? rows[0];
 

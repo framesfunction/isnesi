@@ -74,7 +74,6 @@ This is a strong initial database baseline, not a complete production certificat
 - Decide retention schedules and implement controlled retention/deletion jobs with legal review.
 - Add provider-specific payment adapter after choosing the provider (e.g. Mobile Money/card gateway); provider-neutral tables are ready.
 - Add backups/PITR appropriate to the selected Supabase plan and test restores.
-- Add explicit locale content for French; the schema supports `en` and `fr`, but translations are not fabricated.
 - Review all legal text, privacy notices, child safeguarding procedures and data-protection obligations with qualified local counsel.
 
 ## Schema overview

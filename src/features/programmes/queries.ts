@@ -1,5 +1,4 @@
 import { getPublicEnv } from "@/lib/env";
-import { siteConfig } from "@/lib/site";
 import { createPublicClient, hasPublicContentAccess } from "@/lib/supabase/public";
 import type { Json } from "@/types/database";
 import { publicObjectUrl } from "@/features/media/helpers";
@@ -43,7 +42,7 @@ function pickTranslation(
 ): ProgrammeTranslation | undefined {
   const forProgramme = translations.filter((row) => row.programme_id === programmeId);
   return (
-    forProgramme.find((row) => row.locale === siteConfig.defaultLocale) ?? forProgramme[0]
+    forProgramme.find((row) => row.locale === "en") ?? forProgramme[0]
   );
 }
 
@@ -148,7 +147,7 @@ export async function getProgrammeByKey(key: string): Promise<ProgrammeDetail | 
 
     const rows = translations ?? [];
     const translation =
-      rows.find((row) => row.locale === siteConfig.defaultLocale) ?? rows[0];
+      rows.find((row) => row.locale === "en") ?? rows[0];
 
     let featuredImageUrl: string | null = null;
     if (programme.featured_image_id) {

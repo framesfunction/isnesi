@@ -1,5 +1,4 @@
 import { isSupabaseConfigured } from "@/lib/env";
-import { siteConfig } from "@/lib/site";
 import { createClient } from "@/lib/supabase/server";
 
 /**
@@ -52,7 +51,7 @@ export async function listAdminCategories(search: string): Promise<AdminTaxonomy
     supabase
       .from("category_translations")
       .select("category_id, label")
-      .eq("locale", siteConfig.defaultLocale)
+      .eq("locale", "en")
       .in("category_id", ids),
     supabase.from("content_categories").select("category_id").in("category_id", ids),
   ]);
@@ -100,7 +99,7 @@ export async function listAdminTags(search: string): Promise<AdminTaxonomyItem[]
     supabase
       .from("tag_translations")
       .select("tag_id, label")
-      .eq("locale", siteConfig.defaultLocale)
+      .eq("locale", "en")
       .in("tag_id", ids),
     supabase.from("content_tags").select("tag_id").in("tag_id", ids),
   ]);
@@ -140,7 +139,7 @@ async function getCategory(
     .from("category_translations")
     .select("label")
     .eq("category_id", categoryId)
-    .eq("locale", siteConfig.defaultLocale)
+    .eq("locale", "en")
     .maybeSingle();
 
   return { id: data.id, key: data.key, label: translation?.label ?? null };
@@ -160,7 +159,7 @@ async function getTag(
     .from("tag_translations")
     .select("label")
     .eq("tag_id", tagId)
-    .eq("locale", siteConfig.defaultLocale)
+    .eq("locale", "en")
     .maybeSingle();
 
   return { id: data.id, key: data.key, label: translation?.label ?? null };

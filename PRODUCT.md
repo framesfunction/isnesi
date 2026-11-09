@@ -29,7 +29,7 @@ Environments: local Supabase stack via Docker Desktop, or a hosted Supabase proj
 ## Capabilities and Constraints
 
 - Confirmed: Next.js 16.4 App Router, React 19, TypeScript strict, Tailwind CSS v4 with ISNESI design tokens, shadcn/ui, Supabase (PostgreSQL, Auth, RLS, Storage, Edge Functions), React Hook Form + Zod, lucide-react, Vitest, PWA shell for the public site, ISR (5-minute revalidate) on public pages, nonce-based CSP implemented in `src/proxy.ts`, security headers in `next.config.ts`.
-- Open with the organisation: payment provider, newsletter provider, transactional email, retention schedule, MFA enforcement policy, backup budget, French-first content strategy. The architecture accommodates each without a rebuild (`docs/reference/specifications.md` §14).
+- Open with the organisation: payment provider, newsletter provider, transactional email, retention schedule, MFA enforcement policy, backup budget. The architecture accommodates each without a rebuild (`docs/reference/specifications.md` §14).
 - Online giving stays closed until `MOMO_*` and `PAYMENT_WEBHOOK_SECRET` are set; the donate page is honest about the missing provider.
 - WCAG 2.2 AA target, with manual testing in addition to automated checks.
 - Currency: public-facing currency may be XAF, but financial tables retain an explicit currency code.

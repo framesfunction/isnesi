@@ -111,11 +111,7 @@ Everything mocked is a Supabase client, network fetch, or provider HTTP call. No
    provider selection are organizational decisions never closed** (see
    `supabase/README.md` "follow-up hardening"). No documented or executable
    backup/restore procedure exists in this repo.
-6. **French (`fr`) content is not authored.** The schema and UI support
-   locales, but `NEXT_PUBLIC_DEFAULT_LOCALE` is a Zod literal of `"en"` and
-   only English content exists. Content localization is an editorial decision,
-   not something to fabricate in code.
-7. **Dark mode is not offered to visitors** (tokens are wired for it; no
+6. **Dark mode is not offered to visitors** (tokens are wired for it; no
    toggle). A theme toggle is a product/UI decision, not yet taken.
 
 Resolved during this pass (historic detail in REMEDIATION_TRACKER.md):

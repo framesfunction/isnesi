@@ -806,8 +806,6 @@ Unique constraint: `(slug)` for the active URL namespace.
 - translation_status
 - updated_at
 
-This supports future English/French content without redesigning the schema.
-
 ### `navigation_menus`
 
 - id

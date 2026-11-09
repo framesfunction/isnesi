@@ -21,7 +21,7 @@ export default function manifest(): MetadataRoute.Manifest {
     orientation: "portrait-primary",
     background_color: "#FFFDF5",
     theme_color: siteConfig.themeColor,
-    lang: siteConfig.defaultLocale,
+    lang: "en",
     categories: ["education", "nonprofit", "social"],
     icons: [
       {

@@ -1,5 +1,4 @@
 import { getPublicEnv } from "@/lib/env";
-import { siteConfig } from "@/lib/site";
 import { createPublicClient, hasPublicContentAccess } from "@/lib/supabase/public";
 import { publicObjectUrl } from "@/features/media/helpers";
 
@@ -69,7 +68,7 @@ export async function listPublicPartners(): Promise<PublicPartner[]> {
     return partners.map((partner) => {
       const forPartner = translationRows.filter((row) => row.partner_id === partner.id);
       const translation =
-        forPartner.find((row) => row.locale === siteConfig.defaultLocale) ??
+        forPartner.find((row) => row.locale === "en") ??
         forPartner[0];
 
       return {

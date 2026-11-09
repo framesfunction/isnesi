@@ -18,7 +18,6 @@ code last changed at `3b2bde5`).
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL | Required (app runs degraded without it) | — | `src/lib/env.ts`, `src/proxy.ts` (CSP connect-src), `next.config.ts` (image remote pattern) |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public anon key for the URL above | Required (same) | — | `src/lib/env.ts` |
 | `NEXT_PUBLIC_SITE_URL` | Canonical site origin used for metadata/SEO | Optional | `http://localhost:3000` | `src/lib/env.ts`; direct fallback reads in `src/app/sitemap.ts`, `src/app/robots.ts`, `src/app/layout.tsx`, stories/impact/get-involved pages |
-| `NEXT_PUBLIC_DEFAULT_LOCALE` | Site locale | Optional, must be `en` if set | `en` | `src/lib/env.ts` (Zod literal `en`) |
 
 ### Server-only secrets
 

@@ -20,7 +20,6 @@ const supabaseSchema = z.object({
 
 const publicEnvSchema = supabaseSchema.extend({
   NEXT_PUBLIC_SITE_URL: nonEmpty.default("http://localhost:3000"),
-  NEXT_PUBLIC_DEFAULT_LOCALE: z.literal("en").default("en"),
 });
 
 const serverEnvSchema = z.object({
@@ -32,7 +31,6 @@ export type PublicEnv = {
   supabaseUrl: string;
   supabaseAnonKey: string;
   siteUrl: string;
-  defaultLocale: "en";
 };
 
 export type ServerEnv = {
@@ -57,7 +55,6 @@ function readRaw(): Record<string, string | undefined> {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
-    NEXT_PUBLIC_DEFAULT_LOCALE: process.env.NEXT_PUBLIC_DEFAULT_LOCALE,
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
     CRON_SECRET: process.env.CRON_SECRET,
   };
@@ -94,7 +91,6 @@ export function getPublicEnv(): PublicEnv {
     supabaseUrl: parsed.data.NEXT_PUBLIC_SUPABASE_URL.replace(/\/+$/, ""),
     supabaseAnonKey: parsed.data.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     siteUrl: parsed.data.NEXT_PUBLIC_SITE_URL.replace(/\/+$/, ""),
-    defaultLocale: parsed.data.NEXT_PUBLIC_DEFAULT_LOCALE,
   };
 }
 
