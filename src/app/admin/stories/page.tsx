@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ActionForm } from "@/components/admin/action-form";
+import { BlockEditor } from "@/components/admin/block-editor";
 import { DataTable } from "@/components/admin/data-table";
 import { AdminPageHeader } from "@/components/admin/page-header";
 import { ListToolbar } from "@/components/admin/list-toolbar";
@@ -20,8 +21,6 @@ import { saveContentAction } from "@/features/editorial/actions";
 import { formatDateTime } from "@/lib/format";
 export const metadata: Metadata = { title: "Stories & news" };
 export const dynamic = "force-dynamic";
-const JSON_PLACEHOLDER =
-  '[{ "type": "paragraph", "text": "Opening paragraph" }]';
 const FIELD_LABELS =
   "flex flex-col gap-1.5 text-xs font-black uppercase tracking-[0.12em] text-ink-muted";
 const INPUT_CLASS =
@@ -261,14 +260,15 @@ export default async function AdminStoriesListPage({
                   {" "}
                   <label className={FIELD_LABELS}>
                     {" "}
-                    <span>Body (JSON blocks)</span>{" "}
-                    <textarea
+                    <span>Body (content blocks)</span>
+                    <BlockEditor
                       name="bodyEnBlocks"
-                      rows={8}
-                      defaultValue={JSON_PLACEHOLDER}
-                      spellCheck={false}
-                      className="rounded-xl border border-line bg-white px-3 py-2 font-mono text-xs text-ink"
-                    />{" "}
+                      value={[]}
+                    />
+                    <p className="text-xs text-ink-muted">
+                      Blocks are heading, paragraph, list, quote, callout and
+                      image. Images are picked from the media library.
+                    </p>
                   </label>
                 </div>
                 <p className="mt-3 text-xs text-ink-muted">
