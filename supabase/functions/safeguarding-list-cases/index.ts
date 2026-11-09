@@ -2,17 +2,6 @@ import { clientIp, rateLimit, requireSafeguardingCaller } from "../_shared/safeg
 import { serviceRequest } from "../_shared/safeguarding.ts";
 
 const RATE = { limit: 10, windowMs: 60 * 60 * 1000 };
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const STATUSES = new Set([
-  "received",
-  "triage",
-  "assigned",
-  "action_required",
-  "monitoring",
-  "closed",
-  "referred",
-]);
-const SEVERITIES = new Set(["unassessed", "low", "medium", "high", "urgent"]);
 
 type CaseRow = {
   id: string;

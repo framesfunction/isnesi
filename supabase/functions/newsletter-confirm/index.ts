@@ -1,24 +1,6 @@
+import { clientIp, rateLimit } from "../_shared/caller.ts";
+
 const RATE_LIMIT = { limit: 10, windowMs: 60 * 60 * 1000 };
-const inMemoryBuckets = new Map<string, { count: number; resetAt: number }>();
-
-function rateLimit(key: string): { ok: boolean } {
-  const now = Date.now();
-  const bucket = inMemoryBuckets.get(key);
-  if (!bucket || bucket.resetAt <= now) {
-    inMemoryBuckets.set(key, { count: 1, resetAt: now + RATE_LIMIT.windowMs });
-    return { ok: true };
-  }
-  if (bucket.count >= RATE_LIMIT.limit) {
-    return { ok: false };
-  }
-  bucket.count += 1;
-  return { ok: true };
-}
-
-function clientIp(request: Request): string {
-  const forwarded = request.headers.get("x-forwarded-for");
-  return forwarded?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown";
-}
 
 Deno.serve(async (request) => {
   if (request.method !== "POST") {
@@ -26,7 +8,7 @@ Deno.serve(async (request) => {
   }
 
   const ip = clientIp(request);
-  if (!rateLimit(`newsletter:confirm:${ip}`).ok) {
+  if (!rateLimit(`newsletter:confirm:${ip}`, RATE_LIMIT.limit, RATE_LIMIT.windowMs).ok) {
     return Response.json({ error: "Too many attempts. Please try again later." }, { status: 429 });
   }
 

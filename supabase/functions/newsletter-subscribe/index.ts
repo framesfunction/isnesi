@@ -1,26 +1,7 @@
+import { clientIp, rateLimit } from "../_shared/caller.ts";
 import { serviceRequest } from "../_shared/safeguarding.ts";
 
 const RATE_LIMIT = { limit: 5, windowMs: 60 * 60 * 1000 };
-const inMemoryBuckets = new Map<string, { count: number; resetAt: number }>();
-
-function rateLimit(key: string): { ok: boolean; remaining: number } {
-  const now = Date.now();
-  const bucket = inMemoryBuckets.get(key);
-  if (!bucket || bucket.resetAt <= now) {
-    inMemoryBuckets.set(key, { count: 1, resetAt: now + RATE_LIMIT.windowMs });
-    return { ok: true, remaining: RATE_LIMIT.limit - 1 };
-  }
-  if (bucket.count >= RATE_LIMIT.limit) {
-    return { ok: false, remaining: 0 };
-  }
-  bucket.count += 1;
-  return { ok: true, remaining: RATE_LIMIT.limit - bucket.count };
-}
-
-function clientIp(request: Request): string {
-  const forwarded = request.headers.get("x-forwarded-for");
-  return forwarded?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown";
-}
 
 function makeToken(): string {
   const bytes = new Uint8Array(24);
@@ -34,7 +15,7 @@ Deno.serve(async (request) => {
   }
 
   const ip = clientIp(request);
-  const limited = rateLimit(`newsletter:subscribe:${ip}`);
+  const limited = rateLimit(`newsletter:subscribe:${ip}`, RATE_LIMIT.limit, RATE_LIMIT.windowMs);
   if (!limited.ok) {
     return Response.json({ error: "Too many attempts. Please try again later." }, { status: 429 });
   }
