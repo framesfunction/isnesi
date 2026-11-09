@@ -59,6 +59,7 @@ function readRaw(): Record<string, string | undefined> {
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
     NEXT_PUBLIC_DEFAULT_LOCALE: process.env.NEXT_PUBLIC_DEFAULT_LOCALE,
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    CRON_SECRET: process.env.CRON_SECRET,
   };
 }
 
