@@ -1,5 +1,6 @@
 import { ActionForm } from "@/components/admin/action-form";
 import { BlockEditor } from "@/components/admin/block-editor";
+import { FeaturedImagePicker } from "@/components/admin/featured-image-picker";
 import { parseEditorBlocks } from "@/lib/validation/blocks";
 import { linesToText } from "@/features/programmes/helpers";
 import { saveProgrammeAction } from "@/features/programmes/actions";
@@ -76,16 +77,12 @@ export function ProgrammeForm({ programme }: { programme?: AdminProgrammeDetail 
           Programme details
         </legend>
         <div className="grid gap-4 sm:grid-cols-3">
-          <label className={FIELD_LABELS}>
-            <span>Featured image (media ID)</span>
-            <input
-              type="text"
-              name="featuredImageId"
-              defaultValue={programme?.featuredImageId ?? ""}
-              placeholder="paste a media library asset ID"
-              className={INPUT_CLASS}
-            />
-          </label>
+          <FeaturedImagePicker
+            value={programme?.featuredImageId ?? null}
+            onChange={() => {
+              // Handled by hidden input; form submission includes the value.
+            }}
+          />
           <label className={FIELD_LABELS}>
             <span>Target beneficiaries</span>
             <input
