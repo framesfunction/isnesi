@@ -23,9 +23,7 @@ import {
 } from "@/lib/validation/finance";
 import { fieldErrors } from "@/lib/validation/form";
 
-import type { Database } from "@/types/database";
-
-type PaymentStatus = Database["public"]["Enums"]["payment_status"];
+import { computeRefundPaymentStatus } from "@/features/finance/refund-status";
 
 export async function createDonationCampaignAction(
   _state: unknown,
@@ -278,22 +276,6 @@ export async function saveReconciliationAction(
 
   revalidatePath("/admin/donations");
   return actionOk("Reconciliation record saved.");
-}
-
-/**
- * Compute a donation's payment status after a refund is applied.
- *
- * Pure function: easy to unit-test in isolation (see actions.test.ts).
- * Keeps the refund approval action free of branching logic.
- */
-export function computeRefundPaymentStatus(
-  totalRefunded: number,
-  amountMinor: number,
-  currentStatus: PaymentStatus,
-): PaymentStatus {
-  if (totalRefunded >= amountMinor) return "refunded";
-  if (totalRefunded > 0) return "partially_refunded";
-  return currentStatus;
 }
 
 export async function approveDonationRefundAction(

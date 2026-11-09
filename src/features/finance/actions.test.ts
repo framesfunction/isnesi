@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { computeRefundPaymentStatus } from "@/features/finance/actions";
+import { computeRefundPaymentStatus } from "@/features/finance/refund-status";
 
 /**
  * ISN-009: refund approval must record partial vs full refund status.
