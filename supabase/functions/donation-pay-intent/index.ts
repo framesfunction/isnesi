@@ -1,4 +1,4 @@
-import { clientIp, rateLimit } from "../_shared/caller.ts";
+import { clientIp, enforceRateLimit } from "../_shared/caller.ts";
 import { checkStatus, normalizeMsisdn, readMoMoConfig, requestToPay } from "../_shared/momo.ts";
 import { serviceRequest } from "../_shared/safeguarding.ts";
 
@@ -63,7 +63,7 @@ Deno.serve(async (request) => {
   if (!caller.ok) return caller.response;
 
   const ip = clientIp(request);
-  if (!rateLimit(`donation:pay:${ip}`, RATE.limit, RATE.windowMs).ok) {
+  if (!(await enforceRateLimit(`donation:pay:${ip}`, RATE.limit, RATE.windowMs)).ok) {
     return Response.json({ error: "Too many attempts. Please try again later." }, { status: 429 });
   }
 
@@ -146,7 +146,7 @@ Deno.serve(async (request) => {
   }
 
   // Per-donation rate limit so a single donation cannot be spammed.
-  if (!rateLimit(`donation:pay:donation:${donationId}`, RATE.limit, RATE.windowMs).ok) {
+  if (!(await enforceRateLimit(`donation:pay:donation:${donationId}`, RATE.limit, RATE.windowMs)).ok) {
     return Response.json({ error: "Too many attempts for this donation. Please try again later." }, { status: 429 });
   }
 

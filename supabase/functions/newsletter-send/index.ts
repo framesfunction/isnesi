@@ -1,4 +1,4 @@
-import { clientIp, rateLimit, requirePermissionCaller } from "../_shared/caller.ts";
+import { clientIp, enforceRateLimit, requirePermissionCaller } from "../_shared/caller.ts";
 import { serviceRequest } from "../_shared/safeguarding.ts";
 import { buildEmailMessage } from "../_shared/email.ts";
 
@@ -35,7 +35,7 @@ Deno.serve(async (request) => {
 
   const ip = clientIp(request);
   const rateLimitKey = `newsletter:send:${ip}`;
-  if (!rateLimit(rateLimitKey, RATE.limit, RATE.windowMs).ok) {
+  if (!(await enforceRateLimit(rateLimitKey, RATE.limit, RATE.windowMs)).ok) {
     return Response.json({ error: "Too many attempts. Please try again later." }, { status: 429 });
   }
 
@@ -52,7 +52,7 @@ Deno.serve(async (request) => {
 
   // Per-campaign rate limit so a retried send cannot duplicate work.
   const campaignRateLimitKey = `newsletter:send:campaign:${campaignId}`;
-  if (!rateLimit(campaignRateLimitKey, RATE.limit, RATE.windowMs).ok) {
+  if (!(await enforceRateLimit(campaignRateLimitKey, RATE.limit, RATE.windowMs)).ok) {
     return Response.json({ error: "This campaign is already being sent." }, { status: 429 });
   }
 

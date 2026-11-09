@@ -1,4 +1,4 @@
-import { clientIp, rateLimit } from "../_shared/caller.ts";
+import { clientIp, enforceRateLimit } from "../_shared/caller.ts";
 
 const RATE_LIMIT = { limit: 5, windowMs: 60 * 60 * 1000 };
 const ENQUIRY_TYPES = new Set(["volunteer", "partnership", "contact", "media", "other"]);
@@ -54,7 +54,7 @@ Deno.serve(async (request) => {
   }
 
   const ip = clientIp(request);
-  if (!rateLimit(`enquiry:intake:${ip}`, RATE_LIMIT.limit, RATE_LIMIT.windowMs).ok) {
+  if (!(await enforceRateLimit(`enquiry:intake:${ip}`, RATE_LIMIT.limit, RATE_LIMIT.windowMs)).ok) {
     return Response.json({ error: "Too many submissions from this connection. Please try again later." }, { status: 429 });
   }
 

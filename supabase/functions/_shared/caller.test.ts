@@ -200,3 +200,91 @@ describe("ISN-002 requirePermissionCaller respects is_active and expires_at", ()
     expect(result.response.status).toBe(403);
   });
 });
+
+/**
+ * ISN-003: enforceRateLimit must use the DB-backed atomic bucket
+ * (app_private.consume_rate_limit) when available, and fall back to the
+ * in-memory per-isolate bucket when the RPC is unavailable or env is missing,
+ * so rate limiting degrades to the old behavior instead of failing requests.
+ */
+describe("ISN-003 enforceRateLimit uses the DB-backed limiter", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  function envWithSupabase() {
+    mockEnv((envKey: string) => {
+      if (envKey === "SUPABASE_URL") return baseUrl;
+      if (envKey === "SUPABASE_SERVICE_ROLE_KEY") return serviceRoleKey;
+      return undefined;
+    });
+  }
+
+  it("calls app_private.consume_rate_limit and honors an allowed RPC result", async () => {
+    let rpcBody: unknown = null;
+    mockFetch(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.endsWith("/rpc/consume_rate_limit")) {
+        rpcBody = JSON.parse(String(init?.body));
+        return new Response(JSON.stringify(true), { status: 200 });
+      }
+      throw new Error(`unexpected fetch: ${url}`);
+    });
+    envWithSupabase();
+
+    const mod = await import("./caller.ts");
+    const { enforceRateLimit } = mod;
+    const result = await enforceRateLimit("enquiry:intake:1.2.3.4", 5, 3_600_000);
+
+    expect(result.ok).toBe(true);
+    expect(rpcBody).toEqual({
+      p_bucket_key: "enquiry:intake:1.2.3.4",
+      p_limit: 5,
+      p_window_seconds: 3600,
+    });
+  });
+
+  it("returns ok=false when the RPC reports the bucket is exhausted", async () => {
+    mockFetch(async (input: RequestInfo | URL) => {
+      if (String(input).endsWith("/rpc/consume_rate_limit")) {
+        return new Response(JSON.stringify(false), { status: 200 });
+      }
+      throw new Error("unexpected fetch");
+    });
+    envWithSupabase();
+
+    const mod = await import("./caller.ts");
+    const { enforceRateLimit } = mod;
+    const result = await enforceRateLimit("enquiry:intake:1.2.3.4", 5, 3_600_000);
+    expect(result.ok).toBe(false);
+  });
+
+  it("falls back to the in-memory bucket when the RPC fetch fails", async () => {
+    mockFetch(async () => {
+      throw new Error("network down");
+    });
+    envWithSupabase();
+
+    const mod = await import("./caller.ts");
+    const { enforceRateLimit } = mod;
+    const first = await enforceRateLimit("fallback:key", 1, 60_000);
+    const second = await enforceRateLimit("fallback:key", 1, 60_000);
+    expect(first.ok).toBe(true);
+    expect(second.ok).toBe(false);
+  });
+
+  it("falls back to the in-memory bucket when Supabase env is missing", async () => {
+    mockEnv(() => undefined);
+    let fetchCalled = false;
+    mockFetch(async () => {
+      fetchCalled = true;
+      return new Response(JSON.stringify(true), { status: 200 });
+    });
+
+    const mod = await import("./caller.ts");
+    const { enforceRateLimit } = mod;
+    const result = await enforceRateLimit("noenv:key", 5, 60_000);
+    expect(result.ok).toBe(true);
+    expect(fetchCalled).toBe(false);
+  });
+});

@@ -60,6 +60,51 @@ export function rateLimit(
   return bucket(key, limit, windowMs);
 }
 
+/**
+ * ISN-003: the in-memory buckets above are per-Edge-Function-isolate, so the
+ * documented limits were never global under concurrent isolates. The DB-backed
+ * limiter below runs an atomic upsert (`app_private.consume_rate_limit`) so the
+ * count is shared by all isolates.
+ *
+ * Failure policy: if the limiter call cannot be completed (network error or
+ * the RPC is missing because the migration was not applied), we fall back to
+ * the in-memory bucket rather than failing the whole request. Rate limiting
+ * then degrades to per-isolate, which is the pre-ISN-003 behavior, while the
+ * request itself still works.
+ */
+export async function enforceRateLimit(
+  key: string,
+  limit: number,
+  windowMs: number,
+): Promise<{ ok: boolean; remaining: number }> {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  if (supabaseUrl && serviceRoleKey) {
+    try {
+      const result = await fetch(`${supabaseUrl}/rest/v1/rpc/consume_rate_limit`, {
+        method: "POST",
+        headers: {
+          apikey: serviceRoleKey,
+          authorization: `Bearer ${serviceRoleKey}`,
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          p_bucket_key: key,
+          p_limit: limit,
+          p_window_seconds: Math.max(1, Math.round(windowMs / 1000)),
+        }),
+      });
+      if (result.ok) {
+        const allowed = (await result.json()) === true;
+        return { ok: allowed, remaining: 0 };
+      }
+    } catch {
+      // fall through to the in-memory bucket
+    }
+  }
+  return rateLimit(key, limit, windowMs);
+}
+
 function buckets() {
   const globalStore = globalThis as typeof globalThis & {
     __isnesiRateBuckets?: Map<string, { count: number; resetAt: number }>;

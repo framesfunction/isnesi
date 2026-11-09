@@ -109,6 +109,7 @@ describe("ISN-005 donation-pay-intent authentication and amount validation", () 
     // Donation total is 5000, caller sends 1000
     stubFetch(async (input: RequestInfo | URL) => {
       const url = String(input);
+      if (url.includes("/rpc/consume_rate_limit")) return new Response(JSON.stringify(true), { status: 200 });
       if (url.includes("/auth/v1/user")) return new Response(JSON.stringify({ id: "user-123" }), { status: 200 });
       if (url.includes("/donations")) {
         return donationResponse({ id: "00000000-0000-0000-0000-000000000000", amount_minor: 5000, payment_status: "created", public_reference: "DON-2026-000001" });
@@ -124,6 +125,7 @@ describe("ISN-005 donation-pay-intent authentication and amount validation", () 
     let providerCalled = false;
     stubFetch(async (input: RequestInfo | URL) => {
       const url = String(input);
+      if (url.includes("/rpc/consume_rate_limit")) return new Response(JSON.stringify(true), { status: 200 });
       if (url.includes("/auth/v1/user")) return new Response(JSON.stringify({ id: "user-123" }), { status: 200 });
       if (url.includes("/donations")) {
         return donationResponse({ id: "00000000-0000-0000-0000-000000000000", amount_minor: 1000, payment_status: "created", public_reference: "DON-2026-000001" });
@@ -144,6 +146,7 @@ describe("ISN-005 donation-pay-intent authentication and amount validation", () 
   it("does not overwrite an existing provider_transaction_id (resumes instead)", async () => {
     stubFetch(async (input: RequestInfo | URL) => {
       const url = String(input);
+      if (url.includes("/rpc/consume_rate_limit")) return new Response(JSON.stringify(true), { status: 200 });
       if (url.includes("/auth/v1/user")) return new Response(JSON.stringify({ id: "user-123" }), { status: 200 });
       if (url.includes("/collection/token/")) return new Response(JSON.stringify({ access_token: "tok", expires_in: 3600 }), { status: 200 });
       if (url.includes("/donations")) {

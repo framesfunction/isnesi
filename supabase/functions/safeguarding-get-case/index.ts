@@ -1,4 +1,5 @@
-import { clientIp, rateLimit, requireSafeguardingCaller } from "../_shared/safeguarding.ts";
+import { clientIp, enforceRateLimit } from "../_shared/caller.ts";
+import { requireSafeguardingCaller } from "../_shared/safeguarding.ts";
 import { serviceRequest } from "../_shared/safeguarding.ts";
 
 const RATE = { limit: 10, windowMs: 60 * 60 * 1000 };
@@ -35,7 +36,7 @@ Deno.serve(async (request) => {
   if (!caller.ok) return caller.response;
 
   const ip = clientIp(request);
-  if (!rateLimit(`safeguarding:get-case:${ip}`, RATE.limit, RATE.windowMs).ok) {
+  if (!(await enforceRateLimit(`safeguarding:get-case:${ip}`, RATE.limit, RATE.windowMs)).ok) {
     return Response.json({ error: "Too many attempts. Please try again later." }, { status: 429 });
   }
 

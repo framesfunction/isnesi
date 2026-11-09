@@ -1,4 +1,4 @@
-import { clientIp, rateLimit } from "../_shared/caller.ts";
+import { clientIp, enforceRateLimit } from "../_shared/caller.ts";
 
 const RATE_LIMIT = { limit: 10, windowMs: 60 * 60 * 1000 };
 
@@ -8,7 +8,7 @@ Deno.serve(async (request) => {
   }
 
   const ip = clientIp(request);
-  if (!rateLimit(`newsletter:confirm:${ip}`, RATE_LIMIT.limit, RATE_LIMIT.windowMs).ok) {
+  if (!(await enforceRateLimit(`newsletter:confirm:${ip}`, RATE_LIMIT.limit, RATE_LIMIT.windowMs)).ok) {
     return Response.json({ error: "Too many attempts. Please try again later." }, { status: 429 });
   }
 

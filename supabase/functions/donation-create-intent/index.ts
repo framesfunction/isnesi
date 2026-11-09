@@ -1,4 +1,4 @@
-import { clientIp, rateLimit, requirePermissionCaller } from "../_shared/caller.ts";
+import { clientIp, enforceRateLimit, requirePermissionCaller } from "../_shared/caller.ts";
 import { checkStatus, normalizeMsisdn, readMoMoConfig, requestToPay } from "../_shared/momo.ts";
 import { serviceRequest } from "../_shared/safeguarding.ts";
 
@@ -30,7 +30,7 @@ Deno.serve(async (request) => {
   if (!caller.ok) return caller.response;
 
   const ip = clientIp(request);
-  if (!rateLimit(`donation:intent:${ip}:${caller.userId}`, RATE.limit, RATE.windowMs).ok) {
+  if (!(await enforceRateLimit(`donation:intent:${ip}:${caller.userId}`, RATE.limit, RATE.windowMs)).ok) {
     return Response.json({ error: "Too many attempts. Please try again later." }, { status: 429 });
   }
 
