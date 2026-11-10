@@ -335,6 +335,31 @@ select p.id,'intro','text',2,true,
 from public.pages p where p.slug='about'
 on conflict do nothing;
 
+-- About page: story content (vision + mission)
+insert into public.page_sections(page_id,section_key,section_type,sort_order,is_enabled,config)
+select p.id,'story','blocks',3,true,
+ jsonb_build_object('blocks',
+  '[{"type":"heading","text":"Hello, we&apos;re ISNESI. We make room for every child to grow.","level":2},{"type":"paragraph","text":"ISNESI — Inclusive Special Needs Education &amp; Social Innovation — works with children, families, educators and communities to build a more inclusive society. We focus on strengths, remove barriers and make participation possible, keeping each child&apos;s dignity at the centre."},{"type":"heading","text":"Our vision","level":3},{"type":"paragraph","text":"An inclusive, equitable society where every child and person with a disability has equal access to quality education, opportunity, dignity and full participation in community life."},{"type":"heading","text":"Our mission","level":3},{"type":"paragraph","text":"Promote inclusive and special needs education through innovative, accessible and community-driven solutions that help children with disabilities and other vulnerable children learn, thrive and participate fully."}]'::jsonb
+ )
+from public.pages p where p.slug='about'
+on conflict do nothing;
+
+-- About page: values (what guides us)
+insert into public.page_sections(page_id,section_key,section_type,sort_order,is_enabled,config)
+select p.id,'values','blocks',4,true,
+ jsonb_build_object('blocks',
+  '[{"type":"heading","text":"What guides us","level":2},{"type":"heading","text":"Inclusion","level":3},{"type":"paragraph","text":"Children with disabilities learn alongside their peers, with the support that makes participation real."},{"type":"heading","text":"Dignity","level":3},{"type":"paragraph","text":"Every child is treated as a person with strengths. Disability is part of human diversity, not a barrier to belonging."},{"type":"heading","text":"Community-led","level":3},{"type":"paragraph","text":"Families, schools and local organisations shape the work, so support continues long after a project ends."},{"type":"heading","text":"Learning first","level":3},{"type":"paragraph","text":"Accessible, inclusive education sits at the centre of everything we do."},{"type":"heading","text":"Safeguarding","level":3},{"type":"paragraph","text":"Child safety comes first: review and clearance are required before anything about a child is published."},{"type":"heading","text":"Partnership","level":3},{"type":"paragraph","text":"We work with government, schools, communities and other organisations to extend reach and share learning."}]'::jsonb
+ )
+from public.pages p where p.slug='about'
+on conflict do nothing;
+
+-- About page: call to action
+insert into public.page_sections(page_id,section_key,section_type,sort_order,is_enabled,config)
+select p.id,'cta','text',5,true,
+ jsonb_build_object('heading','Stand with children who deserve every chance to shine.','text','Volunteer, partner or give what you can to support inclusive education. We Leave No Child Behind.')
+from public.pages p where p.slug='about'
+on conflict do nothing;
+
 -- Categories
 with c as (
   insert into public.categories(key)
