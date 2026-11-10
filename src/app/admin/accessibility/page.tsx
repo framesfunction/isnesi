@@ -40,12 +40,18 @@ type PreferenceKey = (typeof PREFERENCES)[number]["key"];
 async function getAccessibilitySettings() {
   if (!isSupabaseConfigured()) return null;
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("site_settings")
-    .select("value")
-    .eq("key", "accessibility")
-    .maybeSingle();
-  return data?.value as Record<string, boolean> | null;
+  let settings: Record<string, boolean> | null = null;
+  try {
+    const { data } = await supabase
+      .from("site_settings")
+      .select("value")
+      .eq("key", "accessibility")
+      .maybeSingle();
+    settings = (data?.value as Record<string, boolean> | null) ?? null;
+  } catch {
+    console.warn("[isnesi] accessibility settings unavailable", { reason: "query failed" });
+  }
+  return settings;
 }
 
 async function saveAccessibilitySettings(

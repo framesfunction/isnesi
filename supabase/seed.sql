@@ -231,6 +231,94 @@ select p.id,'en',
   end)
 from p;
 
+-- Home page (CMS-managed, appears in /admin/pages just like /about)
+with p as (
+  insert into public.pages(slug,page_type,status,template_key,show_in_navigation,sort_order,published_at)
+  values
+   ('home','standard','published','default',true,0,now())
+  returning id, slug
+)
+insert into public.page_translations(page_id,locale,title,excerpt,seo_title,seo_description,canonical_url,body)
+select p.id,'en',
+ 'Home',
+ 'Every child can belong. Inclusive learning for children with disabilities.',
+ 'Home | ISNESI',
+ 'ISNESI home page — inclusive education, programmes, stories and ways to get involved for children with disabilities across Cameroon.',
+ '/',
+ jsonb_build_object('blocks',
+  '[{"type":"heading","text":"Welcome to ISNESI","level":2},{"type":"paragraph","text":"Every child can belong. We help make learning welcoming and accessible for children with disabilities and other vulnerable children, alongside their families, schools and communities."}]'::jsonb
+ )
+from p;
+
+-- Page sections for home page
+insert into public.page_sections(page_id,section_key,section_type,sort_order,is_enabled,config)
+select p.id,'hero','text',1,true,
+ jsonb_build_object('heading','Every child can belong.','text','We help make learning welcoming and accessible for children with disabilities and other vulnerable children, alongside their families, schools and communities. Because every child deserves the chance to shine.')
+from public.pages p where p.slug='home'
+on conflict do nothing;
+
+insert into public.page_sections(page_id,section_key,section_type,sort_order,is_enabled,config)
+select p.id,'tagline','text',2,true,
+ jsonb_build_object('heading','We Leave No Child Behind.','text','Disability is part of human diversity.')
+from public.pages p where p.slug='home'
+on conflict do nothing;
+
+insert into public.page_sections(page_id,section_key,section_type,sort_order,is_enabled,config)
+select p.id,'growing-book','text',3,true,
+ jsonb_build_object('heading','Every barrier removed is a child moving forward.','text','')
+from public.pages p where p.slug='home'
+on conflict do nothing;
+
+insert into public.page_sections(page_id,section_key,section_type,sort_order,is_enabled,config)
+select p.id,'who-we-are','text',4,true,
+ jsonb_build_object('heading','Hello, we&apos;re ISNESI. We make room for every child to grow.','text','Inclusion is built with communities, not delivered to them. ISNESI works with children, families, educators and communities to build a more inclusive society. We focus on strengths, remove barriers and make participation possible, keeping each child&apos;s dignity at the centre.')
+from public.pages p where p.slug='home'
+on conflict do nothing;
+
+insert into public.page_sections(page_id,section_key,section_type,sort_order,is_enabled,config)
+select p.id,'vision','text',5,true,
+ jsonb_build_object('heading','Our vision','text','An inclusive, equitable society where every child and person with a disability has equal access to quality education, opportunity, dignity and full participation in community life.')
+from public.pages p where p.slug='home'
+on conflict do nothing;
+
+insert into public.page_sections(page_id,section_key,section_type,sort_order,is_enabled,config)
+select p.id,'mission','text',6,true,
+ jsonb_build_object('heading','Our mission','text','Promote inclusive and special needs education through innovative, accessible and community-driven solutions that help children with disabilities and other vulnerable children learn, thrive and participate fully.')
+from public.pages p where p.slug='home'
+on conflict do nothing;
+
+insert into public.page_sections(page_id,section_key,section_type,sort_order,is_enabled,config)
+select p.id,'support','text',7,true,
+ jsonb_build_object('heading','Every contribution helps open a door.','text','Donations strengthen inclusive learning, practical support for children and families, and community-led solutions. Time, partnership and funding all count.')
+from public.pages p where p.slug='home'
+on conflict do nothing;
+
+insert into public.page_sections(page_id,section_key,section_type,sort_order,is_enabled,config)
+select p.id,'kids-corner','text',8,true,
+ jsonb_build_object('heading','Welcome to the Kids&apos; Corner!','text','Stories, creative activities and learning games about friendship, kindness and inclusion, in a space made for children and reviewed for child safety.')
+from public.pages p where p.slug='home'
+on conflict do nothing;
+
+insert into public.page_sections(page_id,section_key,section_type,sort_order,is_enabled,config)
+select p.id,'how-we-work','blocks',9,true,
+ jsonb_build_object('blocks',
+  '[{"type":"heading","text":"How we work","level":2},{"type":"heading","text":"Inclusive education first","level":3},{"type":"paragraph","text":"Children with disabilities learn alongside their peers, with the support that makes participation real."},{"type":"heading","text":"Community-led delivery","level":3},{"type":"paragraph","text":"Families, schools and local organisations shape the work, so support continues after a project ends."},{"type":"heading","text":"Accountable and safe","level":3},{"type":"paragraph","text":"Safeguarding, consent and evidence are built into every programme, story and donation we receive."}]'::jsonb
+ )
+from public.pages p where p.slug='home'
+on conflict do nothing;
+
+insert into public.page_sections(page_id,section_key,section_type,sort_order,is_enabled,config)
+select p.id,'cta-band','text',10,true,
+ jsonb_build_object('heading','Every child deserves a place to learn, belong and thrive.','text','Give your time, expertise or support to stand with ISNESI. We Leave No Child Behind.')
+from public.pages p where p.slug='home'
+on conflict do nothing;
+
+insert into public.page_sections(page_id,section_key,section_type,sort_order,is_enabled,config)
+select p.id,'newsletter','text',11,true,
+ jsonb_build_object('heading','Good news in your inbox','text','Occasional ISNESI updates, stories and opportunities to support inclusive education. No noise, unsubscribe anytime. We&apos;ll send a confirmation email before anything lands in your inbox.')
+from public.pages p where p.slug='home'
+on conflict do nothing;
+
 -- Page sections for key pages
 with ps as (
   insert into public.page_sections(page_id,section_key,section_type,sort_order,is_enabled,config)

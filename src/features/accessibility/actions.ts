@@ -27,12 +27,18 @@ type AccessibilityReview = {
 export async function getAccessibilityReviews(): Promise<AccessibilityReview[]> {
   if (!isSupabaseConfigured()) return [];
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("site_settings")
-    .select("value")
-    .eq("key", REVIEW_SETTING_KEY)
-    .maybeSingle();
-  const value = data?.value as unknown;
+  let value: unknown = null;
+  try {
+    const { data } = await supabase
+      .from("site_settings")
+      .select("value")
+      .eq("key", REVIEW_SETTING_KEY)
+      .maybeSingle();
+    value = data?.value;
+  } catch {
+    console.warn("[isnesi] accessibility reviews unavailable", { reason: "query failed" });
+    return [];
+  }
   if (!value || !Array.isArray(value)) return [];
   return value
     .filter((item): item is Record<string, unknown> => item && typeof item === "object")

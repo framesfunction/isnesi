@@ -45,9 +45,15 @@ export async function refreshSession(request: NextRequest): Promise<SessionRefre
   });
 
   // getUser() validates the JWT with Supabase Auth; getSession() only decodes it.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Any failure (network, unreachable Auth service) degrades to anonymous rather
+  // than crashing the middleware and surfacing the generic error page.
+  let user: User | null = null;
+  try {
+    const { data } = await supabase.auth.getUser();
+    user = data?.user ?? null;
+  } catch {
+    // Supabase Auth unreachable; treat the visitor as unsigned-in.
+  }
 
   return { response, user };
 }

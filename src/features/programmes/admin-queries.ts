@@ -92,32 +92,44 @@ export async function listAdminProgrammes(search: string): Promise<AdminProgramm
   if (!isSupabaseConfigured()) return null;
 
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("programmes")
-    .select(PROGRAMME_COLUMNS)
-    .order("sort_order", { ascending: true })
-    .order("key", { ascending: true })
-    .limit(200);
+  let rows: ProgrammeRow[] = [];
+  try {
+    const { data, error } = await supabase
+      .from("programmes")
+      .select(PROGRAMME_COLUMNS)
+      .order("sort_order", { ascending: true })
+      .order("key", { ascending: true })
+      .limit(200);
 
-  if (error) {
-    console.warn("[isnesi] admin programmes unavailable", { code: error.code });
+    if (error) {
+      console.warn("[isnesi] admin programmes unavailable", { code: error.code });
+      return null;
+    }
+    rows = (data ?? []) as ProgrammeRow[];
+  } catch {
+    console.warn("[isnesi] admin programmes unavailable", { reason: "query failed" });
     return null;
   }
 
-  const rows = (data ?? []) as ProgrammeRow[];
   if (rows.length === 0) return [];
 
-  const { data: translations, error: translationError } = await supabase
-    .from("programme_translations")
-    .select(TRANSLATION_COLUMNS)
-    .eq("locale", "en")
-    .in(
-      "programme_id",
-      rows.map((row) => row.id),
-    );
+  let translations: TranslationRow[] = [];
+  try {
+    const { data: t, error: translationError } = await supabase
+      .from("programme_translations")
+      .select(TRANSLATION_COLUMNS)
+      .eq("locale", "en")
+      .in(
+        "programme_id",
+        rows.map((row) => row.id),
+      );
 
-  if (translationError) {
-    console.warn("[isnesi] programme translations unavailable", { code: translationError.code });
+    if (translationError) {
+      console.warn("[isnesi] programme translations unavailable", { code: translationError.code });
+    }
+    translations = (t ?? []) as TranslationRow[];
+  } catch {
+    console.warn("[isnesi] programme translations unavailable", { reason: "query failed" });
   }
 
   const byId = indexTranslations((translations ?? []) as TranslationRow[]);
@@ -151,27 +163,40 @@ export async function getAdminProgramme(programmeId: string): Promise<AdminProgr
 
   const supabase = await createClient();
 
-  const { data: programme, error } = await supabase
-    .from("programmes")
-    .select(PROGRAMME_DETAIL_COLUMNS)
-    .eq("id", programmeId)
-    .maybeSingle();
+  let programme: ProgrammeDetailRow | null = null;
+  try {
+    const { data: p, error } = await supabase
+      .from("programmes")
+      .select(PROGRAMME_DETAIL_COLUMNS)
+      .eq("id", programmeId)
+      .maybeSingle();
 
-  if (error) {
-    console.warn("[isnesi] admin programme unavailable", { programmeId, code: error.code });
+    if (error) {
+      console.warn("[isnesi] admin programme unavailable", { programmeId, code: error.code });
+      return null;
+    }
+    programme = (p ?? null) as ProgrammeDetailRow | null;
+  } catch {
+    console.warn("[isnesi] admin programme unavailable", { programmeId, reason: "query failed" });
     return null;
   }
   if (!programme) return null;
 
-  const { data: translations } = await supabase
-    .from("programme_translations")
-    .select(TRANSLATION_DETAIL_COLUMNS)
-    .eq("programme_id", programmeId)
-    .eq("locale", "en")
-    .maybeSingle();
+  let translation: TranslationRow | null = null;
+  try {
+    const { data: t } = await supabase
+      .from("programme_translations")
+      .select(TRANSLATION_DETAIL_COLUMNS)
+      .eq("programme_id", programmeId)
+      .eq("locale", "en")
+      .maybeSingle();
 
-  const base = programme as ProgrammeDetailRow;
-  const translation = translations as TranslationRow | null;
+    translation = (t ?? null) as TranslationRow | null;
+  } catch {
+    console.warn("[isnesi] programme translation unavailable", { programmeId, reason: "query failed" });
+  }
+
+  const base = programme;
 
   return {
     id: base.id,
