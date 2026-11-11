@@ -313,6 +313,56 @@ export const partnerApprovalSchema = z.object({
 
 export const deletePartnerSchema = z.object({ partnerId: z.string().uuid() });
 
+/* -------------------------------- Centers --------------------------------- */
+
+const slugOrGenerate = z
+  .string()
+  .trim()
+  .optional()
+  .transform((value) => {
+    if (!value || value.length === 0) return null;
+    return value;
+  })
+  .refine(
+    (value) =>
+      value === null ||
+      /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value),
+    "Lowercase letters, numbers and single hyphens only.",
+  );
+
+export const saveCenterSchema = z.object({
+  centerId: z.string().uuid().optional(),
+  slug: slugOrGenerate,
+  name: z.string().trim().min(1, "Required.").max(TEXT_FIELD_MAX),
+  address: z.string().trim().min(1, "Required.").max(TEXT_FIELD_MAX),
+  city: optionalText,
+  phone: optionalText,
+  email: optionalText,
+  websiteUrl: optionalUrl,
+  openingHours: optionalText,
+  descriptionEn: optionalText,
+  logoMediaId: z
+    .string()
+    .trim()
+    .optional()
+    .transform((value) => (value && value.length > 0 ? value : null))
+    .refine(
+      (value) => value === null || z.uuid().safeParse(value).success,
+      "Choose an asset from the media library.",
+    ),
+  mapMediaId: z
+    .string()
+    .trim()
+    .optional()
+    .transform((value) => (value && value.length > 0 ? value : null))
+    .refine(
+      (value) => value === null || z.uuid().safeParse(value).success,
+      "Choose an asset from the media library.",
+    ),
+});
+
+export const deleteCenterSchema = z.object({ centerId: z.string().uuid() });
+
 /* ------------------------------- Navigation ------------------------------- */
 
 const HREF_MAX = 600;

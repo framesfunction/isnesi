@@ -86,6 +86,103 @@ export type Database = {
           },
         ];
       };
+      centers: {
+        Row: {
+          address: string;
+          city: string | null;
+          created_at: string;
+          description: string | null;
+          email: string | null;
+          id: string;
+          logo_media_id: string | null;
+          map_media_id: string | null;
+          name: string;
+          opening_hours: string | null;
+          phone: string | null;
+          public_visible: boolean;
+          slug: string;
+          updated_at: string;
+          website_url: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          address: string;
+          city?: string | null;
+          created_at?: string;
+          description?: string | null;
+          email?: string | null;
+          id?: string;
+          logo_media_id?: string | null;
+          map_media_id?: string | null;
+          name: string;
+          opening_hours?: string | null;
+          phone?: string | null;
+          public_visible?: boolean;
+          slug: string;
+          updated_at?: string;
+          website_url?: string | null;
+        };
+        Update: {
+          address?: string;
+          city?: string | null;
+          created_at?: string;
+          description?: string | null;
+          email?: string | null;
+          id?: string;
+          logo_media_id?: string | null;
+          map_media_id?: string | null;
+          name?: string;
+          opening_hours?: string | null;
+          phone?: string | null;
+          public_visible?: boolean;
+          slug?: string;
+          updated_at?: string;
+          website_url?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "centers_logo_media_id_fkey";
+            columns: ["logo_media_id"];
+            isOneToOne: false;
+            referencedRelation: "media_assets";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "centers_map_media_id_fkey";
+            columns: ["map_media_id"];
+            isOneToOne: false;
+            referencedRelation: "media_assets";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      center_translations: {
+        Row: {
+          center_id: string;
+          description: string | null;
+          locale: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          center_id: string;
+          description?: string | null;
+          locale: string;
+        };
+        Update: {
+          center_id?: string;
+          description?: string | null;
+          locale?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "center_translations_center_id_fkey";
+            columns: ["center_id"];
+            isOneToOne: false;
+            referencedRelation: "centers";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       content_approvals: {
         Row: {
           content_id: string;

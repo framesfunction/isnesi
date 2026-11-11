@@ -26,6 +26,7 @@ export const publicNavigation: PublicNavItem[] = [
   { label: "Stories & News", href: "/stories", description: "From our community" },
   { label: "Get Involved", href: "/get-involved", description: "Volunteer, partner or fundraise" },
   { label: "Partners", href: "/partners", description: "Organisations working with us" },
+  { label: "Centers", href: "/centers", description: "Visit an ISNESI center near you" },
   { label: "Contact", href: "/contact", description: "Talk to the ISNESI team" },
 ];
 

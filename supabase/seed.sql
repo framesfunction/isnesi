@@ -676,3 +676,19 @@ values
  ('funds-raised','Funds raised',15000000,'currency','XAF','Funds raised through donations and grants in 2026.','Finance reconciliation records','https://isnesi.cm/reports/2026-finance','2026',4,true,now() - interval '15 days',(select id from auth.users order by created_at limit 1),(select id from auth.users order by created_at limit 1)),
  ('illustrative-figure','Illustrative figure (not public)',42,'count',null,'This figure is drafted but not yet approved for publication.','Internal working draft','https://isnesi.cm/internal/draft','2026',5,false,null,(select id from auth.users order by created_at limit 1),(select id from auth.users order by created_at limit 1))
 on conflict (key) do nothing;
+
+-- Centers
+insert into public.centers(name, slug, address, city, phone, email, website_url, opening_hours, description, public_visible)
+values
+ ('ISNESI Yaounde Center','yaounde-center','P.O. Box 1234, Bastos','Yaounde','+237 22 22 22 22','info@isnesi.cm','https://isnesi.cm','Mon-Fri 8:00-17:00','ISNESI&rsquo;s main center in Yaounde, offering inclusive education assessments and family support.',true),
+ ('ISNESI Douala Center','douala-center','Rue de Bali, Akwa','Douala','+237 23 34 56 78','douala@isnesi.cm',null,'Mon-Fri 8:00-16:00','Regional center serving the Littoral region with screening and referral services.',true)
+on conflict (slug) do nothing;
+
+insert into public.center_translations(center_id,locale,description)
+select c.id,'en', case c.slug
+ when 'yaounde-center' then 'ISNESI&rsquo;s main center in Yaounde, offering inclusive education assessments, therapy referrals and family support for children with disabilities.'
+ when 'douala-center' then 'Regional center serving the Littoral region with disability screening, assessment and referral services for children and families.'
+ end
+from public.centers c
+where c.slug in ('yaounde-center','douala-center')
+on conflict (center_id,locale) do nothing;

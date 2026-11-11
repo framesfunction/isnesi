@@ -21,6 +21,7 @@ export type AdminModuleKey =
   | "stories"
   | "media"
   | "partners"
+  | "centers"
   | "navigation"
   | "impact-metrics"
   | "taxonomies"
@@ -249,6 +250,26 @@ export const ADMIN_MODULES: AdminModule[] = [
     security: [
       "A partner is never presented as an endorsement without recorded approval",
       "Public visibility requires approval_status of approved",
+    ],
+  },
+  {
+    key: "centers",
+    label: "Centers",
+    href: "/admin/centers",
+    icon: "building-2",
+    group: "website",
+    description: "Physical center locations, contact details and public visibility",
+    permission: "centers.manage",
+    purpose: "Manage physical center locations shown on the public website.",
+    tables: ["centers", "center_translations", "media_assets"],
+    capabilities: [
+      "Center name, address, city, phone, email, website and opening hours",
+      "Description plus logo and map imagery from the media library",
+      "Public visibility toggle — centers are public immediately on creation",
+    ],
+    security: [
+      "No approval workflow: a center is public as soon as it is saved",
+      "Only staff with centers.manage may create, edit or delete",
     ],
   },
   {
