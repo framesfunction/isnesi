@@ -89,12 +89,83 @@ const database = new pg.Client({
   ssl: { rejectUnauthorized: false },
 });
 await database.connect();
+
+/** Split raw SQL into individual statements, respecting string literals and dollar quotes. */
+function splitSqlStatements(sql) {
+  const statements = [];
+  let current = "";
+  let inSingleQuote = false;
+  let inDollarQuote = false;
+  let dollarTag = "";
+  for (let i = 0; i < sql.length; i++) {
+    const ch = sql[i];
+    if (inDollarQuote) {
+      current += ch;
+      if (sql.slice(i).startsWith(dollarTag)) {
+        inDollarQuote = false;
+        i += dollarTag.length - 1;
+      }
+      continue;
+    }
+    if (inSingleQuote) {
+      current += ch;
+      if (ch === "'" && sql[i + 1] !== "'") {
+        inSingleQuote = false;
+      } else if (ch === "'" && sql[i + 1] === "'") {
+        current += sql[i + 1]; // Preserve escaped SQL quote ''
+        i++;
+      }
+      continue;
+    }
+    if (ch === "$") {
+      const rest = sql.slice(i);
+      const match = rest.match(/^\$(\w*)\$/);
+      if (match) {
+        inDollarQuote = true;
+        dollarTag = match[0];
+        current += ch;
+        continue;
+      }
+    }
+    if (ch === "'") {
+      inSingleQuote = true;
+      current += ch;
+      continue;
+    }
+    if (ch === ";") {
+      statements.push(current.trim());
+      current = "";
+      continue;
+    }
+    current += ch;
+  }
+  if (current.trim()) statements.push(current.trim());
+  return statements;
+}
+
 try {
   const { rows } = await database.query(
     "select (select count(*)::int from public.pages) as page_count",
   );
   if ((rows[0]?.page_count ?? 0) === 0) {
-    await database.query(seedSql);
+    const statements = splitSqlStatements(seedSql);
+    for (let i = 0; i < statements.length; i++) {
+      // Remove full-line comment lines, then check if anything remains
+      let stmt = statements[i]
+        .split("\n")
+        .filter((line) => !line.trim().startsWith("--"))
+        .join("\n")
+        .trim();
+      if (!stmt) continue;
+      try {
+        await database.query(stmt);
+      } catch (err) {
+        console.error(`Failed at statement ${i + 1}/${statements.length}`);
+        console.error(`Error: ${err.message}`);
+        console.error(`Statement preview: ${stmt.slice(0, 500)}...`);
+        throw err;
+      }
+    }
     console.log("Hosted seed data applied.");
   } else {
     console.log("Hosted seed data already present; skipped seed SQL.");

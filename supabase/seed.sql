@@ -677,18 +677,280 @@ values
  ('illustrative-figure','Illustrative figure (not public)',42,'count',null,'This figure is drafted but not yet approved for publication.','Internal working draft','https://isnesi.cm/internal/draft','2026',5,false,null,(select id from auth.users order by created_at limit 1),(select id from auth.users order by created_at limit 1))
 on conflict (key) do nothing;
 
--- Centers
+-- ========================================================================
+-- CENTER: ISNESI Dchange Center (West Region, Cameroon) — the only center
+-- ========================================================================
+
 insert into public.centers(name, slug, address, city, phone, email, website_url, opening_hours, description, public_visible)
 values
- ('ISNESI Yaounde Center','yaounde-center','P.O. Box 1234, Bastos','Yaounde','+237 22 22 22 22','info@isnesi.cm','https://isnesi.cm','Mon-Fri 8:00-17:00','ISNESI&rsquo;s main center in Yaounde, offering inclusive education assessments and family support.',true),
- ('ISNESI Douala Center','douala-center','Rue de Bali, Akwa','Douala','+237 23 34 56 78','douala@isnesi.cm',null,'Mon-Fri 8:00-16:00','Regional center serving the Littoral region with screening and referral services.',true)
+ ('ISNESI Dchange Center','dchange-center','Dchange, West Region','Dchange','+237 6 50 12 34 56','dchange@isnesi.cm','https://isnesi.cm/dchange','Mon-Fri 8:00-17:00, Sat 8:00-12:00','ISNESI''s center in Dchange, West Region, Cameroon. Providing inclusive education assessments, therapy referrals, psychosocial support and family guidance for children with disabilities and their families in the West Region.',true)
 on conflict (slug) do nothing;
 
 insert into public.center_translations(center_id,locale,description)
-select c.id,'en', case c.slug
- when 'yaounde-center' then 'ISNESI&rsquo;s main center in Yaounde, offering inclusive education assessments, therapy referrals and family support for children with disabilities.'
- when 'douala-center' then 'Regional center serving the Littoral region with disability screening, assessment and referral services for children and families.'
- end
+select c.id,'en','ISNESI''s center in Dchange, West Region, Cameroon. Providing inclusive education assessments, therapy referrals, psychosocial support and family guidance for children with disabilities and their families in the West Region. The center welcomes children, parents and educators Monday to Friday, with a half-day Saturday clinic.'
 from public.centers c
-where c.slug in ('yaounde-center','douala-center')
+where c.slug = 'dchange-center'
 on conflict (center_id,locale) do nothing;
+
+-- ========================================================================
+-- MEDIA ASSETS for the Dchange center
+-- (Admin uploads the actual image/video files through /admin/media;
+--  these records establish the relationships and placeholder paths.)
+-- ========================================================================
+
+insert into public.media_assets(
+  bucket_id, object_path, file_name, mime_type, byte_size, width, height,
+  alt_text, caption, credit, rights_status, rights_reference, consent_reference,
+  safeguarding_reviewed, uploaded_by
+)
+values
+ ('public-media','center/dchange/cover-building.jpg','cover-building.jpg','image/jpeg',null,1200,800,
+  'ISNESI Dchange Center main building exterior','Cover photo of the Dchange center building','ISNESI Media Team','owned',null,null,true,
+  (select id from auth.users order by created_at limit 1)),
+ ('public-media','center/dchange/classroom-1.jpg','classroom-1.jpg','image/jpeg',null,1200,800,
+  'Inclusive classroom at Dchange center','Classroom with accessible learning materials','ISNESI Media Team','owned',null,null,true,
+  (select id from auth.users order by created_at limit 1)),
+ ('public-media','center/dchange/classroom-2.jpg','classroom-2.jpg','image/jpeg',null,1200,800,
+  'Children learning in small groups','Small group learning session','ISNESI Media Team','owned',null,null,true,
+  (select id from auth.users order by created_at limit 1)),
+ ('public-media','center/dchange/therapy-room.jpg','therapy-room.jpg','image/jpeg',null,1200,800,
+  'Therapy and assessment room','Therapy room with assessment equipment','ISNESI Media Team','owned',null,null,true,
+  (select id from auth.users order by created_at limit 1)),
+ ('public-media','center/dchange/outdoor-play.jpg','outdoor-play.jpg','image/jpeg',null,1200,800,
+  'Outdoor play area','Accessible outdoor play space','ISNESI Media Team','owned',null,null,true,
+  (select id from auth.users order by created_at limit 1)),
+ ('public-media','center/dchange/staff-team.jpg','staff-team.jpg','image/jpeg',null,1200,800,
+  'Dchange center staff team','Therapists, teachers and family support staff','ISNESI Media Team','owned',null,null,true,
+  (select id from auth.users order by created_at limit 1)),
+ ('public-media','center/dchange/parent-meeting.jpg','parent-meeting.jpg','image/jpeg',null,1200,800,
+  'Parent support group meeting','Monthly parent support group session','ISNESI Media Team','owned',null,null,true,
+  (select id from auth.users order by created_at limit 1)),
+ ('public-media','center/dchange/center-video.mp4','center-video.mp4','video/mp4',null,null,null,
+  'Welcome to ISNESI Dchange Center','Short welcome video for the Dchange center','ISNESI Media Team','owned',null,null,true,
+  (select id from auth.users order by created_at limit 1))
+on conflict (object_path) do nothing;
+
+-- Link media assets to the center via center_media
+insert into public.center_media(center_id, media_asset_id, caption, sort_order, is_cover, media_type)
+select c.id, m.id,
+  case m.object_path
+   when 'center/dchange/cover-building.jpg' then 'Main entrance of the ISNESI Dchange Center'
+   when 'center/dchange/classroom-1.jpg' then 'Inclusive classroom with adaptive seating'
+   when 'center/dchange/classroom-2.jpg' then 'Small group learning session'
+   when 'center/dchange/therapy-room.jpg' then 'Therapy and assessment room'
+   when 'center/dchange/outdoor-play.jpg' then 'Accessible outdoor play space'
+   when 'center/dchange/staff-team.jpg' then 'Dchange center staff team'
+   when 'center/dchange/parent-meeting.jpg' then 'Parent support group meeting'
+   when 'center/dchange/center-video.mp4' then 'Welcome video for the Dchange center'
+  end,
+  case m.object_path
+   when 'center/dchange/cover-building.jpg' then 1
+   when 'center/dchange/classroom-1.jpg' then 2
+   when 'center/dchange/classroom-2.jpg' then 3
+   when 'center/dchange/therapy-room.jpg' then 4
+   when 'center/dchange/outdoor-play.jpg' then 5
+   when 'center/dchange/staff-team.jpg' then 6
+   when 'center/dchange/parent-meeting.jpg' then 7
+   when 'center/dchange/center-video.mp4' then 8
+  end,
+  case m.object_path
+   when 'center/dchange/cover-building.jpg' then true
+   else false
+  end,
+  case m.object_path
+   when 'center/dchange/center-video.mp4' then 'video'
+   else 'image'
+  end
+from public.centers c
+cross join public.media_assets m
+where c.slug = 'dchange-center'
+  and m.object_path like 'center/dchange/%'
+on conflict (center_id, media_asset_id) do nothing;
+
+-- ========================================================================
+-- PAGES with media blocks (public pages driven by CMS)
+-- ========================================================================
+
+insert into public.pages(slug, page_type, status, show_in_navigation, sort_order, published_at, created_by, updated_by)
+values
+ ('home','landing','published',true,1,now() - interval '60 days',
+  (select id from auth.users order by created_at limit 1),(select id from auth.users order by created_at limit 1)),
+ ('about','standard','published',true,2,now() - interval '55 days',
+  (select id from auth.users order by created_at limit 1),(select id from auth.users order by created_at limit 1)),
+ ('programmes','standard','published',true,3,now() - interval '50 days',
+  (select id from auth.users order by created_at limit 1),(select id from auth.users order by created_at limit 1)),
+ ('contact','standard','published',true,4,now() - interval '45 days',
+  (select id from auth.users order by created_at limit 1),(select id from auth.users order by created_at limit 1)),
+ ('centers','standard','published',true,5,now() - interval '40 days',
+  (select id from auth.users order by created_at limit 1),(select id from auth.users order by created_at limit 1))
+on conflict (slug) do nothing;
+
+-- Home page sections with media blocks
+insert into public.page_sections(page_id, section_key, section_type, sort_order, is_enabled, config, created_at)
+select p.id,'home-hero','hero',1,true,
+ jsonb_build_object(
+   'blocks', jsonb_build_array(
+     jsonb_build_object('type','heading','text','Every child belongs','level',2),
+     jsonb_build_object('type','paragraph','text','ISNESI works in the West Region of Cameroon so that children with disabilities can learn, belong and thrive in their own communities.'),
+     jsonb_build_object('type','image','mediaId', (select id from public.media_assets where object_path='center/dchange/cover-building.jpg' limit 1),'altText','ISNESI Dchange Center building','caption','The Dchange Center welcomes children and families every weekday.'),
+     jsonb_build_object('type','callout','text','We Leave No Child Behind.')
+   )
+ ),now()
+from public.pages p where p.slug='home'
+on conflict (page_id,section_key) do nothing;
+
+insert into public.page_sections(page_id, section_key, section_type, sort_order, is_enabled, config, created_at)
+select p.id,'home-centers','grid',2,true,
+ jsonb_build_object(
+   'heading','Visit Our Center',
+   'text','The ISNESI Dchange Center in the West Region provides inclusive education assessments, therapy referrals and family support.',
+   'blocks', jsonb_build_array(
+     jsonb_build_object('type','image','mediaId', (select id from public.media_assets where object_path='center/dchange/classroom-1.jpg' limit 1),'altText','Classroom at Dchange Center','caption','Inclusive classroom with adaptive seating.'),
+     jsonb_build_object('type','image','mediaId', (select id from public.media_assets where object_path='center/dchange/outdoor-play.jpg' limit 1),'altText','Outdoor play area','caption','Accessible outdoor play space for all children.')
+   )
+ ),now()
+from public.pages p where p.slug='home'
+on conflict (page_id,section_key) do nothing;
+
+-- About page with media
+insert into public.page_sections(page_id, section_key, section_type, sort_order, is_enabled, config, created_at)
+select p.id,'about-hero','hero',1,true,
+ jsonb_build_object(
+   'blocks', jsonb_build_array(
+     jsonb_build_object('type','heading','text','Who we are','level',2),
+     jsonb_build_object('type','paragraph','text','ISNESI — Inclusive Support for Needs and Education — works with children, families, educators and communities to build a more inclusive society.'),
+     jsonb_build_object('type','image','mediaId', (select id from public.media_assets where object_path='center/dchange/staff-team.jpg' limit 1),'altText','ISNESI staff team','caption','Our therapists, teachers and family support staff at the Dchange Center.'),
+     jsonb_build_object('type','callout','text','Disability is part of human diversity, not a barrier to belonging.')
+   )
+ ),now()
+from public.pages p where p.slug='about'
+on conflict (page_id,section_key) do nothing;
+
+-- Contact page with center media
+insert into public.page_sections(page_id, section_key, section_type, sort_order, is_enabled, config, created_at)
+select p.id,'contact-center','grid',1,true,
+ jsonb_build_object(
+   'heading','Visit the Dchange Center',
+   'text','Come and visit us at our center in Dchange, West Region. We are here to support your family.',
+   'blocks', jsonb_build_array(
+     jsonb_build_object('type','image','mediaId', (select id from public.media_assets where object_path='center/dchange/cover-building.jpg' limit 1),'altText','Dchange Center entrance','caption','Find us in Dchange, West Region, Cameroon.'),
+     jsonb_build_object('type','image','mediaId', (select id from public.media_assets where object_path='center/dchange/parent-meeting.jpg' limit 1),'altText','Parent support group','caption','Monthly parent support group meetings.')
+   )
+ ),now()
+from public.pages p where p.slug='contact'
+on conflict (page_id,section_key) do nothing;
+
+-- Centers page (CMS-managed)
+insert into public.page_sections(page_id, section_key, section_type, sort_order, is_enabled, config, created_at)
+select p.id,'centers-intro','hero',1,true,
+ jsonb_build_object(
+   'blocks', jsonb_build_array(
+     jsonb_build_object('type','heading','text','Our center','level',2),
+     jsonb_build_object('type','paragraph','text','The ISNESI Dchange Center is our physical location in the West Region of Cameroon, where children with disabilities and their families receive inclusive education assessments, therapy referrals and support.'),
+     jsonb_build_object('type','image','mediaId', (select id from public.media_assets where object_path='center/dchange/cover-building.jpg' limit 1),'altText','Dchange Center','caption','ISNESI Dchange Center — open to the community.'),
+     jsonb_build_object('type','image','mediaId', (select id from public.media_assets where object_path='center/dchange/classroom-2.jpg' limit 1),'altText','Learning at the center','caption','Small group learning sessions.'),
+     jsonb_build_object('type','image','mediaId', (select id from public.media_assets where object_path='center/dchange/therapy-room.jpg' limit 1),'altText','Therapy room','caption','Professional assessment and therapy space.')
+   )
+ ),now()
+from public.pages p where p.slug='centers'
+on conflict (page_id,section_key) do nothing;
+
+-- Page translations
+insert into public.page_translations(page_id,locale,title,excerpt,seo_title,seo_description,body)
+select p.id,'en',
+ case p.slug
+  when 'home' then 'Home'
+  when 'about' then 'About ISNESI'
+  when 'programmes' then 'Programmes'
+  when 'contact' then 'Contact Us'
+  when 'centers' then 'Our Center'
+   else initcap(replace(p.slug, '-', ' '))
+ end,
+ case p.slug
+  when 'home' then 'ISNESI — Inclusive education for every child'
+  when 'about' then 'Who we are and why we exist'
+  when 'programmes' then 'Our programme areas'
+  when 'contact' then 'Get in touch with the ISNESI team'
+  when 'centers' then 'Visit our Dchange center'
+   else 'Information about ' || initcap(replace(p.slug, '-', ' '))
+ end,
+ case p.slug
+  when 'home' then 'Home | ISNESI'
+  when 'about' then 'About ISNESI | Inclusive Support for Needs and Education'
+  when 'programmes' then 'Programmes | ISNESI'
+  when 'contact' then 'Contact | ISNESI'
+  when 'centers' then 'Our Center | ISNESI'
+   else initcap(replace(p.slug, '-', ' ')) || ' | ISNESI'
+ end,
+ case p.slug
+  when 'home' then 'ISNESI works in the West Region of Cameroon so children with disabilities can learn, belong and thrive.'
+  when 'about' then 'ISNESI exists so children with disabilities can learn, belong and thrive in their own communities.'
+  when 'programmes' then 'Explore ISNESI programme areas: inclusive education, special needs support and more.'
+  when 'contact' then 'Contact the ISNESI team in Dchange, West Region, Cameroon.'
+  when 'centers' then 'Visit the ISNESI Dchange Center for inclusive education assessments and family support.'
+   else 'Learn more about ' || initcap(replace(p.slug, '-', ' ')) || ' at ISNESI.'
+ end,
+ '{}'::jsonb
+from public.pages p
+on conflict (page_id,locale) do nothing;
+
+-- ========================================================================
+-- PARTNERS
+-- ========================================================================
+
+insert into public.partners(name, relationship_type, website_url, logo_media_id, approval_status, public_visible, approved_by, approved_at)
+select
+ 'West Region Education Board','Implementing partner','https://westregion-edu.cm',null,'approved',true,
+ (select id from auth.users order by created_at limit 1),now() - interval '30 days'
+where not exists (select 1 from public.partners where name='West Region Education Board');
+
+insert into public.partners(name, relationship_type, website_url, logo_media_id, approval_status, public_visible, approved_by, approved_at)
+select
+ 'Cameroon Disability Rights Network','Advocacy partner','https://cdrn.cm',null,'approved',true,
+ (select id from auth.users order by created_at limit 1),now() - interval '25 days'
+where not exists (select 1 from public.partners where name='Cameroon Disability Rights Network');
+
+insert into public.partner_translations(partner_id,locale,description)
+select p.id,'en',
+ case p.name
+  when 'West Region Education Board' then 'Government partner supporting inclusive education implementation across West Region schools.'
+  when 'Cameroon Disability Rights Network' then 'Civil society partner advocating for the rights of persons with disabilities.'
+ end
+from public.partners p
+where p.name in ('West Region Education Board','Cameroon Disability Rights Network')
+on conflict (partner_id,locale) do nothing;
+
+-- ========================================================================
+-- STORIES / NEWS
+-- ========================================================================
+
+insert into public.content_items(content_type, slug, status, author_id, published_at, featured, allow_comments, created_at)
+values
+ ('story','first-steps-at-dchange','published',(select id from auth.users order by created_at limit 1),now() - interval '20 days',true,false,now() - interval '20 days',now() - interval '20 days'),
+ ('story','parent-support-group-launch','published',(select id from auth.users order by created_at limit 1),now() - interval '10 days',false,false,now() - interval '10 days',now() - interval '10 days')
+on conflict (slug) do nothing;
+
+insert into public.content_translations(content_id,locale,title,excerpt,body,seo_title,seo_description)
+values
+  ((select id from public.content_items where slug = 'first-steps-at-dchange'), 'en', 'First Steps at the Dchange Center',
+   'A child''s first inclusive classroom experience at our Dchange center.',
+   jsonb_build_object('blocks', jsonb_build_array(
+     jsonb_build_object('type','paragraph','text','When eight-year-old Amina first walked into the Dchange Center classroom, she was unsure. With adaptive seating, patient teachers and classmates who welcomed her, she is now reading her first words.'),
+     jsonb_build_object('type','image','mediaId', (select id from public.media_assets where object_path='center/dchange/classroom-1.jpg'),'altText','Child learning in classroom','caption','Amina''s first day in the inclusive classroom.')
+   )),
+   'First Steps at the Dchange Center | ISNESI',
+   'Read about a child''s first inclusive classroom experience at our Dchange center.')
+on conflict (content_id,locale) do nothing;
+
+insert into public.content_translations(content_id,locale,title,excerpt,body,seo_title,seo_description)
+values
+  ((select id from public.content_items where slug = 'parent-support-group-launch'), 'en', 'Parent Support Group Launches',
+   'Families gather for the first monthly parent support group meeting.',
+   jsonb_build_object('blocks', jsonb_build_array(
+     jsonb_build_object('type','paragraph','text','The first parent support group meeting brought together twelve families from across Dchange. Parents shared experiences, learned about inclusive education options and built a support network.'),
+     jsonb_build_object('type','image','mediaId', (select id from public.media_assets where object_path='center/dchange/parent-meeting.jpg'),'altText','Parent support group meeting','caption','Families connecting at the first support group meeting.')
+   )),
+   'Parent Support Group Launches | ISNESI',
+   'Families gather for the first monthly parent support group meeting at ISNESI Dchange Center.')
+on conflict (content_id,locale) do nothing;
+

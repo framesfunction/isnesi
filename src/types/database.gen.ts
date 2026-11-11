@@ -183,6 +183,58 @@ export type Database = {
           },
         ];
       };
+      center_media: {
+        Row: {
+          caption: string | null;
+          center_id: string;
+          created_at: string;
+          id: string;
+          is_cover: boolean;
+          media_asset_id: string;
+          media_type: string;
+          sort_order: number;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          caption?: string | null;
+          center_id: string;
+          created_at?: string;
+          id?: string;
+          is_cover?: boolean;
+          media_asset_id: string;
+          media_type?: string;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Update: {
+          caption?: string | null;
+          center_id?: string;
+          created_at?: string;
+          id?: never;
+          is_cover?: boolean;
+          media_asset_id?: string;
+          media_type?: string;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "center_media_center_id_fkey";
+            columns: ["center_id"];
+            isOneToOne: false;
+            referencedRelation: "centers";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "center_media_media_asset_id_fkey";
+            columns: ["media_asset_id"];
+            isOneToOne: false;
+            referencedRelation: "media_assets";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       content_approvals: {
         Row: {
           content_id: string;
